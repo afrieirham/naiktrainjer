@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Near LRT Homes — Walk & Drive to Station</title>
+    <meta
+      name="description"
+      content="Browse homes and areas near LRT stations. See walking and driving routes from each property to the nearest LRT."
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Inter, system-ui, sans-serif;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+      }
+      .map-frame {
+        min-height: 320px;
+        height: 50vh;
+      }
+      @media (min-width: 768px) {
+        .map-frame {
+          height: calc(100vh - 13rem);
+          min-height: 480px;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 min-h-screen antialiased">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+        <div
+          class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        >
+          <div>
+            <h1
+              class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight"
+            >
+              Near LRT Homes
+            </h1>
+            <p class="text-sm text-slate-500 mt-0.5">
+              Property → LRT · walk or drive directions
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <span
+              class="text-xs font-semibold uppercase tracking-wide text-slate-400"
+            >
+              Route mode
+            </span>
+            <div
+              class="inline-flex rounded-xl bg-slate-100 p-1"
+              id="mode-group"
+              role="group"
+              aria-label="Travel mode"
+            >
+              <button
+                type="button"
+                data-mode="walk"
+                class="mode-btn px-4 py-2 rounded-lg text-sm font-semibold transition"
+              >
+                Walk
+              </button>
+              <button
+                type="button"
+                data-mode="drive"
+                class="mode-btn px-4 py-2 rounded-lg text-sm font-semibold transition"
+              >
+                Drive
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+      <div
+        class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row"
+      >
+        <!-- Sidebar list -->
+        <aside
+          class="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-[42vh] md:max-h-none"
+        >
+          <div
+            class="p-3 sm:p-4 border-b border-slate-100 space-y-2.5 shrink-0"
+          >
+            <div class="relative">
+              <svg
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                id="search"
+                type="search"
+                placeholder="Search by name…"
+                autocomplete="off"
+                class="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2">
+              <select
+                id="station-filter"
+                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              >
+                <option value="">All stations</option>
+              </select>
+              <select
+                id="type-filter"
+                class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+              >
+                <option value="">All types</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-0.5">
+              <p id="result-count" class="text-xs text-slate-500"></p>
+              <button
+                type="button"
+                id="reset-filters"
+                class="text-xs font-semibold text-sky-600 hover:text-sky-800"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="list"
+            class="overflow-y-auto scrollbar-thin flex-1 divide-y divide-slate-100"
+            role="listbox"
+            aria-label="Properties"
+          ></div>
+        </aside>
+
+        <!-- Detail + map -->
+        <section class="flex-1 flex flex-col min-w-0">
+          <div
+            id="detail"
+            class="px-4 sm:px-5 py-4 border-b border-slate-100 shrink-0"
+          ></div>
+
+          <div class="relative bg-slate-100 flex-1">
+            <iframe
+              id="map"
+              class="map-frame w-full border-0 block hidden"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+              title="Walking or driving directions to LRT station"
+            ></iframe>
+
+            <div
+              id="map-empty"
+              class="map-frame w-full flex items-center justify-center p-6"
+            >
+              <div class="max-w-sm text-center">
+                <div
+                  class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm"
+                >
+                  <svg
+                    class="w-6 h-6 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.75"
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                    />
+                  </svg>
+                </div>
+                <p class="font-semibold text-slate-800" id="map-empty-title">
+                  Select a property
+                </p>
+                <p class="text-sm text-slate-500 mt-1" id="map-empty-body">
+                  Walking and driving routes to the LRT will appear here.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p class="mt-5 text-center text-xs text-slate-400">
+        Routes open as Google Maps embeds · default mode is Walk
+      </p>
+    </main>
+
+    <script>
+      /**
+       * DATA
+       * Paste Google "Share → Embed a map" URLs into directions.walk / directions.drive
+       * (Directions mode: origin = property, destination = LRT station).
+       *
+       * map          → maps.app.goo.gl short link (optional place pin)
+       * propertyGuru → listing URL (optional)
+       */
+      const properties = [
+        {
+          name: "Serasi Residences",
+          map: "https://maps.app.goo.gl/u8U4rK9k3spDRbPE9",
+          type: "Service Apartment",
+          station: "LRT Putra Heights",
+          propertyGuru: "",
+          directions: {
+            walk: "https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d3984.3577453498287!2d101.57177847530362!3d2.9979873969780155!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e2!4m5!1s0x31cdb3e4409fc0c5%3A0xbfe5f9b57247b026!2sSerasi%20Residences%2C%20Jalan%20Putra%20Indera%205%2C%20Putra%20Heights%2C%2047650%20Subang%20Jaya%2C%20Selangor!3m2!1d3.0001265!2d101.5739042!4m5!1s0x31cdb3aa016f0763%3A0x1909f85d4539e294!2sSJ705%20LRT%20Putra%20Height%2C%20Putra%20Point%20Commercial%20Centre%2C%2047650%20Subang%20Jaya%2C%20Selangor!3m2!1d2.9952829999999997!2d101.575734!5e0!3m2!1sen!2smy!4v1783870181943!5m2!1sen!2smy",
+            drive: "",
+          },
+        },
+        {
+          name: "Taman Alam Megah Seksyen 28",
+          map: "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
+          type: "Area",
+          station: "LRT Subang Alam",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Putra Bistari",
+          map: "https://maps.app.goo.gl/Z1xkor5Z4TEXanMh9",
+          type: "Area",
+          station: "LRT Alam Megah",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Shah Alam Seksyen 27",
+          map: "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
+          type: "Area",
+          station: "LRT Alam Megah",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Main Place Residence",
+          map: "https://maps.app.goo.gl/UDqE9H9m1wTXSJnD9",
+          type: "Service Apartment",
+          station: "LRT USJ 21",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Starville Apartment",
+          map: "https://maps.app.goo.gl/iKUGysQyQfTi6UGq8",
+          type: "Apartment",
+          station: "LRT Wawasan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Rhythm Avenue",
+          map: "https://maps.app.goo.gl/2yAEwRVsBH2WcBNQA",
+          type: "Apartment",
+          station: "LRT Wawasan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang USJ 19",
+          map: "https://maps.app.goo.gl/yaqhSwbWT5aL4oEz6",
+          type: "Area",
+          station: "LRT Wawasan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang USJ 18",
+          map: "https://maps.app.goo.gl/E9khLmoYzXubMx6w6",
+          type: "Area",
+          station: "LRT Wawasan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang Perdana Goodyear Court 3",
+          map: "https://maps.app.goo.gl/h5SXHEUpahhV27c38",
+          type: "Apartment",
+          station: "LRT Taipan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang Perdana Goodyear Court 6",
+          map: "https://maps.app.goo.gl/p9We3s1X7nYhLz7v5",
+          type: "Apartment",
+          station: "LRT Taipan",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang Perdana Goodyear Court 1",
+          map: "https://maps.app.goo.gl/q6W73UPU67jE6tTDA",
+          type: "Apartment",
+          station: "LRT USJ 7",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang Perdana Goodyear Court 2",
+          map: "https://maps.app.goo.gl/idR3yPKprCBZynda9",
+          type: "Apartment",
+          station: "LRT USJ 7",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang USJ 2",
+          map: "https://maps.app.goo.gl/ierw1P898sAXPXpaA",
+          type: "Area",
+          station: "LRT SS 18, LRT USJ 7",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang SS 18",
+          map: "https://maps.app.goo.gl/Lq9SSredB69wLxW48",
+          type: "Area",
+          station: "LRT SS 18",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang SS 14",
+          map: "https://maps.app.goo.gl/pSwhinGPRLsCTB7X8",
+          type: "Area",
+          station: "LRT SS 18",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang SS 15",
+          map: "https://maps.app.goo.gl/LhgJ1RjcbQVAnRJg9",
+          type: "Area",
+          station: "LRT SS 15",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang SS 17",
+          map: "https://maps.app.goo.gl/vvsMdPuvWyXJ6EHL6",
+          type: "Area",
+          station: "LRT SS 15",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Lafite Apartment",
+          map: "https://maps.app.goo.gl/Vqjwqe4AkpL8eQX66",
+          type: "Apartment",
+          station: "LRT SS 15",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Saujana Residency",
+          map: "https://maps.app.goo.gl/Qth2RjxQKPor7gLx6",
+          type: "Condominium",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Subang Avenue",
+          map: "https://maps.app.goo.gl/oGkUeJuuuLNigGUK9",
+          type: "Apartment",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "E-Tiara Service Apartment",
+          map: "https://maps.app.goo.gl/hrTuqvZe9NJ8DNLS9",
+          type: "Service Apartment",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Casa Tiara",
+          map: "https://maps.app.goo.gl/gyZbjvPLooFYmkUC9",
+          type: "Service Apartment",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Lot 15 Service Residence",
+          map: "https://maps.app.goo.gl/FTqPvh7UWhpPN9wF9",
+          type: "Service Apartment",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Isola Service Residence",
+          map: "https://maps.app.goo.gl/BPhzrNU2TGMRbHn9A",
+          type: "Service Apartment",
+          station: "LRT Subang Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Shang Villa",
+          map: "https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9",
+          type: "Condominium",
+          station: "LRT CGC-Glenmarie",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Panorama Residence",
+          map: "https://maps.app.goo.gl/H4vnNfzSayPjRSAg6",
+          type: "Condominium",
+          station: "LRT CGC-Glenmarie",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Plaza Glomac",
+          map: "https://maps.app.goo.gl/12LjCjFhLFcGH6Sj9",
+          type: "Shop/Office",
+          station: "LRT CGC-Glenmarie",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Pacific Place",
+          map: "https://maps.app.goo.gl/aCUwQgxhPixuovpq5",
+          type: "Service Apartment",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "AraTre’ Residence",
+          map: "https://maps.app.goo.gl/9sJB31ZTi5DrJzvq8",
+          type: "Service Apartment",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Urbana Residence",
+          map: "https://maps.app.goo.gl/PDECcaAYCWYfQv5g8",
+          type: "Service Apartment",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Puncak Nusa Kelana Condominium",
+          map: "https://maps.app.goo.gl/a1sqkbdGejShUL5J6",
+          type: "Condominium",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Ara Sentral",
+          map: "https://maps.app.goo.gl/SkCWFxL79SHQuwbH7",
+          type: "Condominium",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "PPR Lembah Subang 2",
+          map: "https://maps.app.goo.gl/3WFt7gzytrRyhw1Y9",
+          type: "Apartment",
+          station: "LRT Ara Damansara",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "D’aman Crimson Condominium",
+          map: "https://maps.app.goo.gl/oH1Wt9oLgYjWKxi86",
+          type: "Condominium",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "D’aman Ria Condominium",
+          map: "https://maps.app.goo.gl/gBpZwn7rB548XwVW8",
+          type: "Condominium",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Eve Suites",
+          map: "https://maps.app.goo.gl/qS3z8yzf1F62aNUq5",
+          type: "Service Apartment",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Flat Taman Putra Damai",
+          map: "https://maps.app.goo.gl/U9wa67JMxghLzPYS7",
+          type: "Flat",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Cantara Residence",
+          map: "https://maps.app.goo.gl/zSTkLxiGzcZCeoig6",
+          type: "Service Apartment",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Apartment Vista Subang",
+          map: "https://maps.app.goo.gl/wHryfhtVCkW4LXkJ9",
+          type: "Apartment",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Winchester - Ara Damansara",
+          map: "https://maps.app.goo.gl/4Ejuy3va5huALeu7A",
+          type: "Terrace",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Petaling Jaya SS 25",
+          map: "https://maps.app.goo.gl/puoSha9dn1D6mX8u8",
+          type: "Area",
+          station: "LRT Lembah Subang",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Petaling Jaya SS 4",
+          map: "https://maps.app.goo.gl/BC5c4SzD6cE3fpzJ6",
+          type: "Area",
+          station: "LRT Kelana Jaya, LRT Taman Bahagia",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Petaling Jaya SS 3",
+          map: "https://maps.app.goo.gl/RQDqUxYZUeLhyavN9",
+          type: "Area",
+          station: "LRT Taman Bahagia",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Petaling Jaya SS 2",
+          map: "https://maps.app.goo.gl/tuUMmk5X4UoiH74R6",
+          type: "Area",
+          station: "LRT Taman Bahagia",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Megah Rise Residensi",
+          map: "https://maps.app.goo.gl/CZTkEkbe7WXN2ZBG6",
+          type: "Service Apartment",
+          station: "LRT Taman Bahagia",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Paramount View Condominium",
+          map: "https://maps.app.goo.gl/kbWrTf51R2YPxFSw9",
+          type: "Condominium",
+          station: "LRT Taman Paramount",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Flat Sri Aman",
+          map: "https://maps.app.goo.gl/54YzE8N7dAtceVQBA",
+          type: "Flat",
+          station: "LRT Taman Paramount",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Sea Park",
+          map: "https://maps.app.goo.gl/mFaV39kcjQTo7gzA9",
+          type: "Area",
+          station: "LRT Taman Paramount",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Taman Paramount",
+          map: "https://maps.app.goo.gl/MaP5wAHmZukuVda89",
+          type: "Area",
+          station: "LRT Taman Paramount",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Petaling Jaya Seksyen 22",
+          map: "https://maps.app.goo.gl/DDrSqAz3ZDPg3s4v9",
+          type: "Area",
+          station: "LRT Taman Paramount",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Millennium Square Condominium",
+          map: "https://maps.app.goo.gl/gXHS6VH9gwYxkRAd9",
+          type: "Condominium",
+          station: "LRT Asia Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "The Istara Condominium",
+          map: "https://maps.app.goo.gl/SzxDhzR6S2jv5kCB8",
+          type: "Condominium",
+          station: "LRT Asia Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Pinnacle Petaling Jaya",
+          map: "https://maps.app.goo.gl/kEY6umHbBJGRQ3kHA",
+          type: "Condominium",
+          station: "LRT Asia Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "PJ8 Service Suite",
+          map: "https://maps.app.goo.gl/qEQkw2AarrzAdpff8",
+          type: "Condominium",
+          station: "LRT Asia Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Centrestage Designer Suite",
+          map: "https://maps.app.goo.gl/C6yAtbNukhMaxeB29",
+          type: "Service Apartment",
+          station: "LRT Asia Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Amcorp Service Suite",
+          map: "https://maps.app.goo.gl/6cEiCj1QMthRE9fp6",
+          type: "Service Apartment",
+          station: "LRT Taman Jaya",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Vista Angkasa",
+          map: "https://maps.app.goo.gl/tkqkmTT4RVrNkDJS7",
+          type: "Apartment",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "KL Gateway Residence",
+          map: "https://maps.app.goo.gl/AWsK9ZkEVBkEJ3X39",
+          type: "Service Apartment",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "KL Gateway Premium Residence",
+          map: "https://maps.app.goo.gl/We8ynrMbF1D85XQq8",
+          type: "Service Apartment",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Residensi Kerinchi",
+          map: "https://maps.app.goo.gl/othaBG2Mw8wn3mw2A",
+          type: "Condominium",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Pangsapuri PKNS 17 Kampung Kerinchi",
+          map: "https://maps.app.goo.gl/BhfcL56ewtBsXwFh9",
+          type: "Flat",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "The Estate Bangsar South",
+          map: "https://maps.app.goo.gl/kxxLvUNZNnRZMZUr9",
+          type: "Condominium",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "The Park Residences Bangsar South",
+          map: "https://maps.app.goo.gl/uQrd4AcJCtz3xwtJ6",
+          type: "Condominium",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Pantai Panorama Condominium",
+          map: "https://maps.app.goo.gl/RVzgmg2V5uEijrXa6",
+          type: "Condominium",
+          station: "LRT KL Gateway - Universiti",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Camellia Serviced Suites",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT KL Gateway - Universiti, LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "South View Serviced Apartments",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT KL Gateway - Universiti, LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "SouthLink Lifestyle Apartments",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT KL Gateway - Universiti, LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Novum @ Bangsar South",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Fajar Ria Condo",
+          map: "",
+          type: "Condominium",
+          station: "LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Regency Suites",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT Kerinchi",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "KL Eco City Vogue Suites 1",
+          map: "",
+          type: "Apartment",
+          station: "LRT Abdulah Hukum",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "KL Eco City Vogue Suites 2",
+          map: "",
+          type: "Condominium",
+          station: "LRT Abdulah Hukum",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "ViiA Residences",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT Abdulah Hukum",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Nadi Bangsar Serviced Residence",
+          map: "",
+          type: "Service Apartment",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Bangsar Permai",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Gaya Bangsar Condominium",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Mutiara Residency",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Sri Impian Condominium",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Menara Pelangi",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Apartment Cuepacs",
+          map: "",
+          type: "Apartment",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Crescent Court Condo",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Bangsar Hill Park",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+        {
+          name: "Sri Bangsar Apartment",
+          map: "",
+          type: "Condominium",
+          station: "LRT Bangsar",
+          propertyGuru: "",
+          directions: { walk: "", drive: "" },
+        },
+      ];
+
+      // ——— State ———
+      let selectedName = properties[0].name;
+      let mode = "walk"; // walk | drive
+
+      // ——— Filters init ———
+      const stations = [...new Set(properties.map((p) => p.station))].sort(
+        (a, b) => a.localeCompare(b),
+      );
+      const types = [...new Set(properties.map((p) => p.type))].sort((a, b) =>
+        a.localeCompare(b),
+      );
+
+      const stationFilter = document.getElementById("station-filter");
+      const typeFilter = document.getElementById("type-filter");
+
+      stations.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        stationFilter.appendChild(opt);
+      });
+      types.forEach((t) => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        typeFilter.appendChild(opt);
+      });
+
+      // ——— Helpers ———
+      function typeClasses(type) {
+        const map = {
+          "Service Apartment": "bg-teal-50 text-teal-700 ring-teal-600/15",
+          Apartment: "bg-sky-50 text-sky-700 ring-sky-600/15",
+          Condominium: "bg-violet-50 text-violet-700 ring-violet-600/15",
+          Flat: "bg-amber-50 text-amber-800 ring-amber-600/15",
+          Terrace: "bg-orange-50 text-orange-800 ring-orange-600/15",
+          "Shop/Office": "bg-rose-50 text-rose-700 ring-rose-600/15",
+          Area: "bg-slate-100 text-slate-600 ring-slate-500/10",
+        };
+        return map[type] || "bg-slate-100 text-slate-600 ring-slate-500/10";
+      }
+
+      function badge(text, classes) {
+        return `<span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${classes}">${escapeHtml(
+          text,
+        )}</span>`;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function embedFor(property, travelMode) {
+        if (!property.directions) return "";
+        return (property.directions[travelMode] || "").trim();
+      }
+
+      /** Full Google Maps directions (opens in new tab) — useful even before embeds are pasted */
+      function googleDirUrl(property, travelMode) {
+        const travelmode = travelMode === "drive" ? "driving" : "walking";
+        const origin = `${property.name}, Malaysia`;
+        const destination = `${property.station}, Malaysia`;
+        return (
+          "https://www.google.com/maps/dir/?api=1" +
+          `&origin=${encodeURIComponent(origin)}` +
+          `&destination=${encodeURIComponent(destination)}` +
+          `&travelmode=${travelmode}`
+        );
+      }
+
+      function filteredList() {
+        const q = document.getElementById("search").value.trim().toLowerCase();
+        const station = stationFilter.value;
+        const type = typeFilter.value;
+        return properties.filter((p) => {
+          if (q && !p.name.toLowerCase().includes(q)) return false;
+          if (station && p.station !== station) return false;
+          if (type && p.type !== type) return false;
+          return true;
+        });
+      }
+
+      function paintModeButtons() {
+        document.querySelectorAll(".mode-btn").forEach((btn) => {
+          const active = btn.dataset.mode === mode;
+          btn.classList.toggle("bg-white", active);
+          btn.classList.toggle("text-slate-900", active);
+          btn.classList.toggle("shadow-sm", active);
+          btn.classList.toggle("text-slate-500", !active);
+        });
+      }
+
+      function setMap(src) {
+        const iframe = document.getElementById("map");
+        const empty = document.getElementById("map-empty");
+
+        if (src) {
+          empty.classList.add("hidden");
+          iframe.classList.remove("hidden");
+          if (iframe.getAttribute("src") !== src) {
+            iframe.src = src;
+          }
+        } else {
+          iframe.classList.add("hidden");
+          iframe.removeAttribute("src");
+          empty.classList.remove("hidden");
+        }
+      }
+
+      function renderList() {
+        const list = filteredList();
+        const el = document.getElementById("list");
+        document.getElementById("result-count").textContent =
+          `${list.length} place${list.length === 1 ? "" : "s"}`;
+
+        if (!list.length) {
+          el.innerHTML =
+            '<p class="p-8 text-sm text-slate-400 text-center">No matches. Try clearing filters.</p>';
+          return;
+        }
+
+        if (!list.some((p) => p.name === selectedName)) {
+          selectedName = list[0].name;
+        }
+
+        el.innerHTML = list
+          .map((p) => {
+            const active = p.name === selectedName;
+            return `
+            <button
+              type="button"
+              role="option"
+              aria-selected="${active}"
+              data-name="${escapeHtml(p.name)}"
+              class="w-full text-left px-4 py-3.5 transition ${
+                active
+                  ? "bg-sky-50 border-l-4 border-l-sky-500"
+                  : "hover:bg-slate-50 border-l-4 border-l-transparent"
+              }"
+            >
+              <p class="font-semibold text-sm leading-snug ${
+                active ? "text-sky-950" : "text-slate-900"
+              }">${escapeHtml(p.name)}</p>
+              <p class="text-xs text-slate-500 mt-1">${escapeHtml(p.type)}</p>
+              <p class="text-xs font-medium text-slate-600 mt-1.5 truncate">
+                ${escapeHtml(p.station)}
+              </p>
+            </button>
+          `;
+          })
+          .join("");
+
+        el.querySelectorAll("button[data-name]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            selectedName = btn.dataset.name;
+            renderList();
+            renderDetailAndMap();
+            if (window.innerWidth < 768) {
+              document
+                .getElementById("detail")
+                .scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          });
+        });
+
+        renderDetailAndMap();
+      }
+
+      function renderDetailAndMap() {
+        paintModeButtons();
+        const p = properties.find((x) => x.name === selectedName);
+        if (!p) return;
+
+        const embed = embedFor(p, mode);
+        const modeLabel = mode === "drive" ? "Drive" : "Walk";
+
+        const pinLink = p.map
+          ? `<a href="${escapeHtml(
+              p.map,
+            )}" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900">
+              Place on Google Maps
+              <span aria-hidden="true">↗</span>
+            </a>`
+          : "";
+
+        const pgLink = p.propertyGuru
+          ? `<a href="${escapeHtml(
+              p.propertyGuru,
+            )}" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900">
+              PropertyGuru
+              <span aria-hidden="true">↗</span>
+            </a>`
+          : "";
+
+        const dirLink = `<a href="${escapeHtml(
+          googleDirUrl(p, mode),
+        )}" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900">
+          Open ${modeLabel.toLowerCase()} route
+          <span aria-hidden="true">↗</span>
+        </a>`;
+
+        document.getElementById("detail").innerHTML = `
+        <div class="space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                ${escapeHtml(p.name)}
+              </h2>
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                ${badge(p.type, typeClasses(p.type))}
+                ${badge(p.station, "bg-slate-100 text-slate-600 ring-slate-500/10")}
+                ${badge(
+                  modeLabel + " to station",
+                  mode === "drive"
+                    ? "bg-amber-50 text-amber-900 ring-amber-600/15"
+                    : "bg-emerald-50 text-emerald-800 ring-emerald-600/15",
+                )}
+              </div>
+            </div>
+            <div class="flex flex-col sm:items-end gap-2 shrink-0">
+              ${dirLink}
+              ${pinLink}
+              ${pgLink}
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-slate-50 border border-slate-100 px-3 py-3 sm:px-4">
+            <div class="flex items-center gap-2 sm:gap-3 text-sm">
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">From</p>
+                <p class="font-semibold text-slate-900 truncate">${escapeHtml(
+                  p.name,
+                )}</p>
+              </div>
+              <div class="shrink-0 flex flex-col items-center px-1 text-center">
+                <span class="text-[10px] font-bold uppercase tracking-wide ${
+                  mode === "drive" ? "text-amber-600" : "text-emerald-600"
+                }">${modeLabel}</span>
+                <div class="my-1 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full ${
+                    mode === "drive" ? "bg-amber-500" : "bg-emerald-500"
+                  }"></span>
+                  <span class="w-10 sm:w-14 h-0.5 bg-slate-300"></span>
+                  <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1 text-right">
+                <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400">To</p>
+                <p class="font-semibold text-slate-900 truncate">${escapeHtml(
+                  p.station,
+                )}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+        if (embed) {
+          setMap(embed);
+        } else {
+          document.getElementById("map-empty-title").textContent =
+            "Map embed not added yet";
+          document.getElementById("map-empty-body").textContent =
+            `Use “Open ${modeLabel.toLowerCase()} route” above, or paste the Google embed URL into directions.${mode} for this place.`;
+          setMap("");
+        }
+      }
+
+      // ——— Events ———
+      document.getElementById("search").addEventListener("input", renderList);
+      stationFilter.addEventListener("change", renderList);
+      typeFilter.addEventListener("change", renderList);
+
+      document.getElementById("reset-filters").addEventListener("click", () => {
+        document.getElementById("search").value = "";
+        stationFilter.value = "";
+        typeFilter.value = "";
+        renderList();
+      });
+
+      document.getElementById("mode-group").addEventListener("click", (e) => {
+        const btn = e.target.closest(".mode-btn");
+        if (!btn) return;
+        mode = btn.dataset.mode;
+        renderDetailAndMap();
+      });
+
+      // ——— Boot ———
+      renderList();
+    </script>
+  </body>
+</html>
