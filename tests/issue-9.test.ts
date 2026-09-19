@@ -79,7 +79,7 @@ describe("browse page intro copy", () => {
 describe("footer link", () => {
   it("browse page footer links to /submit", () => {
     assert.ok(
-      browseHtml.includes('href="/submit"'),
+      browseHtml.includes('href="/submit/"'),
       "Browse page footer must link to /submit",
     );
   });
@@ -93,7 +93,7 @@ describe("footer link", () => {
 
   it("submit page footer links to /submit", () => {
     assert.ok(
-      submitHtml.includes('href="/submit"'),
+      submitHtml.includes('href="/submit/"'),
       "Submit page footer must link to /submit",
     );
   });
@@ -107,7 +107,7 @@ describe("footer link", () => {
       ),
     );
     assert.ok(
-      placeHtml.includes('href="/submit"'),
+      placeHtml.includes('href="/submit/"'),
       `Place page "${firstPlace.slug}" footer must link to /submit`,
     );
   });
@@ -143,7 +143,7 @@ describe("submit page", () => {
 
   it("has a canonical link to /submit", () => {
     assert.ok(
-      submitHtml.includes('rel="canonical" href="https://naiktrainjer.com/submit"'),
+      submitHtml.includes('rel="canonical" href="https://naiktrainjer.com/submit/"'),
       "Submit page canonical must point to /submit",
     );
   });

@@ -215,7 +215,7 @@ describe("place page metadata", () => {
   it("every canonical URL ends with the place slug", () => {
     for (const page of pages) {
       assert.ok(
-        page.canonical.endsWith(`/${page.slug}`),
+        page.canonical.endsWith(`/${page.slug}/`),
         `Canonical "${page.canonical}" for "${page.slug}" does not end with slug`,
       );
     }
@@ -399,7 +399,7 @@ describe("browse page place links", () => {
 
   it("every Place name in the browse page links to its place page", () => {
     for (const place of data.places) {
-      const href = `/places/${place.slug}`;
+      const href = `/places/${place.slug}/`;
       assert.ok(
         browseHtml.includes(`href="${href}"`),
         `Browse page does not link to "${href}" for "${place.name}"`,

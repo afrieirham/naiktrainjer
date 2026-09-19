@@ -10,6 +10,7 @@ import {
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
 import { WalkDriveToggle } from "../components/WalkDriveToggle";
+import { publicUrl } from "../lib/routes";
 import {
   TYPE_LABELS,
   KIND_LABELS,
@@ -50,7 +51,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
   }
 
   const ogImage = `https://naiktrainjer.com/og/${place.slug}.png`;
-  const pageUrl = `https://naiktrainjer.com/places/${place.slug}`;
+  const pageUrl = publicUrl(`/places/${place.slug}`);
   const title = `${place.name} — NaikTrainJer`;
   const ogType = place.kind === "area" ? "place" : "place";
 
@@ -264,7 +265,7 @@ export default function PlacePage() {
       <footer className="mt-auto border-t border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
           NaikTrainJer —{" "}
-          <a href="/submit" className="font-semibold text-sky-600 hover:text-sky-800">
+          <a href="/submit/" className="font-semibold text-sky-600 hover:text-sky-800">
             suggest a place
           </a>
         </div>

@@ -99,7 +99,7 @@ describe("sitemap.xml", () => {
 
   it("contains the Submit page URL", () => {
     assert.ok(
-      sitemapXml.includes(`<loc>${SITE_URL}/submit</loc>`),
+      sitemapXml.includes(`<loc>${SITE_URL}/submit/</loc>`),
       "Submit page URL missing from sitemap",
     );
   });
@@ -130,7 +130,7 @@ describe("sitemap.xml", () => {
 
   it("every Place slug in the data file appears in the sitemap", () => {
     for (const place of data.places) {
-      const expected = `${SITE_URL}/places/${place.slug}`;
+      const expected = `${SITE_URL}/places/${place.slug}/`;
       assert.ok(
         sitemapXml.includes(`<loc>${expected}</loc>`),
         `Place "${place.slug}" missing from sitemap`,
@@ -203,7 +203,8 @@ describe("sitemap ↔ build parity", () => {
       (m) => m[1],
     );
     for (const url of locs) {
-      const path = url.replace(SITE_URL, "");
+      const raw = url.replace(SITE_URL, "");
+      const path = raw === "/" ? "/" : raw.replace(/\/$/, "");
       assert.ok(
         builtPaths.has(path),
         `Sitemap entry "${url}" has no corresponding build output`,
@@ -213,7 +214,7 @@ describe("sitemap ↔ build parity", () => {
 
   it("every prerendered page appears in the sitemap", () => {
     for (const path of builtPaths) {
-      const fullUrl = `${SITE_URL}${path}`;
+      const fullUrl = path === "/" ? `${SITE_URL}/` : `${SITE_URL}${path}/`;
       assert.ok(
         sitemapXml.includes(`<loc>${fullUrl}</loc>`),
         `Prerendered page "${path}" missing from sitemap`,
@@ -288,10 +289,14 @@ describe("page metadata", () => {
         .replace(BUILD_DIR, "")
         .replace(/\/index\.html$/, "");
       if (expectedPath === "") expectedPath = "/";
+      // The host serves a directory build at its trailing-slash URL, so that is
+      // what the canonical must name.
+      const expectedUrl =
+        expectedPath === "/" ? `${SITE_URL}/` : `${SITE_URL}${expectedPath}/`;
       assert.equal(
         canonical,
-        `${SITE_URL}${expectedPath}`,
-        `${rel}: canonical "${canonical}" does not match expected "${SITE_URL}${expectedPath}"`,
+        expectedUrl,
+        `${rel}: canonical "${canonical}" does not match expected "${expectedUrl}"`,
       );
     }
   });

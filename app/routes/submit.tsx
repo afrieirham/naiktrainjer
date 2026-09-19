@@ -1,3 +1,4 @@
+import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/submit";
 
 export const meta: Route.MetaFunction = () => [
@@ -7,7 +8,7 @@ export const meta: Route.MetaFunction = () => [
     content:
       "Suggest a place near an LRT station on the Kelana Jaya line to be added to NaikTrainJer.",
   },
-  { tagName: "link", rel: "canonical", href: "https://naiktrainjer.com/submit" },
+  { tagName: "link", rel: "canonical", href: publicUrl("/submit") },
 ];
 
 const TALLY_URL = "https://tally.so/r/0Q4oRN";
@@ -73,7 +74,7 @@ export default function SubmitPage() {
       <footer className="mt-auto border-t border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
           NaikTrainJer —{" "}
-          <a href="/submit" className="font-semibold text-sky-600 hover:text-sky-800">
+          <a href="/submit/" className="font-semibold text-sky-600 hover:text-sky-800">
             suggest a place
           </a>
         </div>

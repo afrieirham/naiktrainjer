@@ -10,7 +10,7 @@ ${urls.map((url) => `  <url><loc>${url}</loc></url>`).join("\n")}
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=31536000, immutable",
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
