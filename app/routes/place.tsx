@@ -48,10 +48,24 @@ export function meta({ loaderData }: Route.MetaArgs) {
     description = `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName} on the Kelana Jaya line. Walk and drive routes on NaikTrainJer.`;
   }
 
+  const ogImage = `https://naiktrainjer.com/og/${place.slug}.png`;
+  const pageUrl = `https://naiktrainjer.com/places/${place.slug}`;
+  const title = `${place.name} — NaikTrainJer`;
+  const ogType = place.kind === "area" ? "place" : "place";
+
   return [
-    { title: `${place.name} — NaikTrainJer` },
+    { title },
     { name: "description", content: description },
-    { tagName: "link", rel: "canonical", href: `https://naiktrainjer.com/places/${place.slug}` },
+    { tagName: "link", rel: "canonical", href: pageUrl },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: ogType },
+    { property: "og:url", content: pageUrl },
+    { property: "og:image", content: ogImage },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: ogImage },
   ];
 }
 
