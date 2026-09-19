@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build && tsx scripts/generate-og-cards.ts",
     "dev": "react-router dev",
+    "measure": "tsx scripts/measure.ts",
     "typecheck": "react-router typegen && tsc",
     "test": "node --test tests/"
   },

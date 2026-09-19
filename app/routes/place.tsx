@@ -15,6 +15,7 @@ import {
   KIND_LABELS,
   TYPE_CLASSES,
   metaLabel,
+  formatMeasurement,
 } from "../lib/labels";
 import type { Route } from "./+types/place";
 
@@ -163,6 +164,27 @@ export default function PlacePage() {
                       </p>
                     </div>
                   )}
+                  {place.walkMinutes !== undefined &&
+                    place.walkMeters !== undefined &&
+                    place.driveMinutes !== undefined && (
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          Walk / drive
+                        </span>
+                        <p className="font-semibold text-slate-900">
+                          {formatMeasurement(
+                            place.walkMinutes,
+                            place.walkMeters,
+                            place.driveMinutes,
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {place.driveMinutes === 1
+                            ? "1 min drive"
+                            : `${place.driveMinutes} min drive`}
+                        </p>
+                      </div>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">

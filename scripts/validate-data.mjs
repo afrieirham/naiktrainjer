@@ -38,6 +38,14 @@ try {
     if (!s.line) err(`Station missing line: ${JSON.stringify(s)}`);
     if (s.slug && stationSlugs.has(s.slug)) err(`Duplicate station slug: ${s.slug}`);
     if (s.slug) stationSlugs.add(s.slug);
+
+    if (s.coordinates) {
+      const c = s.coordinates;
+      if (typeof c.lat !== 'number') err(`Station "${s.name}": coordinates.lat is not a number`);
+      else if (c.lat < LAT_MIN || c.lat > LAT_MAX) err(`Station "${s.name}": coordinates.lat ${c.lat} outside Klang Valley range [${LAT_MIN}, ${LAT_MAX}]`);
+      if (typeof c.lng !== 'number') err(`Station "${s.name}": coordinates.lng is not a number`);
+      else if (c.lng < LNG_MIN || c.lng > LNG_MAX) err(`Station "${s.name}": coordinates.lng ${c.lng} outside Klang Valley range [${LNG_MIN}, ${LNG_MAX}]`);
+    }
   }
 
   // Place validation
