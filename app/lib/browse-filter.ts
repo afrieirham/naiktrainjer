@@ -8,6 +8,9 @@ export type Place = {
   map?: string;
   coordinates?: { lat: number; lng: number };
   source?: string;
+  walkMinutes?: number;
+  walkMeters?: number;
+  driveMinutes?: number;
 };
 
 export type Station = {

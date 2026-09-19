@@ -36,7 +36,11 @@ describe("prerendered HTML", () => {
   it("index.html exists and is real HTML (not an empty shell)", () => {
     assert.ok(html.length > 1000, `Expected HTML to be >1000 bytes, got ${html.length}`);
     assert.ok(html.includes("<!DOCTYPE html>"), "Expected DOCTYPE");
-    assert.ok(html.includes("<title>NaikTrainJer</title>"), "Expected title");
+    const titles = [...html.matchAll(/<title[^>]*>(.*?)<\/title>/g)].map((m) => m[1]);
+    assert.equal(titles.length, 1, `Expected exactly one <title>, got ${titles.length}: ${titles.join(" | ")}`);
+    assert.ok(titles[0].includes("NaikTrainJer"), `Expected the title to name the site, got "${titles[0]}"`);
+    const descriptions = [...html.matchAll(/<meta name="description" content="(.*?)"/g)].map((m) => m[1]);
+    assert.equal(descriptions.length, 1, `Expected exactly one meta description, got ${descriptions.length}`);
   });
 
   it("contains every Station name with its correct count", () => {

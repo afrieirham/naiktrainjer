@@ -17,6 +17,8 @@ import {
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
 import { WalkDriveToggle } from "../components/WalkDriveToggle";
+import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel } from "../lib/labels";
+import type { Route } from "./+types/browse";
 
 export function loader() {
   return {
@@ -25,40 +27,18 @@ export function loader() {
   };
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  "service-apartment": "Service Apartment",
-  apartment: "Apartment",
-  condominium: "Condominium",
-  flat: "Flat",
-  terrace: "Terrace",
-  "shop-office": "Shop/Office",
-  area: "Area",
-};
-
-const KIND_LABELS: Record<string, string> = {
-  building: "Building",
-  area: "Area",
-};
-
 /**
- * A Place's kind and type are different facts, but an Area's are the same word
- * ("Area"), so collapse the label rather than printing it twice.
+ * The site's own page. The root layout no longer hardcodes a title or description,
+ * so every route must supply its own — otherwise a page ships with no metadata at all.
  */
-function metaLabel(place: { kind: string; type: string }): string {
-  const kind = KIND_LABELS[place.kind] ?? place.kind;
-  const type = TYPE_LABELS[place.type] ?? place.type;
-  return kind === type ? type : `${kind} · ${type}`;
-}
-
-const TYPE_CLASSES: Record<string, string> = {
-  "service-apartment": "bg-teal-50 text-teal-700 ring-teal-600/15",
-  apartment: "bg-sky-50 text-sky-700 ring-sky-600/15",
-  condominium: "bg-violet-50 text-violet-700 ring-violet-600/15",
-  flat: "bg-amber-50 text-amber-800 ring-amber-600/15",
-  terrace: "bg-orange-50 text-orange-800 ring-orange-600/15",
-  "shop-office": "bg-rose-50 text-rose-700 ring-rose-600/15",
-  area: "bg-slate-100 text-slate-600 ring-slate-500/10",
-};
+export const meta: Route.MetaFunction = () => [
+  { title: "NaikTrainJer — places near LRT stations on the Kelana Jaya line" },
+  {
+    name: "description",
+    content: `Browse ${propertiesData.places.length} places I checked near LRT stations on the Kelana Jaya line, from Putra Heights to KL Gateway. Walk or drive directions to the station.`,
+  },
+  { tagName: "link", rel: "canonical", href: "https://naiktrainjer.com/" },
+];
 
 export default function Browse() {
   const { stations, places } = useLoaderData<typeof loader>();
@@ -263,13 +243,19 @@ export default function Browse() {
                           role="listitem"
                           onClick={() => setSelectedSlug(place.slug)}
                         >
-                          <p
-                            className={`font-semibold text-sm leading-snug ${
-                              isActive ? "text-sky-950" : "text-slate-900"
-                            }`}
+                          <a
+                            href={`/places/${place.slug}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="block"
                           >
-                            {place.name}
-                          </p>
+                            <p
+                              className={`font-semibold text-sm leading-snug ${
+                                isActive ? "text-sky-950" : "text-slate-900"
+                              }`}
+                            >
+                              {place.name}
+                            </p>
+                          </a>
                           <p className="text-xs text-slate-500 mt-1">
                             {metaLabel(place)}
                           </p>
