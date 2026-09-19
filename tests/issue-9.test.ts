@@ -150,8 +150,16 @@ describe("submit page", () => {
 
   it("contains the Tally iframe embed", () => {
     assert.ok(
-      submitHtml.includes('src="https://tally.so/r/0Q4oRN"'),
-      "Submit page must embed the Tally form at https://tally.so/r/0Q4oRN",
+      submitHtml.includes('data-tally-src="https://tally.so/embed/0Q4oRN'),
+      "Submit page must embed the Tally form through its self-sizing embed URL",
+    );
+    assert.ok(
+      submitHtml.includes("dynamicHeight=1"),
+      "The embed must let Tally size the frame, or the Submit button falls below an inner scrollbar",
+    );
+    assert.ok(
+      submitHtml.includes("hideTitle=1"),
+      "The form's own heading duplicates the page heading, so it must be hidden",
     );
   });
 
@@ -164,7 +172,7 @@ describe("submit page", () => {
 
   it("the Tally iframe has a title attribute", () => {
     const iframeMatch = submitHtml.match(
-      /<iframe[^>]*src="https:\/\/tally\.so\/r\/0Q4oRN"[^>]*>/,
+      /<iframe[^>]*data-tally-src="https:\/\/tally\.so\/embed\/0Q4oRN[^"]*"[^>]*>/,
     );
     assert.ok(iframeMatch, "Tally iframe not found");
     assert.ok(
@@ -184,9 +192,11 @@ describe("submit page", () => {
     );
   });
 
-  it("the Tally iframe appears only on the Submit page", () => {
-    const browseHasTally = browseHtml.includes("tally.so/r/0Q4oRN");
-    assert.ok(!browseHasTally, "Browse page must not contain Tally embed");
+  it("the Tally embed appears only on the Submit page", () => {
+    assert.ok(
+      !browseHtml.includes("tally.so"),
+      "Browse page must not contain the Tally embed or its script",
+    );
 
     const firstPlace = data.places[0];
     const placeHtml = stripComments(
@@ -195,14 +205,16 @@ describe("submit page", () => {
         "utf-8",
       ),
     );
-    const placeHasTally = placeHtml.includes("tally.so/r/0Q4oRN");
-    assert.ok(!placeHasTally, "Place page must not contain Tally embed");
+    assert.ok(
+      !placeHtml.includes("tally.so"),
+      "Place page must not contain the Tally embed or its script",
+    );
   });
 
-  it("does not contain the Tally script tag (only iframe)", () => {
+  it("uses Tally's embed script, because a fixed iframe height cuts the form off", () => {
     assert.ok(
-      !submitHtml.includes("tally.so/widgets"),
-      "Submit page must not load the Tally script — only the iframe embed",
+      submitHtml.includes("https://tally.so/widgets/embed.js"),
+      "The Submit page must load Tally's embed script so the frame matches the form's height",
     );
   });
 });

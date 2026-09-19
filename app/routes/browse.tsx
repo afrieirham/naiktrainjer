@@ -140,9 +140,9 @@ export default function Browse() {
           as they were found along the line.
         </p>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row md:h-[calc(100vh-11rem)]">
           <aside
-            className="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-[42vh] md:max-h-none"
+            className="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-[70vh] md:max-h-none md:overflow-hidden"
             aria-label="Places list"
           >
             <div className="p-3 sm:p-4 border-b border-slate-100 space-y-2.5 shrink-0">
@@ -214,7 +214,7 @@ export default function Browse() {
               </div>
             </div>
 
-            <div className="overflow-y-auto flex-1" role="list">
+            <div className="overflow-y-auto flex-1 min-h-0" role="list">
               {stationGroups.length === 0 && (
                 <p className="p-8 text-sm text-slate-400 text-center">
                   No matches. Try clearing filters.
@@ -238,34 +238,41 @@ export default function Browse() {
                     {group.places.map((place) => {
                       const isActive = place.slug === selectedSlug;
                       return (
-                        <button
+                        <div
                           key={place.slug}
-                          type="button"
-                          className={`w-full text-left px-4 py-3.5 transition ${
+                          role="listitem"
+                          className={`relative ${
                             isActive
                               ? "bg-sky-50 border-l-4 border-l-sky-500"
                               : "hover:bg-slate-50 border-l-4 border-l-transparent"
                           }`}
-                          role="listitem"
-                          onClick={() => setSelectedSlug(place.slug)}
                         >
-                          <a
-                            href={`/places/${place.slug}/`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="block"
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSlug(place.slug)}
+                            aria-pressed={isActive}
+                            className="w-full text-left px-4 py-3.5 pr-12"
                           >
-                            <p
-                              className={`font-semibold text-sm leading-snug ${
+                            <span
+                              className={`block font-semibold text-sm leading-snug ${
                                 isActive ? "text-sky-950" : "text-slate-900"
                               }`}
                             >
                               {place.name}
-                            </p>
+                            </span>
+                            <span className="block text-xs text-slate-500 mt-1">
+                              {metaLabel(place)}
+                            </span>
+                          </button>
+                          <a
+                            href={`/places/${place.slug}/`}
+                            aria-label={`Open the page for ${place.name}`}
+                            title="Open the full page for this place"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm font-semibold text-slate-400 hover:bg-slate-200 hover:text-sky-700 focus-visible:bg-slate-200"
+                          >
+                            ↗
                           </a>
-                          <p className="text-xs text-slate-500 mt-1">
-                            {metaLabel(place)}
-                          </p>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -275,7 +282,7 @@ export default function Browse() {
           </aside>
 
           <section
-            className="flex-1 flex flex-col min-w-0 min-h-[220px] md:min-h-0 md:sticky md:top-20 md:h-[calc(100vh-13rem)]"
+            className="flex-1 flex flex-col min-w-0 min-h-[220px] md:min-h-0 md:h-full md:overflow-y-auto"
             aria-label="Place details"
           >
             {selectedPlace ? (
@@ -347,6 +354,13 @@ export default function Browse() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={`/places/${selectedPlace.slug}/`}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-sky-50 px-2.5 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-100 hover:text-sky-900"
+                    >
+                      Open full page
+                      <span aria-hidden="true">&#x2197;</span>
+                    </a>
                     <a
                       href={openRouteUrl}
                       target="_blank"

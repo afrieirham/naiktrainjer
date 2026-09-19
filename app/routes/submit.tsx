@@ -11,7 +11,18 @@ export const meta: Route.MetaFunction = () => [
   { tagName: "link", rel: "canonical", href: publicUrl("/submit") },
 ];
 
-const TALLY_URL = "https://tally.so/r/0Q4oRN";
+const TALLY_FORM_ID = "0Q4oRN";
+const TALLY_URL = `https://tally.so/r/${TALLY_FORM_ID}`;
+
+/**
+ * Tally's embed script sizes the iframe to the form's real height, so the
+ * fields and the Submit button are never cut off behind the frame's own
+ * scrollbar — guessing a fixed height got that wrong at every width.
+ * `hideTitle` drops the form's own heading, which repeated this page's.
+ */
+const TALLY_EMBED_URL =
+  `https://tally.so/embed/${TALLY_FORM_ID}` +
+  "?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1";
 
 export default function SubmitPage() {
   return (
@@ -32,7 +43,7 @@ export default function SubmitPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
           Suggest a place
         </h1>
@@ -42,20 +53,16 @@ export default function SubmitPage() {
         </p>
 
         <div className="mt-6">
-          {/*
-            Tally's iframe scrolls internally, so the height has to be generous
-            enough that the four fields and the submit button are reachable
-            without touching its inner scrollbar — smaller on wider screens,
-            where the form lays out shorter.
-          */}
           <iframe
-            src={TALLY_URL}
+            data-tally-src={TALLY_EMBED_URL}
             loading="lazy"
             width="100%"
-            className="border-0 h-[840px] md:h-[620px]"
-            title="Suggest a place form"
+            height="500"
+            className="border-0 min-h-[780px] md:min-h-[620px]"
             style={{ minWidth: "100%" }}
+            title="Suggest a place form"
           />
+          <script async src="https://tally.so/widgets/embed.js" />
         </div>
 
         <p className="mt-4 text-sm text-slate-500">
