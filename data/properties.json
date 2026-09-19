@@ -1,0 +1,1207 @@
+{
+  "stations": [
+    {
+      "slug": "lrt-putra-heights",
+      "name": "LRT Putra Heights",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-subang-alam",
+      "name": "LRT Subang Alam",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-alam-megah",
+      "name": "LRT Alam Megah",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-usj-21",
+      "name": "LRT USJ 21",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-wawasan",
+      "name": "LRT Wawasan",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-taipan",
+      "name": "LRT Taipan",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-usj-7",
+      "name": "LRT USJ 7",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-ss-18",
+      "name": "LRT SS 18",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-ss-15",
+      "name": "LRT SS 15",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-subang-jaya",
+      "name": "LRT Subang Jaya",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-cgc-glenmarie",
+      "name": "LRT CGC-Glenmarie",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-ara-damansara",
+      "name": "LRT Ara Damansara",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-lembah-subang",
+      "name": "LRT Lembah Subang",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-kelana-jaya",
+      "name": "LRT Kelana Jaya",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-taman-bahagia",
+      "name": "LRT Taman Bahagia",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-taman-paramount",
+      "name": "LRT Taman Paramount",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-asia-jaya",
+      "name": "LRT Asia Jaya",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-taman-jaya",
+      "name": "LRT Taman Jaya",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-kl-gateway-universiti",
+      "name": "LRT KL Gateway - Universiti",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-kerinchi",
+      "name": "LRT Kerinchi",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-abdullah-hukum",
+      "name": "LRT Abdullah Hukum",
+      "line": "kelana-jaya"
+    },
+    {
+      "slug": "lrt-bangsar",
+      "name": "LRT Bangsar",
+      "line": "kelana-jaya"
+    }
+  ],
+  "places": [
+    {
+      "slug": "serasi-residences",
+      "name": "Serasi Residences",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-putra-heights",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/u8U4rK9k3spDRbPE9",
+      "coordinates": {
+        "lat": 3.0001265,
+        "lng": 101.5739042
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "taman-alam-megah-seksyen-28",
+      "name": "Taman Alam Megah Seksyen 28",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-subang-alam",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
+      "coordinates": {
+        "lat": 3.0110891,
+        "lng": 101.5572156
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "putra-bistari",
+      "name": "Putra Bistari",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-alam-megah",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/Z1xkor5Z4TEXanMh9",
+      "coordinates": {
+        "lat": 3.0190091,
+        "lng": 101.5706993
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "shah-alam-seksyen-27",
+      "name": "Shah Alam Seksyen 27",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-alam-megah",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
+      "coordinates": {
+        "lat": 3.0110891,
+        "lng": 101.5572156
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "main-place-residence",
+      "name": "Main Place Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-usj-21",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/UDqE9H9m1wTXSJnD9",
+      "coordinates": {
+        "lat": 3.0266473,
+        "lng": 101.5810336
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "starville-apartment",
+      "name": "Starville Apartment",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-wawasan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/iKUGysQyQfTi6UGq8",
+      "coordinates": {
+        "lat": 3.0269746,
+        "lng": 101.5787319
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "rhythm-avenue",
+      "name": "Rhythm Avenue",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-wawasan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/2yAEwRVsBH2WcBNQA",
+      "coordinates": {
+        "lat": 3.0344304,
+        "lng": 101.589643
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-usj-19",
+      "name": "Subang USJ 19",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-wawasan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/yaqhSwbWT5aL4oEz6",
+      "coordinates": {
+        "lat": 3.032633,
+        "lng": 101.5833348
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-usj-18",
+      "name": "Subang USJ 18",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-wawasan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/E9khLmoYzXubMx6w6",
+      "coordinates": {
+        "lat": 3.0330026,
+        "lng": 101.5828223
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-perdana-goodyear-court-3",
+      "name": "Subang Perdana Goodyear Court 3",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-taipan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/h5SXHEUpahhV27c38",
+      "coordinates": {
+        "lat": 3.0478112,
+        "lng": 101.59193
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-perdana-goodyear-court-6",
+      "name": "Subang Perdana Goodyear Court 6",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-taipan",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/p9We3s1X7nYhLz7v5",
+      "coordinates": {
+        "lat": 3.0454864,
+        "lng": 101.5927547
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-perdana-goodyear-court-1",
+      "name": "Subang Perdana Goodyear Court 1",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-usj-7",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/q6W73UPU67jE6tTDA",
+      "coordinates": {
+        "lat": 3.0454864,
+        "lng": 101.5927547
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-perdana-goodyear-court-2",
+      "name": "Subang Perdana Goodyear Court 2",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-usj-7",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/idR3yPKprCBZynda9",
+      "coordinates": {
+        "lat": 3.0541018,
+        "lng": 101.5910139
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-usj-2",
+      "name": "Subang USJ 2",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-ss-18",
+      "alsoNear": [
+        "lrt-usj-7"
+      ],
+      "map": "https://maps.app.goo.gl/ierw1P898sAXPXpaA",
+      "coordinates": {
+        "lat": 3.0541018,
+        "lng": 101.5910139
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-ss-18",
+      "name": "Subang SS 18",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-ss-18",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/Lq9SSredB69wLxW48",
+      "coordinates": {
+        "lat": 3.0679308,
+        "lng": 101.5822878
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-ss-14",
+      "name": "Subang SS 14",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-ss-18",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/pSwhinGPRLsCTB7X8",
+      "coordinates": {
+        "lat": 3.0679308,
+        "lng": 101.5822878
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-ss-15",
+      "name": "Subang SS 15",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-ss-15",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/LhgJ1RjcbQVAnRJg9",
+      "coordinates": {
+        "lat": 3.077656,
+        "lng": 101.5836696
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-ss-17",
+      "name": "Subang SS 17",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-ss-15",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/vvsMdPuvWyXJ6EHL6",
+      "coordinates": {
+        "lat": 3.076945,
+        "lng": 101.5773312
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "lafite-apartment",
+      "name": "Lafite Apartment",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-ss-15",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/Vqjwqe4AkpL8eQX66",
+      "coordinates": {
+        "lat": 3.076945,
+        "lng": 101.5773312
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "saujana-residency",
+      "name": "Saujana Residency",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/Qth2RjxQKPor7gLx6",
+      "coordinates": {
+        "lat": 3.0828793,
+        "lng": 101.5818805
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "subang-avenue",
+      "name": "Subang Avenue",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/oGkUeJuuuLNigGUK9",
+      "coordinates": {
+        "lat": 3.0831143,
+        "lng": 101.5862756
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "e-tiara-service-apartment",
+      "name": "E-Tiara Service Apartment",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/hrTuqvZe9NJ8DNLS9",
+      "coordinates": {
+        "lat": 3.0828501,
+        "lng": 101.5880997
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "casa-tiara",
+      "name": "Casa Tiara",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/gyZbjvPLooFYmkUC9",
+      "coordinates": {
+        "lat": 3.0828501,
+        "lng": 101.5880997
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "lot-15-service-residence",
+      "name": "Lot 15 Service Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/FTqPvh7UWhpPN9wF9",
+      "coordinates": {
+        "lat": 3.0828033,
+        "lng": 101.5891589
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "isola-service-residence",
+      "name": "Isola Service Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-subang-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/BPhzrNU2TGMRbHn9A",
+      "coordinates": {
+        "lat": 3.0828033,
+        "lng": 101.5891589
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "shang-villa",
+      "name": "Shang Villa",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-cgc-glenmarie",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9",
+      "coordinates": {
+        "lat": 3.096588,
+        "lng": 101.590365
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "panorama-residence",
+      "name": "Panorama Residence",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-cgc-glenmarie",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/H4vnNfzSayPjRSAg6",
+      "coordinates": {
+        "lat": 3.0953536,
+        "lng": 101.5899401
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "plaza-glomac",
+      "name": "Plaza Glomac",
+      "kind": "building",
+      "type": "shop-office",
+      "station": "lrt-cgc-glenmarie",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/12LjCjFhLFcGH6Sj9",
+      "coordinates": {
+        "lat": 3.0953536,
+        "lng": 101.5899401
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "pacific-place",
+      "name": "Pacific Place",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/aCUwQgxhPixuovpq5",
+      "coordinates": {
+        "lat": 3.1117284,
+        "lng": 101.5833682
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "aratre-residence",
+      "name": "AraTre’ Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/9sJB31ZTi5DrJzvq8",
+      "coordinates": {
+        "lat": 3.1117284,
+        "lng": 101.5833682
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "urbana-residence",
+      "name": "Urbana Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/PDECcaAYCWYfQv5g8",
+      "coordinates": {
+        "lat": 3.111733,
+        "lng": 101.5793213
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "puncak-nusa-kelana-condominium",
+      "name": "Puncak Nusa Kelana Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/a1sqkbdGejShUL5J6",
+      "coordinates": {
+        "lat": 3.111733,
+        "lng": 101.5793213
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "ara-sentral",
+      "name": "Ara Sentral",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/SkCWFxL79SHQuwbH7",
+      "coordinates": {
+        "lat": 3.1093928,
+        "lng": 101.5852373
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "ppr-lembah-subang-2",
+      "name": "PPR Lembah Subang 2",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-ara-damansara",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/3WFt7gzytrRyhw1Y9",
+      "coordinates": {
+        "lat": 3.1093928,
+        "lng": 101.5852373
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "daman-crimson-condominium",
+      "name": "D’aman Crimson Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/oH1Wt9oLgYjWKxi86",
+      "coordinates": {
+        "lat": 3.115302,
+        "lng": 101.5901228
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "daman-ria-condominium",
+      "name": "D’aman Ria Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/gBpZwn7rB548XwVW8",
+      "coordinates": {
+        "lat": 3.1146145,
+        "lng": 101.5893776
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "eve-suites",
+      "name": "Eve Suites",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/qS3z8yzf1F62aNUq5",
+      "coordinates": {
+        "lat": 3.1146145,
+        "lng": 101.5893776
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "flat-taman-putra-damai",
+      "name": "Flat Taman Putra Damai",
+      "kind": "building",
+      "type": "flat",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/U9wa67JMxghLzPYS7",
+      "coordinates": {
+        "lat": 3.1148126,
+        "lng": 101.5830268
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "cantara-residence",
+      "name": "Cantara Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/zSTkLxiGzcZCeoig6",
+      "coordinates": {
+        "lat": 3.1170822,
+        "lng": 101.5869578
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "apartment-vista-subang",
+      "name": "Apartment Vista Subang",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/wHryfhtVCkW4LXkJ9",
+      "coordinates": {
+        "lat": 3.1178479,
+        "lng": 101.5902048
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "winchester-ara-damansara",
+      "name": "Winchester - Ara Damansara",
+      "kind": "building",
+      "type": "terrace",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/4Ejuy3va5huALeu7A",
+      "coordinates": {
+        "lat": 3.1169462,
+        "lng": 101.5893739
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "petaling-jaya-ss-25",
+      "name": "Petaling Jaya SS 25",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-lembah-subang",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/puoSha9dn1D6mX8u8",
+      "coordinates": {
+        "lat": 3.1138812,
+        "lng": 101.5943596
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "petaling-jaya-ss-4",
+      "name": "Petaling Jaya SS 4",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-kelana-jaya",
+      "alsoNear": [
+        "lrt-taman-bahagia"
+      ],
+      "map": "https://maps.app.goo.gl/BC5c4SzD6cE3fpzJ6",
+      "coordinates": {
+        "lat": 3.1138812,
+        "lng": 101.5943596
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "petaling-jaya-ss-3",
+      "name": "Petaling Jaya SS 3",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-taman-bahagia",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/RQDqUxYZUeLhyavN9",
+      "coordinates": {
+        "lat": 3.1063294,
+        "lng": 101.6015777
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "petaling-jaya-ss-2",
+      "name": "Petaling Jaya SS 2",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-taman-bahagia",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/tuUMmk5X4UoiH74R6",
+      "coordinates": {
+        "lat": 3.1196797,
+        "lng": 101.5963816
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "megah-rise-residensi",
+      "name": "Megah Rise Residensi",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-taman-bahagia",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/CZTkEkbe7WXN2ZBG6",
+      "coordinates": {
+        "lat": 3.1149609,
+        "lng": 101.6084622
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "paramount-view-condominium",
+      "name": "Paramount View Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-taman-paramount",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/kbWrTf51R2YPxFSw9",
+      "coordinates": {
+        "lat": 3.105648,
+        "lng": 101.6177694
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "flat-sri-aman",
+      "name": "Flat Sri Aman",
+      "kind": "building",
+      "type": "flat",
+      "station": "lrt-taman-paramount",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/54YzE8N7dAtceVQBA",
+      "coordinates": {
+        "lat": 3.1047869,
+        "lng": 101.619141
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "sea-park",
+      "name": "Sea Park",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-taman-paramount",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/mFaV39kcjQTo7gzA9",
+      "coordinates": {
+        "lat": 3.1092813,
+        "lng": 101.6168043
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "taman-paramount",
+      "name": "Taman Paramount",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-taman-paramount",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/MaP5wAHmZukuVda89",
+      "coordinates": {
+        "lat": 3.1100319,
+        "lng": 101.6022015
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "petaling-jaya-seksyen-22",
+      "name": "Petaling Jaya Seksyen 22",
+      "kind": "area",
+      "type": "area",
+      "station": "lrt-taman-paramount",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/DDrSqAz3ZDPg3s4v9",
+      "coordinates": {
+        "lat": 3.1081439,
+        "lng": 101.6154553
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "millennium-square-condominium",
+      "name": "Millennium Square Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-asia-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/gXHS6VH9gwYxkRAd9",
+      "coordinates": {
+        "lat": 3.1017,
+        "lng": 101.6126791
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "the-istara-condominium",
+      "name": "The Istara Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-asia-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/SzxDhzR6S2jv5kCB8",
+      "coordinates": {
+        "lat": 3.1048785,
+        "lng": 101.6326687
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "pinnacle-petaling-jaya",
+      "name": "Pinnacle Petaling Jaya",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-asia-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/kEY6umHbBJGRQ3kHA",
+      "coordinates": {
+        "lat": 3.1056062,
+        "lng": 101.637209
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "pj8-service-suite",
+      "name": "PJ8 Service Suite",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-asia-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/qEQkw2AarrzAdpff8",
+      "coordinates": {
+        "lat": 3.1014086,
+        "lng": 101.637247
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "centrestage-designer-suite",
+      "name": "Centrestage Designer Suite",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-asia-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/C6yAtbNukhMaxeB29",
+      "coordinates": {
+        "lat": 3.1117289,
+        "lng": 101.6366555
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "amcorp-service-suite",
+      "name": "Amcorp Service Suite",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-taman-jaya",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/6cEiCj1QMthRE9fp6",
+      "coordinates": {
+        "lat": 3.1117289,
+        "lng": 101.6366555
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "vista-angkasa",
+      "name": "Vista Angkasa",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/tkqkmTT4RVrNkDJS7",
+      "coordinates": {
+        "lat": 3.1133433,
+        "lng": 101.6596193
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "kl-gateway-residence",
+      "name": "KL Gateway Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/AWsK9ZkEVBkEJ3X39",
+      "coordinates": {
+        "lat": 3.1137539,
+        "lng": 101.6601379
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "kl-gateway-premium-residence",
+      "name": "KL Gateway Premium Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/We8ynrMbF1D85XQq8",
+      "coordinates": {
+        "lat": 3.1137539,
+        "lng": 101.6601379
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "residensi-kerinchi",
+      "name": "Residensi Kerinchi",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/othaBG2Mw8wn3mw2A",
+      "coordinates": {
+        "lat": 3.1138749,
+        "lng": 101.6615042
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "pangsapuri-pkns-17-kampung-kerinchi",
+      "name": "Pangsapuri PKNS 17 Kampung Kerinchi",
+      "kind": "building",
+      "type": "flat",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/BhfcL56ewtBsXwFh9",
+      "coordinates": {
+        "lat": 3.1121867,
+        "lng": 101.6623458
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "the-estate-bangsar-south",
+      "name": "The Estate Bangsar South",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/kxxLvUNZNnRZMZUr9",
+      "coordinates": {
+        "lat": 3.1110534,
+        "lng": 101.6582869
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "the-park-residences-bangsar-south",
+      "name": "The Park Residences Bangsar South",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/uQrd4AcJCtz3xwtJ6",
+      "coordinates": {
+        "lat": 3.1102546,
+        "lng": 101.6601379
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "pantai-panorama-condominium",
+      "name": "Pantai Panorama Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [],
+      "map": "https://maps.app.goo.gl/RVzgmg2V5uEijrXa6",
+      "coordinates": {
+        "lat": 3.1095606,
+        "lng": 101.6600423
+      },
+      "source": "owner"
+    },
+    {
+      "slug": "camellia-serviced-suites",
+      "name": "Camellia Serviced Suites",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [
+        "lrt-kerinchi"
+      ],
+      "source": "owner"
+    },
+    {
+      "slug": "south-view-serviced-apartments",
+      "name": "South View Serviced Apartments",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [
+        "lrt-kerinchi"
+      ],
+      "source": "owner"
+    },
+    {
+      "slug": "southlink-lifestyle-apartments",
+      "name": "SouthLink Lifestyle Apartments",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kl-gateway-universiti",
+      "alsoNear": [
+        "lrt-kerinchi"
+      ],
+      "source": "owner"
+    },
+    {
+      "slug": "novum-bangsar-south",
+      "name": "Novum @ Bangsar South",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kerinchi",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "fajar-ria-condo",
+      "name": "Fajar Ria Condo",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-kerinchi",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "regency-suites",
+      "name": "Regency Suites",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-kerinchi",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "kl-eco-city-vogue-suites-1",
+      "name": "KL Eco City Vogue Suites 1",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-abdullah-hukum",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "kl-eco-city-vogue-suites-2",
+      "name": "KL Eco City Vogue Suites 2",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-abdullah-hukum",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "viia-residences",
+      "name": "ViiA Residences",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-abdullah-hukum",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "nadi-bangsar-serviced-residence",
+      "name": "Nadi Bangsar Serviced Residence",
+      "kind": "building",
+      "type": "service-apartment",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "bangsar-permai",
+      "name": "Bangsar Permai",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "gaya-bangsar-condominium",
+      "name": "Gaya Bangsar Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "mutiara-residency",
+      "name": "Mutiara Residency",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "sri-impian-condominium",
+      "name": "Sri Impian Condominium",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "menara-pelangi",
+      "name": "Menara Pelangi",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "apartment-cuepacs",
+      "name": "Apartment Cuepacs",
+      "kind": "building",
+      "type": "apartment",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "crescent-court-condo",
+      "name": "Crescent Court Condo",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "bangsar-hill-park",
+      "name": "Bangsar Hill Park",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    },
+    {
+      "slug": "sri-bangsar-apartment",
+      "name": "Sri Bangsar Apartment",
+      "kind": "building",
+      "type": "condominium",
+      "station": "lrt-bangsar",
+      "alsoNear": [],
+      "source": "owner"
+    }
+  ]
+}
