@@ -9,6 +9,14 @@ import {
   type PlaceGroup,
   type SortMode,
 } from "../lib/browse-filter";
+import {
+  buildRouteFrameUrl,
+  buildOpenRouteUrl,
+  buildPlacePinUrl,
+  type RouteMode,
+} from "../lib/route-url";
+import { RouteFrame } from "../components/RouteFrame";
+import { WalkDriveToggle } from "../components/WalkDriveToggle";
 
 export function loader() {
   return {
@@ -59,6 +67,7 @@ export default function Browse() {
   const [stationFilter, setStationFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("station");
+  const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
 
@@ -93,6 +102,21 @@ export default function Browse() {
     );
   }, [selectedPlace, stationNameMap]);
 
+  const routeFrameUrl = useMemo(() => {
+    if (!selectedPlace || !selectedStationName) return "";
+    return buildRouteFrameUrl(selectedPlace, selectedStationName, routeMode);
+  }, [selectedPlace, selectedStationName, routeMode]);
+
+  const openRouteUrl = useMemo(() => {
+    if (!selectedPlace || !selectedStationName) return "";
+    return buildOpenRouteUrl(selectedPlace, selectedStationName, routeMode);
+  }, [selectedPlace, selectedStationName, routeMode]);
+
+  const placePinUrl = useMemo(() => {
+    if (!selectedPlace) return "";
+    return buildPlacePinUrl(selectedPlace);
+  }, [selectedPlace]);
+
   const stationCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const place of places) {
@@ -115,12 +139,17 @@ export default function Browse() {
     <div className="min-h-screen flex flex-col">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            NaikTrainJer
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Places near LRT · Kelana Jaya line
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                NaikTrainJer
+              </h1>
+              <p className="text-sm text-slate-500 mt-0.5">
+                Places near LRT · Kelana Jaya line
+              </p>
+            </div>
+            <WalkDriveToggle mode={routeMode} onChange={setRouteMode} />
+          </div>
         </div>
       </header>
 
@@ -303,6 +332,27 @@ export default function Browse() {
                       </div>
                     )}
                   </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={openRouteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
+                    >
+                      Open route
+                      <span aria-hidden="true">&#x2197;</span>
+                    </a>
+                    <a
+                      href={placePinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900"
+                    >
+                      Place on Google Maps
+                      <span aria-hidden="true">&#x2197;</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -341,36 +391,40 @@ export default function Browse() {
             )}
 
             <div className="relative bg-slate-100 flex-1">
-              <div className="w-full flex items-center justify-center p-6 min-h-[320px] md:min-h-[480px]">
-                <div className="max-w-sm text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm">
-                    <svg
-                      className="w-6 h-6 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                      />
-                    </svg>
+              {selectedPlace && routeFrameUrl ? (
+                <RouteFrame src={routeFrameUrl} mode={routeMode} />
+              ) : (
+                <div className="w-full flex items-center justify-center p-6 min-h-[320px] md:min-h-[480px]">
+                  <div className="max-w-sm text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm">
+                      <svg
+                        className="w-6 h-6 text-slate-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.75}
+                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                        />
+                      </svg>
+                    </div>
+                    <p className="font-semibold text-slate-800">
+                      {selectedPlace
+                        ? "Map coming soon"
+                        : "Select a place"}
+                    </p>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {selectedPlace
+                        ? "Walking and driving routes to the station will appear here."
+                        : "Details will appear here."}
+                    </p>
                   </div>
-                  <p className="font-semibold text-slate-800">
-                    {selectedPlace
-                      ? "Map coming soon"
-                      : "Select a place"}
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {selectedPlace
-                      ? "Walking and driving routes to the station will appear here."
-                      : "Details will appear here."}
-                  </p>
                 </div>
-              </div>
+              )}
             </div>
           </section>
         </div>
