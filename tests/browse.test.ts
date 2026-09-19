@@ -9,6 +9,11 @@ import {
   type Place,
   type Station,
 } from "../app/lib/browse-filter.ts";
+import {
+  buildRouteFrameUrl,
+  buildOpenRouteUrl,
+  buildPlacePinUrl,
+} from "../app/lib/route-url.ts";
 
 const HTML_PATH = resolve(import.meta.dirname, "../build/client/index.html");
 const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
@@ -74,7 +79,7 @@ describe("prerendered HTML", () => {
   });
 
   it("renders all 22 station groups", () => {
-    const groupPattern = /role="group" aria-label="/g;
+    const groupPattern = /role="group" aria-label="(?!Travel mode)/g;
     let count = 0;
     while (groupPattern.exec(cleanHtml) !== null) count++;
     assert.equal(count, 22, `Expected 22 station groups, got ${count}`);
@@ -278,5 +283,205 @@ describe("pure filter/sort functions", () => {
       const expected = [...new Set(places.map((p) => p.type))].sort();
       assert.deepEqual(types, expected);
     });
+  });
+});
+
+describe("route URL builders", () => {
+  const { stations, places } = data;
+  const stationNameMap = new Map(stations.map((s) => [s.slug, s.name]));
+
+  describe("buildRouteFrameUrl", () => {
+    it("uses coordinates as origin when present", () => {
+      const place = places.find((p) => p.coordinates)!;
+      const stationName = stationNameMap.get(place.station)!;
+      const url = buildRouteFrameUrl(place, stationName, "walk");
+      const encodedOrigin = encodeURIComponent(`${place.coordinates!.lat},${place.coordinates!.lng}`);
+      assert.ok(
+        url.includes(encodedOrigin),
+        `URL should contain coordinates as origin: ${url}`
+      );
+      assert.ok(
+        url.includes(encodeURIComponent(stationName)),
+        `URL should contain station name: ${url}`
+      );
+      assert.ok(
+        url.includes("dirflg=w"),
+        `URL should use walk mode: ${url}`
+      );
+      assert.ok(
+        url.includes("output=embed"),
+        `URL should use output=embed: ${url}`
+      );
+      assert.ok(
+        url.startsWith("https://maps.google.com/maps"),
+        `URL should start with maps.google.com/maps: ${url}`
+      );
+    });
+
+    it("uses place name as origin when coordinates are absent", () => {
+      const place = places.find((p) => !p.coordinates)!;
+      const stationName = stationNameMap.get(place.station)!;
+      const url = buildRouteFrameUrl(place, stationName, "walk");
+      assert.ok(
+        url.includes(encodeURIComponent(place.name)),
+        `URL should contain place name as origin: ${url}`
+      );
+      assert.ok(
+        url.includes("dirflg=w"),
+        `URL should use walk mode: ${url}`
+      );
+    });
+
+    it("uses dirflg=d for drive mode", () => {
+      const place = places.find((p) => p.coordinates)!;
+      const stationName = stationNameMap.get(place.station)!;
+      const url = buildRouteFrameUrl(place, stationName, "drive");
+      assert.ok(
+        url.includes("dirflg=d"),
+        `URL should use drive mode: ${url}`
+      );
+    });
+
+    it("produces a valid URL for every Place in the data file", () => {
+      for (const place of places) {
+        const stationName = stationNameMap.get(place.station)!;
+        const walkUrl = buildRouteFrameUrl(place, stationName, "walk");
+        const driveUrl = buildRouteFrameUrl(place, stationName, "drive");
+
+        assert.ok(
+          walkUrl.startsWith("https://maps.google.com/maps"),
+          `Walk URL for "${place.name}" should start with maps.google.com/maps`
+        );
+        assert.ok(
+          walkUrl.includes("dirflg=w"),
+          `Walk URL for "${place.name}" should use dirflg=w`
+        );
+        assert.ok(
+          walkUrl.includes("output=embed"),
+          `Walk URL for "${place.name}" should include output=embed`
+        );
+        assert.ok(
+          driveUrl.includes("dirflg=d"),
+          `Drive URL for "${place.name}" should use dirflg=d`
+        );
+
+        if (place.coordinates) {
+          assert.ok(
+            walkUrl.includes(encodeURIComponent(`${place.coordinates.lat},${place.coordinates.lng}`)),
+            `Walk URL for "${place.name}" should contain coordinates`
+          );
+        } else {
+          assert.ok(
+            walkUrl.includes(encodeURIComponent(place.name)),
+            `Walk URL for "${place.name}" should contain encoded name`
+          );
+        }
+      }
+    });
+  });
+
+  describe("buildOpenRouteUrl", () => {
+    it("uses travelmode=walking for walk mode", () => {
+      const place = places.find((p) => p.coordinates)!;
+      const stationName = stationNameMap.get(place.station)!;
+      const url = buildOpenRouteUrl(place, stationName, "walk");
+      assert.ok(
+        url.includes("travelmode=walking"),
+        `URL should use travelmode=walking: ${url}`
+      );
+      assert.ok(
+        url.startsWith("https://www.google.com/maps/dir/?api=1"),
+        `URL should start with google.com/maps/dir/?api=1: ${url}`
+      );
+    });
+
+    it("uses travelmode=driving for drive mode", () => {
+      const place = places.find((p) => p.coordinates)!;
+      const stationName = stationNameMap.get(place.station)!;
+      const url = buildOpenRouteUrl(place, stationName, "drive");
+      assert.ok(
+        url.includes("travelmode=driving"),
+        `URL should use travelmode=driving: ${url}`
+      );
+    });
+
+    it("uses coordinates as origin when present, name otherwise", () => {
+      const withCoords = places.find((p) => p.coordinates)!;
+      const withoutCoords = places.find((p) => !p.coordinates)!;
+      const stationName1 = stationNameMap.get(withCoords.station)!;
+      const stationName2 = stationNameMap.get(withoutCoords.station)!;
+
+      const url1 = buildOpenRouteUrl(withCoords, stationName1, "walk");
+      assert.ok(
+        url1.includes(encodeURIComponent(`${withCoords.coordinates!.lat},${withCoords.coordinates!.lng}`)),
+        `URL for "${withCoords.name}" should contain coordinates`
+      );
+
+      const url2 = buildOpenRouteUrl(withoutCoords, stationName2, "walk");
+      assert.ok(
+        url2.includes(encodeURIComponent(withoutCoords.name)),
+        `URL for "${withoutCoords.name}" should contain name`
+      );
+    });
+  });
+
+  describe("buildPlacePinUrl", () => {
+    it("returns the place map link when present", () => {
+      const place = places.find((p) => p.map)!;
+      const url = buildPlacePinUrl(place);
+      assert.equal(url, place.map);
+    });
+
+    it("returns a Google Maps search URL when map is absent", () => {
+      const place = places.find((p) => !p.map)!;
+      const url = buildPlacePinUrl(place);
+      assert.ok(
+        url.startsWith("https://www.google.com/maps/search/"),
+        `URL should start with maps/search: ${url}`
+      );
+      assert.ok(
+        url.includes(encodeURIComponent(place.name)),
+        `URL should contain place name: ${url}`
+      );
+    });
+  });
+});
+
+describe("prerendered HTML — route frame", () => {
+  it("contains the empty state before a Place is selected", () => {
+    assert.ok(
+      cleanHtml.includes("Select a place"),
+      "Empty state title missing"
+    );
+    assert.ok(
+      cleanHtml.includes("Details will appear here."),
+      "Empty state body missing"
+    );
+  });
+
+  it("contains the Walk/Drive toggle", () => {
+    assert.ok(
+      cleanHtml.includes('aria-label="Travel mode"'),
+      "Travel mode toggle missing"
+    );
+    assert.ok(
+      cleanHtml.includes("Walk"),
+      "Walk button missing"
+    );
+    assert.ok(
+      cleanHtml.includes("Drive"),
+      "Drive button missing"
+    );
+  });
+
+  it("contains no Google API key", () => {
+    assert.ok(
+      !cleanHtml.includes("key="),
+      "No API key should appear in HTML"
+    );
+    assert.ok(
+      !cleanHtml.includes("GOOGLE_MAPS_API"),
+      "No API key reference should appear in HTML"
+    );
   });
 });
