@@ -134,6 +134,12 @@ export default function Browse() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 w-full">
+        <p className="mb-4 text-sm text-slate-600 leading-relaxed">
+          A directory of places to rent near LRT stations on the Kelana Jaya line, from
+          Putra Heights to KL Gateway. Every place was checked while hunting for a rental — added
+          as they were found along the line.
+        </p>
+
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row">
           <aside
             className="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-[42vh] md:max-h-none"
@@ -419,6 +425,15 @@ export default function Browse() {
           Grouped by station · Kelana Jaya line
         </p>
       </main>
+
+      <footer className="mt-auto border-t border-slate-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
+          NaikTrainJer —{" "}
+          <a href="/submit" className="font-semibold text-sky-600 hover:text-sky-800">
+            suggest a place
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
