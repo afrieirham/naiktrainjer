@@ -11,6 +11,8 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+const CF_BEACON_TOKEN = process.env.CLOUDFLARE_ANALYTICS_TOKEN ?? "";
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -24,6 +26,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        {CF_BEACON_TOKEN && (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token":"${CF_BEACON_TOKEN}"}`}
+          />
+        )}
       </body>
     </html>
   );

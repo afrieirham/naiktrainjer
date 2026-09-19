@@ -97,10 +97,10 @@ describe("sitemap.xml", () => {
     );
   });
 
-  it("does NOT contain a /submit URL", () => {
+  it("contains the Submit page URL", () => {
     assert.ok(
-      !sitemapXml.includes(`${SITE_URL}/submit`),
-      "Sitemap should not list /submit before #9 builds it",
+      sitemapXml.includes(`<loc>${SITE_URL}/submit</loc>`),
+      "Submit page URL missing from sitemap",
     );
   });
 
@@ -179,6 +179,10 @@ describe("sitemap ↔ build parity", () => {
     // The root index
     if (existsSync(resolve(BUILD_DIR, "index.html"))) {
       builtPaths.add("/");
+    }
+    // Submit page
+    if (existsSync(resolve(BUILD_DIR, "submit", "index.html"))) {
+      builtPaths.add("/submit");
     }
     // Place pages
     const placesDir = resolve(BUILD_DIR, "places");
