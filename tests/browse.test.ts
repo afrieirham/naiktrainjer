@@ -2,6 +2,13 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  filterPlaces,
+  groupByStation,
+  getUniqueTypes,
+  type Place,
+  type Station,
+} from "../app/lib/browse-filter.ts";
 
 const HTML_PATH = resolve(import.meta.dirname, "../build/client/index.html");
 const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
@@ -12,7 +19,7 @@ function stripComments(html: string): string {
 
 let html: string;
 let cleanHtml: string;
-let data: { stations: Array<{ slug: string; name: string; line: string }>; places: Array<{ slug: string; name: string; station: string }> };
+let data: { stations: Station[]; places: Place[] };
 
 before(() => {
   html = readFileSync(HTML_PATH, "utf-8");
@@ -64,5 +71,212 @@ describe("prerendered HTML", () => {
       sum += parseInt(match[1], 10);
     }
     assert.equal(sum, totalCount, `Expected sum of group counts to equal ${totalCount}, got ${sum}`);
+  });
+
+  it("renders all 22 station groups", () => {
+    const groupPattern = /role="group" aria-label="/g;
+    let count = 0;
+    while (groupPattern.exec(cleanHtml) !== null) count++;
+    assert.equal(count, 22, `Expected 22 station groups, got ${count}`);
+  });
+
+  it("renders all 84 Place rows", () => {
+    const rowPattern = /role="listitem"/g;
+    let count = 0;
+    while (rowPattern.exec(cleanHtml) !== null) count++;
+    assert.equal(count, 84, `Expected 84 Place rows, got ${count}`);
+  });
+
+  it("contains a station filter select with every Station option", () => {
+    assert.ok(cleanHtml.includes('id="station-filter"'), "Station filter select missing");
+    for (const station of data.stations) {
+      const escaped = station.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const pattern = new RegExp(`<option[^>]*value="${station.slug}"[^>]*>`);
+      assert.ok(
+        pattern.test(cleanHtml),
+        `Station option "${station.name}" (slug: ${station.slug}) not found in filter`
+      );
+    }
+  });
+
+  it("contains a type filter select with every Type option", () => {
+    assert.ok(cleanHtml.includes('id="type-filter"'), "Type filter select missing");
+    const uniqueTypes = [...new Set(data.places.map((p) => p.type))].sort();
+    for (const type of uniqueTypes) {
+      const escaped = type.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const pattern = new RegExp(`<option[^>]*value="${escaped}"[^>]*>`);
+      assert.ok(
+        pattern.test(cleanHtml),
+        `Type option "${type}" not found in filter`
+      );
+    }
+  });
+
+  it("station filter option counts match the data file", () => {
+    const stationCounts = new Map<string, number>();
+    for (const place of data.places) {
+      stationCounts.set(place.station, (stationCounts.get(place.station) ?? 0) + 1);
+    }
+
+    for (const station of data.stations) {
+      const expectedCount = stationCounts.get(station.slug) ?? 0;
+      const escaped = station.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const pattern = new RegExp(
+        `<option[^>]*value="${station.slug}"[^>]*>[^<]*\\(\\s*${expectedCount}\\s*\\)`
+      );
+      assert.ok(
+        pattern.test(cleanHtml),
+        `Station option for "${station.name}" should show count ${expectedCount}`
+      );
+    }
+  });
+
+  it("type filter option counts match the data file", () => {
+    const typeCounts = new Map<string, number>();
+    for (const place of data.places) {
+      typeCounts.set(place.type, (typeCounts.get(place.type) ?? 0) + 1);
+    }
+
+    const uniqueTypes = [...new Set(data.places.map((p) => p.type))].sort();
+    for (const type of uniqueTypes) {
+      const expectedCount = typeCounts.get(type) ?? 0;
+      const escaped = type.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const pattern = new RegExp(
+        `<option[^>]*value="${escaped}"[^>]*>[^<]*\\(\\s*${expectedCount}\\s*\\)`
+      );
+      assert.ok(
+        pattern.test(cleanHtml),
+        `Type option for "${type}" should show count ${expectedCount}`
+      );
+    }
+  });
+
+  it("contains a sort control", () => {
+    assert.ok(cleanHtml.includes('id="sort-mode"'), "Sort control missing");
+    assert.ok(cleanHtml.includes("Station order"), "Station order option missing");
+    assert.ok(cleanHtml.includes("A–Z"), "A-Z option missing");
+    assert.ok(cleanHtml.includes("Most places"), "Most places option missing");
+  });
+
+  it("contains no search box", () => {
+    assert.ok(!cleanHtml.includes('id="search"'), "Search box should not exist");
+    assert.ok(!cleanHtml.includes('type="search"'), "Search input should not exist");
+  });
+});
+
+describe("pure filter/sort functions", () => {
+  const { stations, places } = data;
+
+  describe("filterPlaces", () => {
+    it("returns all places when no filters are set", () => {
+      const result = filterPlaces(places, "", "");
+      assert.equal(result.length, 84);
+    });
+
+    it("filters by station", () => {
+      const result = filterPlaces(places, "lrt-bangsar", "");
+      const expected = places.filter((p) => p.station === "lrt-bangsar").length;
+      assert.equal(result.length, expected);
+      for (const place of result) {
+        assert.equal(place.station, "lrt-bangsar");
+      }
+    });
+
+    it("filters by type", () => {
+      const result = filterPlaces(places, "", "condominium");
+      const expected = places.filter((p) => p.type === "condominium").length;
+      assert.equal(result.length, expected);
+      for (const place of result) {
+        assert.equal(place.type, "condominium");
+      }
+    });
+
+    it("filters by both station and type", () => {
+      const result = filterPlaces(places, "lrt-bangsar", "condominium");
+      assert.ok(result.length > 0);
+      for (const place of result) {
+        assert.equal(place.station, "lrt-bangsar");
+        assert.equal(place.type, "condominium");
+      }
+    });
+
+    it("returns empty when no places match both filters", () => {
+      const result = filterPlaces(places, "lrt-bangsar", "flat");
+      assert.equal(result.length, 0);
+    });
+  });
+
+  describe("groupByStation", () => {
+    it("groups places by station in data-file order (station sort)", () => {
+      const filtered = filterPlaces(places, "", "");
+      const groups = groupByStation(filtered, stations, "station");
+
+      const groupSlugs = groups.map((g) => g.stationSlug);
+      const stationSlugs = stations.map((s) => s.slug);
+
+      for (const slug of groupSlugs) {
+        assert.ok(stationSlugs.includes(slug), `Group slug ${slug} not in station list`);
+      }
+    });
+
+    it("sorts places alphabetically within each group", () => {
+      const filtered = filterPlaces(places, "lrt-bangsar", "");
+      const groups = groupByStation(filtered, stations, "station");
+
+      const bGroup = groups.find((g) => g.stationSlug === "lrt-bangsar");
+      assert.ok(bGroup);
+      for (let i = 1; i < bGroup.places.length; i++) {
+        assert.ok(
+          bGroup.places[i - 1].name.localeCompare(bGroup.places[i].name) <= 0,
+          `Places not sorted: ${bGroup.places[i - 1].name} > ${bGroup.places[i].name}`
+        );
+      }
+    });
+
+    it("az sort orders stations alphabetically", () => {
+      const filtered = filterPlaces(places, "", "");
+      const groups = groupByStation(filtered, stations, "az");
+
+      for (let i = 1; i < groups.length; i++) {
+        assert.ok(
+          groups[i - 1].stationName.localeCompare(groups[i].stationName) <= 0,
+          `Stations not A-Z: ${groups[i - 1].stationName} > ${groups[i].stationName}`
+        );
+      }
+    });
+
+    it("most sort orders stations by count descending", () => {
+      const filtered = filterPlaces(places, "", "");
+      const groups = groupByStation(filtered, stations, "most");
+
+      for (let i = 1; i < groups.length; i++) {
+        assert.ok(
+          groups[i - 1].count >= groups[i].count,
+          `Groups not by count: ${groups[i - 1].stationName} (${groups[i - 1].count}) < ${groups[i].stationName} (${groups[i].count})`
+        );
+      }
+    });
+
+    it("most sort breaks ties alphabetically", () => {
+      const filtered = filterPlaces(places, "", "");
+      const groups = groupByStation(filtered, stations, "most");
+
+      for (let i = 1; i < groups.length; i++) {
+        if (groups[i - 1].count === groups[i].count) {
+          assert.ok(
+            groups[i - 1].stationName.localeCompare(groups[i].stationName) <= 0,
+            `Tie not broken alphabetically: ${groups[i - 1].stationName} > ${groups[i].stationName}`
+          );
+        }
+      }
+    });
+  });
+
+  describe("getUniqueTypes", () => {
+    it("returns all unique types from the data", () => {
+      const types = getUniqueTypes(places);
+      const expected = [...new Set(places.map((p) => p.type))].sort();
+      assert.deepEqual(types, expected);
+    });
   });
 });
