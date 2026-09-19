@@ -6,6 +6,7 @@ import type { Place, Station } from "../app/lib/browse-filter.ts";
 import { TYPE_LABELS, KIND_LABELS } from "../app/lib/labels.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
+const OG_DIR = resolve(BUILD_DIR, "og");
 const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
@@ -18,8 +19,15 @@ function extractMeta(html: string, name: string): string | null {
     "g",
   );
   const all = [...html.matchAll(pattern)];
-  // Exactly one, or the page is wrong: a duplicated tag means the browser and
-  // Google read the first, not the one this page wrote.
+  return all.length === 1 ? all[0][1] : null;
+}
+
+function extractPropertyMeta(html: string, property: string): string | null {
+  const pattern = new RegExp(
+    `<meta[^>]*property="${property}"[^>]*content="([^"]*)"`,
+    "g",
+  );
+  const all = [...html.matchAll(pattern)];
   return all.length === 1 ? all[0][1] : null;
 }
 
@@ -438,5 +446,158 @@ describe("measured Place rendering (unit test)", () => {
     assert.equal(unmeasuredPlace.walkMinutes, undefined);
     assert.equal(unmeasuredPlace.walkMeters, undefined);
     assert.equal(unmeasuredPlace.driveMinutes, undefined);
+  });
+});
+
+describe("Open Graph and Twitter meta tags", () => {
+  const pages: Array<{
+    slug: string;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogType: string | null;
+    ogUrl: string | null;
+    ogImage: string | null;
+    twitterCard: string | null;
+    twitterImage: string | null;
+  }> = [];
+
+  before(() => {
+    for (const place of data.places) {
+      const pagePath = resolve(
+        BUILD_DIR,
+        "places",
+        place.slug,
+        "index.html",
+      );
+      const html = stripComments(readFileSync(pagePath, "utf-8"));
+      pages.push({
+        slug: place.slug,
+        ogTitle: extractPropertyMeta(html, "og:title"),
+        ogDescription: extractPropertyMeta(html, "og:description"),
+        ogType: extractPropertyMeta(html, "og:type"),
+        ogUrl: extractPropertyMeta(html, "og:url"),
+        ogImage: extractPropertyMeta(html, "og:image"),
+        twitterCard: extractMeta(html, "twitter:card"),
+        twitterImage: extractMeta(html, "twitter:image"),
+      });
+    }
+  });
+
+  it("every page has og:title", () => {
+    for (const page of pages) {
+      assert.ok(page.ogTitle, `og:title missing for "${page.slug}"`);
+    }
+  });
+
+  it("every page has og:description", () => {
+    for (const page of pages) {
+      assert.ok(
+        page.ogDescription,
+        `og:description missing for "${page.slug}"`,
+      );
+    }
+  });
+
+  it("every page has og:type", () => {
+    for (const page of pages) {
+      assert.ok(page.ogType, `og:type missing for "${page.slug}"`);
+    }
+  });
+
+  it("every page has og:url", () => {
+    for (const page of pages) {
+      assert.ok(page.ogUrl, `og:url missing for "${page.slug}"`);
+      assert.ok(
+        page.ogUrl!.startsWith("https://naiktrainjer.com/places/"),
+        `og:url "${page.ogUrl}" for "${page.slug}" does not start with expected prefix`,
+      );
+    }
+  });
+
+  it("every page has og:image pointing at the built card", () => {
+    for (const page of pages) {
+      assert.ok(page.ogImage, `og:image missing for "${page.slug}"`);
+      assert.equal(
+        page.ogImage,
+        `https://naiktrainjer.com/og/${page.slug}.png`,
+        `og:image for "${page.slug}" does not match expected path`,
+      );
+    }
+  });
+
+  it("every page has twitter:card = summary_large_image", () => {
+    for (const page of pages) {
+      assert.equal(
+        page.twitterCard,
+        "summary_large_image",
+        `twitter:card for "${page.slug}" is not summary_large_image`,
+      );
+    }
+  });
+
+  it("every page has twitter:image matching og:image", () => {
+    for (const page of pages) {
+      assert.ok(
+        page.twitterImage,
+        `twitter:image missing for "${page.slug}"`,
+      );
+      assert.equal(
+        page.twitterImage,
+        page.ogImage,
+        `twitter:image does not match og:image for "${page.slug}"`,
+      );
+    }
+  });
+});
+
+describe("OG card files", () => {
+  it("a card file exists for every Place in the data", () => {
+    for (const place of data.places) {
+      const cardPath = resolve(OG_DIR, `${place.slug}.png`);
+      assert.ok(
+        existsSync(cardPath),
+        `Card file missing for "${place.slug}" at ${cardPath}`,
+      );
+    }
+  });
+
+  it("no card files exist for slugs not in the data", () => {
+    if (existsSync(OG_DIR)) {
+      const emitted = readdirSync(OG_DIR);
+      for (const file of emitted) {
+        const slug = file.replace(/\.png$/, "");
+        assert.ok(
+          data.places.some((p) => p.slug === slug),
+          `Card file "${file}" has no matching place in the data file`,
+        );
+      }
+    }
+  });
+
+  it("every card file is a real PNG with 1200x630 dimensions", async () => {
+    const { default: sharp } = await import("sharp");
+    for (const place of data.places) {
+      const cardPath = resolve(OG_DIR, `${place.slug}.png`);
+      const buf = readFileSync(cardPath);
+      assert.ok(buf.length > 1000, `Card for "${place.slug}" is near-empty (${buf.length} bytes)`);
+      // PNG magic bytes: 0x89 P N G
+      assert.equal(buf[0], 0x89, `Card for "${place.slug}" missing PNG magic byte 0x89`);
+      assert.equal(buf[1], 0x50, `Card for "${place.slug}" missing PNG magic byte P`);
+      assert.equal(buf[2], 0x4e, `Card for "${place.slug}" missing PNG magic byte N`);
+      assert.equal(buf[3], 0x47, `Card for "${place.slug}" missing PNG magic byte G`);
+      const meta = await sharp(buf).metadata();
+      assert.equal(meta.width, 1200, `Card for "${place.slug}" width is ${meta.width}, expected 1200`);
+      assert.equal(meta.height, 630, `Card for "${place.slug}" height is ${meta.height}, expected 630`);
+    }
+  });
+
+  it("no two Places reference the same card file", () => {
+    const paths = data.places.map((p) => `og/${p.slug}.png`);
+    const unique = new Set(paths);
+    assert.equal(
+      unique.size,
+      paths.length,
+      `Found duplicate card references`,
+    );
   });
 });
