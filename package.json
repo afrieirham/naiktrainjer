@@ -3,11 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build && tsx scripts/generate-og-cards.ts",
+    "build": "node scripts/build.mjs",
     "dev": "react-router dev",
     "measure": "tsx scripts/measure.ts",
     "typecheck": "react-router typegen && tsc",
-    "test": "node --test tests/"
+    "test": "node --test tests/",
+    "build:once": "react-router build && tsx scripts/generate-og-cards.ts"
   },
   "dependencies": {
     "@react-router/node": "^8",
