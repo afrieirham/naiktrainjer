@@ -9,7 +9,7 @@ import {
   type SortMode,
   type Station,
 } from "../lib/browse-filter";
-import { coveredLine, type Line } from "../lib/lines";
+import { coveredLine, coverage, coverageCopy, type Line } from "../lib/lines";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -60,6 +60,8 @@ export default function Browse() {
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
+
+  const cov = useMemo(() => coverage(line, stations), [line, stations]);
 
   const stationNameMap = useMemo(
     () => new Map(stations.map((s) => [s.slug, s.name])),
@@ -140,8 +142,8 @@ export default function Browse() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 w-full">
         <p className="mb-4 text-sm text-slate-600 leading-relaxed">
-          A directory of places to rent near stations on the {line.name} line. Every place
-          was checked while hunting for a rental — added as I found them along the line.
+          A directory of places to rent near stations on the {line.name} line, checked by
+          hand while I was hunting for a rental. {coverageCopy(cov)}
         </p>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row md:h-[calc(100vh-11rem)]">

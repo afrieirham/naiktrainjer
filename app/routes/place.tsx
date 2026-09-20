@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import propertiesData from "../../data/properties.json";
-import type { Place } from "../lib/browse-filter";
+import type { Place, Station } from "../lib/browse-filter";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -11,6 +11,7 @@ import {
 import { RouteFrame } from "../components/RouteFrame";
 import { WalkDriveToggle } from "../components/WalkDriveToggle";
 import { publicUrl } from "../lib/routes";
+import { coveredLine, type Line } from "../lib/lines";
 import {
   TYPE_LABELS,
   KIND_LABELS,
@@ -18,6 +19,12 @@ import {
   metaLabel,
 } from "../lib/labels";
 import type { Route } from "./+types/place";
+
+/** The Line the directory covers, so no page names a Line by hand. */
+const COVERED_LINE = coveredLine(
+  propertiesData.lines as Line[],
+  propertiesData.stations as Station[],
+);
 
 export function loader({ params }: Route.LoaderArgs) {
   const slug = params.placeSlug as string;
@@ -33,20 +40,21 @@ export function loader({ params }: Route.LoaderArgs) {
     place: place as Place,
     stationName: station?.name ?? place.station,
     alsoNearNames: alsoNearStations.map((s) => s!.name),
+    lineName: COVERED_LINE.name,
   };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
   if (!loaderData) return [];
-  const { place, stationName } = loaderData;
+  const { place, stationName, lineName } = loaderData;
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const kindLabel = KIND_LABELS[place.kind] ?? place.kind;
 
   let description: string;
   if (place.kind === "area") {
-    description = `${place.name} is a neighbourhood near ${stationName} on the Kelana Jaya line. Walk and drive routes on NaikTrainJer.`;
+    description = `${place.name} is a neighbourhood near ${stationName} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
   } else {
-    description = `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName} on the Kelana Jaya line. Walk and drive routes on NaikTrainJer.`;
+    description = `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
   }
 
   const ogImage = `https://naiktrainjer.com/og/${place.slug}.png`;
@@ -71,7 +79,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function PlacePage() {
-  const { place, stationName, alsoNearNames } = useLoaderData<typeof loader>();
+  const { place, stationName, alsoNearNames, lineName } = useLoaderData<typeof loader>();
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const routeFrameUrl = useMemo(
@@ -104,7 +112,7 @@ export default function PlacePage() {
                 NaikTrainJer
               </a>
               <p className="text-sm text-slate-500 mt-0.5">
-                Places near LRT · Kelana Jaya line
+                Places near the {lineName} line
               </p>
             </div>
             <WalkDriveToggle mode={routeMode} onChange={setRouteMode} />

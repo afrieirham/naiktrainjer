@@ -1,12 +1,21 @@
 import { publicUrl } from "../lib/routes";
+import { coveredLine, type Line } from "../lib/lines";
+import propertiesData from "../../data/properties.json";
+import type { Station } from "../lib/browse-filter";
 import type { Route } from "./+types/submit";
+
+/** The Line the directory covers, so no page names a Line by hand. */
+const COVERED_LINE = coveredLine(
+  propertiesData.lines as Line[],
+  propertiesData.stations as Station[],
+);
 
 export const meta: Route.MetaFunction = () => [
   { title: "Suggest a place — NaikTrainJer" },
   {
     name: "description",
     content:
-      "Suggest a place near an LRT station on the Kelana Jaya line to be added to NaikTrainJer.",
+      `Suggest a place near a station on the ${COVERED_LINE.name} line to be added to NaikTrainJer.`,
   },
   { tagName: "link", rel: "canonical", href: publicUrl("/submit") },
 ];
@@ -37,7 +46,7 @@ export default function SubmitPage() {
               NaikTrainJer
             </a>
             <p className="text-sm text-slate-500 mt-0.5">
-              Places near LRT · Kelana Jaya line
+              Places near the {COVERED_LINE.name} line
             </p>
           </div>
         </div>
