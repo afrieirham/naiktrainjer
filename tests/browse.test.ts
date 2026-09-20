@@ -1,30 +1,46 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  buildStationRows,
   filterPlaces,
-  groupByStation,
   getUniqueTypes,
   type Place,
   type Station,
 } from "../app/lib/browse-filter.ts";
+import type { Line } from "../app/lib/lines.ts";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
   buildPlacePinUrl,
 } from "../app/lib/route-url.ts";
 
-const HTML_PATH = resolve(import.meta.dirname, "../build/client/index.html");
+const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
+const HTML_PATH = resolve(BUILD_DIR, "index.html");
 const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
+/** The name as the prerendered HTML carries it: React escapes the apostrophe. */
+function asHtmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/'/g, "&#x27;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 let html: string;
 let cleanHtml: string;
-let data: { stations: Station[]; places: Place[] };
+let data: { lines: Line[]; stations: Station[]; places: Place[] };
 
 before(() => {
   html = readFileSync(HTML_PATH, "utf-8");
@@ -82,29 +98,122 @@ describe("prerendered HTML", () => {
     assert.equal(sum, totalCount, `Expected sum of group counts to equal ${totalCount}, got ${sum}`);
   });
 
-  it("renders all 22 station groups", () => {
+  it("renders a group for every checked Station", () => {
     const groupPattern = /role="group" aria-label="(?!Travel mode)/g;
     let count = 0;
     while (groupPattern.exec(cleanHtml) !== null) count++;
-    assert.equal(count, 22, `Expected 22 station groups, got ${count}`);
+    assert.equal(
+      count,
+      data.stations.length,
+      `Expected ${data.stations.length} checked Station groups, got ${count}`,
+    );
   });
 
-  it("renders all 84 Place rows", () => {
+  it("renders a row for every Place", () => {
     const rowPattern = /role="listitem"/g;
     let count = 0;
     while (rowPattern.exec(cleanHtml) !== null) count++;
-    assert.equal(count, 84, `Expected 84 Place rows, got ${count}`);
+    assert.equal(
+      count,
+      data.places.length,
+      `Expected ${data.places.length} Place rows, got ${count}`,
+    );
   });
 
-  it("contains a station filter select with every Station option", () => {
-    assert.ok(cleanHtml.includes('id="station-filter"'), "Station filter select missing");
-    for (const station of data.stations) {
-      const escaped = station.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-      const pattern = new RegExp(`<option[^>]*value="${station.slug}"[^>]*>`);
+  it("contains no station filter", () => {
+    assert.ok(
+      !cleanHtml.includes('id="station-filter"'),
+      "The Station filter is gone: a Station is navigation within the corridor, not a filter",
+    );
+    assert.ok(
+      !cleanHtml.includes("All stations"),
+      "No Station filter option may remain",
+    );
+  });
+
+  it("renders every Station on the Line, in corridor order", () => {
+    const checkedByCode = new Map(data.stations.map((s) => [s.code, s]));
+    const expected = [...data.lines[0].stations]
+      .sort((a, b) => b.sort - a.sort)
+      .map((station) => checkedByCode.get(station.code)?.name ?? station.code);
+
+    const marker = /role="group" aria-label="([^"]+)"|data-station-code="([A-Za-z0-9]+)"/g;
+    const rendered: string[] = [];
+    for (const match of cleanHtml.matchAll(marker)) {
+      const name = match[1] ?? match[2];
+      if (name === "Travel mode") continue;
+      rendered.push(name);
+    }
+
+    assert.deepEqual(
+      rendered,
+      expected,
+      "Every Station on the Line must render, in the Line's own order",
+    );
+  });
+
+  it("marks every unchecked Station as not checked yet", () => {
+    const checkedCodes = new Set(data.stations.map((s) => s.code));
+    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+    assert.ok(unchecked.length > 0, "This check is meaningless with no unchecked Station");
+
+    const marks = [...cleanHtml.matchAll(/Not checked yet/g)];
+    assert.equal(
+      marks.length,
+      unchecked.length,
+      `Expected ${unchecked.length} "Not checked yet" markers, got ${marks.length}`,
+    );
+
+    for (const station of unchecked) {
+      const pattern = new RegExp(
+        `data-station-code="${station.code}"[^>]*>[\\s\\S]{0,160}?${escapeRegExp(asHtmlText(station.name))}`,
+      );
       assert.ok(
         pattern.test(cleanHtml),
-        `Station option "${station.name}" (slug: ${station.slug}) not found in filter`
+        `Unchecked Station "${station.name}" (${station.code}) must be named on the page`,
       );
+    }
+  });
+
+  it("keeps an unchecked Station row non-interactive", () => {
+    const checkedCodes = new Set(data.stations.map((s) => s.code));
+    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+
+    const firstRow = cleanHtml.indexOf('data-station-unchecked="true"');
+    const asideEnd = cleanHtml.indexOf('aria-label="Place details"');
+    assert.ok(firstRow > -1 && asideEnd > firstRow, "The unchecked stretch is missing from the list");
+
+    const rows = cleanHtml
+      .slice(firstRow, asideEnd)
+      .split('data-station-unchecked="true"')
+      .slice(1);
+    assert.equal(rows.length, unchecked.length, "One row per unchecked Station");
+
+    for (const row of rows) {
+      assert.ok(!row.includes("<button"), `An unchecked Station row must not be a button`);
+      assert.ok(!row.includes("<a "), `An unchecked Station row must not link anywhere`);
+    }
+  });
+
+  it("gives an unchecked Station no page of its own", () => {
+    const checkedCodes = new Set(data.stations.map((s) => s.code));
+    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+
+    assert.ok(
+      !existsSync(resolve(BUILD_DIR, "stations")),
+      "Unchecked Stations must not have a route, let alone a prerendered page",
+    );
+    for (const station of unchecked) {
+      const slug = station.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      for (const path of [station.code.toLowerCase(), `stations/${slug}`]) {
+        assert.ok(
+          !existsSync(resolve(BUILD_DIR, path)),
+          `"${path}" must not be prerendered — a page that promises nothing is worse than no page`,
+        );
+      }
     }
   });
 
@@ -117,25 +226,6 @@ describe("prerendered HTML", () => {
       assert.ok(
         pattern.test(cleanHtml),
         `Type option "${type}" not found in filter`
-      );
-    }
-  });
-
-  it("station filter option counts match the data file", () => {
-    const stationCounts = new Map<string, number>();
-    for (const place of data.places) {
-      stationCounts.set(place.station, (stationCounts.get(place.station) ?? 0) + 1);
-    }
-
-    for (const station of data.stations) {
-      const expectedCount = stationCounts.get(station.slug) ?? 0;
-      const escaped = station.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-      const pattern = new RegExp(
-        `<option[^>]*value="${station.slug}"[^>]*>[^<]*\\(\\s*${expectedCount}\\s*\\)`
-      );
-      assert.ok(
-        pattern.test(cleanHtml),
-        `Station option for "${station.name}" should show count ${expectedCount}`
       );
     }
   });
@@ -182,26 +272,18 @@ describe("prerendered HTML", () => {
   });
 });
 
-describe("pure filter/sort functions", () => {
-  const { stations, places } = data;
+describe("pure filter/corridor functions", () => {
+  const { lines, stations, places } = data;
+  const line = lines[0];
 
   describe("filterPlaces", () => {
-    it("returns all places when no filters are set", () => {
-      const result = filterPlaces(places, "", "");
+    it("returns all places when no filter is set", () => {
+      const result = filterPlaces(places, "");
       assert.equal(result.length, 84);
     });
 
-    it("filters by station", () => {
-      const result = filterPlaces(places, "lrt-bangsar", "");
-      const expected = places.filter((p) => p.station === "lrt-bangsar").length;
-      assert.equal(result.length, expected);
-      for (const place of result) {
-        assert.equal(place.station, "lrt-bangsar");
-      }
-    });
-
     it("filters by type", () => {
-      const result = filterPlaces(places, "", "condominium");
+      const result = filterPlaces(places, "condominium");
       const expected = places.filter((p) => p.type === "condominium").length;
       assert.equal(result.length, expected);
       for (const place of result) {
@@ -209,81 +291,105 @@ describe("pure filter/sort functions", () => {
       }
     });
 
-    it("filters by both station and type", () => {
-      const result = filterPlaces(places, "lrt-bangsar", "condominium");
-      assert.ok(result.length > 0);
-      for (const place of result) {
-        assert.equal(place.station, "lrt-bangsar");
-        assert.equal(place.type, "condominium");
-      }
-    });
-
-    it("returns empty when no places match both filters", () => {
-      const result = filterPlaces(places, "lrt-bangsar", "flat");
+    it("returns empty when no place has the type", () => {
+      const result = filterPlaces(places, "castle");
       assert.equal(result.length, 0);
     });
   });
 
-  describe("groupByStation", () => {
-    it("groups places by station in data-file order (station sort)", () => {
-      const filtered = filterPlaces(places, "", "");
-      const groups = groupByStation(filtered, stations, "station");
-
-      const groupSlugs = groups.map((g) => g.stationSlug);
-      const stationSlugs = stations.map((s) => s.slug);
-
-      for (const slug of groupSlugs) {
-        assert.ok(stationSlugs.includes(slug), `Group slug ${slug} not in station list`);
-      }
+  describe("buildStationRows", () => {
+    it("renders every Station on the Line in corridor order", () => {
+      const rows = buildStationRows(line, stations, places, places, "station");
+      const corridor = [...line.stations]
+        .sort((a, b) => b.sort - a.sort)
+        .map((s) => s.code);
+      assert.equal(rows.length, line.stations.length);
+      assert.deepEqual(rows.map((r) => r.code), corridor);
     });
 
-    it("sorts places alphabetically within each group", () => {
-      const filtered = filterPlaces(places, "lrt-bangsar", "");
-      const groups = groupByStation(filtered, stations, "station");
-
-      const bGroup = groups.find((g) => g.stationSlug === "lrt-bangsar");
-      assert.ok(bGroup);
-      for (let i = 1; i < bGroup.places.length; i++) {
-        assert.ok(
-          bGroup.places[i - 1].name.localeCompare(bGroup.places[i].name) <= 0,
-          `Places not sorted: ${bGroup.places[i - 1].name} > ${bGroup.places[i].name}`
-        );
-      }
+    it("carries every Place under its checked Station", () => {
+      const rows = buildStationRows(line, stations, places, places, "station");
+      const sum = rows.reduce((total, row) => total + row.count, 0);
+      assert.equal(sum, places.length);
     });
 
-    it("az sort orders stations alphabetically", () => {
-      const filtered = filterPlaces(places, "", "");
-      const groups = groupByStation(filtered, stations, "az");
-
-      for (let i = 1; i < groups.length; i++) {
-        assert.ok(
-          groups[i - 1].stationName.localeCompare(groups[i].stationName) <= 0,
-          `Stations not A-Z: ${groups[i - 1].stationName} > ${groups[i].stationName}`
-        );
-      }
-    });
-
-    it("most sort orders stations by count descending", () => {
-      const filtered = filterPlaces(places, "", "");
-      const groups = groupByStation(filtered, stations, "most");
-
-      for (let i = 1; i < groups.length; i++) {
-        assert.ok(
-          groups[i - 1].count >= groups[i].count,
-          `Groups not by count: ${groups[i - 1].stationName} (${groups[i - 1].count}) < ${groups[i].stationName} (${groups[i].count})`
-        );
-      }
-    });
-
-    it("most sort breaks ties alphabetically", () => {
-      const filtered = filterPlaces(places, "", "");
-      const groups = groupByStation(filtered, stations, "most");
-
-      for (let i = 1; i < groups.length; i++) {
-        if (groups[i - 1].count === groups[i].count) {
+    it("sorts places alphabetically within a Station", () => {
+      const rows = buildStationRows(line, stations, places, places, "station");
+      for (const row of rows) {
+        for (let i = 1; i < row.places.length; i++) {
           assert.ok(
-            groups[i - 1].stationName.localeCompare(groups[i].stationName) <= 0,
-            `Tie not broken alphabetically: ${groups[i - 1].stationName} > ${groups[i].stationName}`
+            row.places[i - 1].name.localeCompare(row.places[i].name) <= 0,
+            `Places not sorted: ${row.places[i - 1].name} > ${row.places[i].name}`,
+          );
+        }
+      }
+    });
+
+    it("marks every Station with no checked counterpart as unchecked", () => {
+      const rows = buildStationRows(line, stations, places, places, "station");
+      const checkedCodes = new Set(stations.map((s) => s.code));
+      const unchecked = rows.filter((row) => row.check === "unchecked");
+      assert.deepEqual(
+        unchecked.map((row) => row.code),
+        line.stations
+          .filter((s) => !checkedCodes.has(s.code))
+          .sort((a, b) => b.sort - a.sort)
+          .map((s) => s.code),
+      );
+      for (const row of unchecked) {
+        assert.equal(row.count, 0);
+        assert.equal(row.places.length, 0);
+      }
+    });
+
+    it("keeps a checked Station a filter emptied, but only when the data holds nothing for it", () => {
+      const empty = filterPlaces(places, "castle");
+      const rows = buildStationRows(line, stations, places, empty, "station");
+      const checkedRows = rows.filter((row) => row.check === "checked");
+      assert.equal(
+        checkedRows.length,
+        0,
+        "A Station emptied by the filter is not shown as holding nothing",
+      );
+
+      const noDataRows = buildStationRows(line, stations, [], [], "station");
+      assert.equal(
+        noDataRows.filter((row) => row.check === "checked").length,
+        stations.length,
+        "A checked Station the data holds nothing for stays on the page",
+      );
+      for (const row of noDataRows.filter((row) => row.check === "checked")) {
+        assert.equal(row.count, 0);
+      }
+    });
+
+    it("az sort orders Stations by name", () => {
+      const rows = buildStationRows(line, stations, places, places, "az");
+      for (let i = 1; i < rows.length; i++) {
+        assert.ok(
+          rows[i - 1].name.localeCompare(rows[i].name) <= 0,
+          `Stations not A-Z: ${rows[i - 1].name} > ${rows[i].name}`,
+        );
+      }
+    });
+
+    it("most sort orders Stations by count descending", () => {
+      const rows = buildStationRows(line, stations, places, places, "most");
+      for (let i = 1; i < rows.length; i++) {
+        assert.ok(
+          rows[i - 1].count >= rows[i].count,
+          `Stations not by count: ${rows[i - 1].name} (${rows[i - 1].count}) < ${rows[i].name} (${rows[i].count})`,
+        );
+      }
+    });
+
+    it("most sort breaks ties by name", () => {
+      const rows = buildStationRows(line, stations, places, places, "most");
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i - 1].count === rows[i].count) {
+          assert.ok(
+            rows[i - 1].name.localeCompare(rows[i].name) <= 0,
+            `Tie not broken by name: ${rows[i - 1].name} > ${rows[i].name}`,
           );
         }
       }
