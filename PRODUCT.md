@@ -24,10 +24,13 @@ on either scene, without reading a wall of site copy first.
 
 ## Positioning
 
-One corridor covered end to end, in physical line order: the Kelana Jaya line, Putra Heights to KL
-Gateway. Every place is there because the maintainer personally checked it while hunting for a
-rental, not because it was scraped. Coverage claims stay scoped to the one line that actually
-exists. A listing aggregator cannot truthfully copy "every place on this line was checked by hand."
+One corridor, in physical line order: the Kelana Jaya line — 37 stations, 22 of them checked by
+hand so far, LRT Bangsar down to LRT Putra Heights. Every place is there because the maintainer
+personally checked it while hunting for a rental, not because it was scraped. Coverage claims
+stay scoped to what has actually been checked: the unchecked stretch of the corridor is shown
+and named rather than implied away, and no page claims a line, a station or a span the data does
+not hold. A listing aggregator cannot truthfully copy "every place on this stretch was checked
+by hand."
 
 ## Operating Context
 
@@ -39,20 +42,24 @@ exists. A listing aggregator cannot truthfully copy "every place on this line wa
   Place's coordinates and its nearest station, in walk or drive mode. The frame cannot be styled,
   read, or clicked into.
 - Place suggestions arrive through an embedded third-party form (Tally).
-- The maintainer runs a one-off offline Measure script and commits the results; measurement is a
-  data task, never part of the build or the request path.
+- The maintainer runs one-off offline scripts — the network reference export, and a Measure
+  script held back as a future enhancement — and commits their results; both write into the data
+  file and neither is part of the build or the request path.
 
 ## Capabilities and Constraints
 
-- Two entities: **Station** (name, line, coordinates) and **Place** (name, kind, type, station,
-  alsoNear, map link, coordinates, source). 22 stations, 84 places today.
+- Three levels of data: the **Line** (name, colour, code, and every station on it with a corridor
+  position), the **Station** (the ones actually checked, each on its Line by code), and the
+  **Place** (name, kind, type, station, alsoNear, map link, coordinates, source). 1 line — 37
+  stations, 22 checked — and 84 places today.
 - Place is either a **Building** or an **Area**; **Type** is a controlled list. **Also near** is
   context only, never a route destination.
 - A Place without a map link stays in the directory.
-- Measurement fields (`walkMinutes`, `walkMeters`, `driveMinutes`) exist in the schema but **0 of
-  84 places carry them today**. The current redesign deliberately does **not** build a walk-time
-  number into the interface; the map route is the answer. A genuinely unmeasured future state is
-  hidden, never guessed.
+- Measurement fields (`walkMinutes`, `walkMeters`, `driveMinutes`) are **not in the schema at
+  all**, and **no page shows a walk or drive figure**: the current redesign deliberately does
+  **not** build a walk-time number into the interface; the map route is the answer. The Measure
+  script stays in the repo, deferred, and the data validator forbids the fields, so a figure
+  cannot reach a page. A genuinely unmeasured future state is hidden, never guessed.
 - Only the Kelana Jaya line exists in the data today; the line field exists so other lines are a
   data change, not a rebuild.
 - View state (filters, selection, route mode) should be encoded in the URL so Back, refresh, and
@@ -67,12 +74,17 @@ exists. A listing aggregator cannot truthfully copy "every place on this line wa
 
 ## Evidence on Hand
 
-- `data/properties.json` — the single source of truth: 22 stations, 84 places.
-- `CONTEXT.md` — the domain glossary (Place, Kind, Type, Station, Nearest station, Also near,
-  Measurement, Route frame, Browse page, Place page, Preview card, Submit page, Source, Coverage).
+- `data/properties.json` — the single source of truth: the Kelana Jaya line's 37 stations, the 22
+  of them checked, and 84 places.
+- `CONTEXT.md` — the domain glossary (Place, Kind, Type, Station, Line, Checked, Corridor
+  position, Nearest station, Also near, Measurement, Route frame, Browse page, Place page,
+  Preview card, Submit page, Source, Coverage).
 - `docs/adr/0001-prerender-from-one-data-file.md` — the prerendering decision.
+- `docs/adr/0002-browse-is-line-scoped.md` — line-scoped browsing and display order.
+- `docs/adr/0003-pocketbase-is-a-network-reference.md` — the network reference, exported by hand.
 - Per-place Open Graph preview cards already generate for sharing.
-- 0 of 84 places have Measurements. Future work must not fabricate walk or drive numbers.
+- No place carries a Measurement, and no page may show one. Future work must not fabricate walk
+  or drive numbers.
 
 ## Product Principles
 
