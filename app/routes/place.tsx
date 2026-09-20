@@ -9,22 +9,19 @@ import {
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { WalkDriveToggle } from "../components/WalkDriveToggle";
+import { AppBar } from "../components/AppBar";
+import { TravelMode } from "../components/TravelMode";
+import { BackIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
-import { coveredLine, type Line } from "../lib/lines";
-import {
-  TYPE_LABELS,
-  KIND_LABELS,
-  TYPE_CLASSES,
-  metaLabel,
-} from "../lib/labels";
+import { coveredLine, coverage, type Line } from "../lib/lines";
+import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
 import type { Route } from "./+types/place";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const COVERED_LINE = coveredLine(
-  propertiesData.lines as Line[],
-  propertiesData.stations as Station[],
-);
+const CHECKED_STATIONS = propertiesData.stations as Station[];
+const COVERED_LINE = coveredLine(propertiesData.lines as Line[], CHECKED_STATIONS);
+const COVERAGE = coverage(COVERED_LINE, CHECKED_STATIONS);
+const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${propertiesData.places.length} places`;
 
 export function loader({ params }: Route.LoaderArgs) {
   const slug = params.placeSlug as string;
@@ -95,167 +92,129 @@ export default function PlacePage() {
   const placePinUrl = useMemo(() => buildPlacePinUrl(place), [place]);
 
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
-  const kindLabel = KIND_LABELS[place.kind] ?? place.kind;
-
   const isBuilding = place.kind === "building";
+  const sentence = isBuilding
+    ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName}, on the ${lineName} line.`
+    : `${place.name} is a neighbourhood near ${stationName}, on the ${lineName} line.`;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <a
-                href="/"
-                className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight hover:text-sky-700 transition"
-              >
-                NaikTrainJer
-              </a>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Places near the {lineName} line
-              </p>
-            </div>
-            <WalkDriveToggle mode={routeMode} onChange={setRouteMode} />
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 w-full">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row">
-          <aside
-            className="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col"
-            aria-label="Place details"
+    <div
+      className="flex min-h-dvh flex-col md:h-dvh md:overflow-hidden"
+      style={{ "--line-accent": COVERED_LINE.color } as React.CSSProperties}
+    >
+      <AppBar
+        subtitle={`${lineName} line`}
+        counts={COUNTS}
+        action={
+          <a
+            href="/submit/"
+            className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
           >
-            <div className="px-4 sm:px-5 py-4 border-b border-slate-100 shrink-0">
-              <div className="space-y-3">
-                <div className="min-w-0">
-                  <h1 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-                    {place.name}
-                  </h1>
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    <span
-                      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
-                        TYPE_CLASSES[place.type] ??
-                        "bg-slate-100 text-slate-600 ring-slate-500/10"
-                      }`}
-                    >
-                      {typeLabel}
-                    </span>
-                    {kindLabel !== typeLabel && (
-                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-100 text-slate-600 ring-slate-500/10">
-                        {kindLabel}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {isBuilding
-                    ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName}.`
-                    : `${place.name} is a neighbourhood near ${stationName}.`}
-                </p>
-
-                <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-3 sm:px-4 text-sm space-y-1.5">
-                  <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                      Nearest station
-                    </span>
-                    <p className="font-semibold text-slate-900">{stationName}</p>
-                  </div>
-                  {alsoNearNames.length > 0 && (
-                    <div>
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Also near
-                      </span>
-                      <p className="font-semibold text-slate-900">
-                        {alsoNearNames.join(", ")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <a
-                    href={openRouteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
-                  >
-                    Open route
-                    <span aria-hidden="true">&#x2197;</span>
-                  </a>
-                  <a
-                    href={placePinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900"
-                  >
-                    Place on Google Maps
-                    <span aria-hidden="true">&#x2197;</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4">
-              <a
-                href="/"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 hover:text-sky-800"
-              >
-                <span aria-hidden="true">&#x2190;</span>
-                Browse all places
-              </a>
-            </div>
-          </aside>
-
-          <section
-            className="flex-1 flex flex-col min-w-0 min-h-[220px] md:min-h-0 md:sticky md:top-20 md:h-[calc(100vh-13rem)]"
-            aria-label="Route map"
-          >
-            <div className="relative bg-slate-100 flex-1">
-              {routeFrameUrl ? (
-                <RouteFrame src={routeFrameUrl} mode={routeMode} />
-              ) : (
-                <div className="w-full flex items-center justify-center p-6 min-h-[320px] md:min-h-[480px]">
-                  <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm">
-                      <svg
-                        className="w-6 h-6 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.75}
-                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                        />
-                      </svg>
-                    </div>
-                    <p className="font-semibold text-slate-800">
-                      Map coming soon
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Walking and driving routes to the station will appear here.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </main>
-
-      <footer className="mt-auto border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
-          NaikTrainJer —{" "}
-          <a href="/submit/" className="font-semibold text-sky-600 hover:text-sky-800">
-            suggest a place
+            Suggest a place
           </a>
-        </div>
-      </footer>
+        }
+      />
+
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {/*
+          The details column. On a phone the route leads, so this sits below it and
+          the order swaps back at `md`, where the two columns sit side by side.
+        */}
+        <section
+          aria-label="Place details"
+          className="app-scroll order-2 border-t border-rule md:order-1 md:min-h-0 md:w-[420px] md:shrink-0 md:overflow-y-auto md:border-t-0 md:border-r"
+        >
+          <div className="border-b border-rule px-5 py-5 md:px-6">
+            <h1 className="text-[26px] font-bold leading-[1.1] tracking-[-0.02em] text-ink sm:text-[34px]">
+              {place.name}
+            </h1>
+            <p className="mt-2 text-[12.5px] font-medium text-ink-soft">
+              {metaLabel(place)}
+            </p>
+            <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
+              {sentence}
+            </p>
+          </div>
+
+          <dl className="px-5 py-5 md:px-6">
+            <dt className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+              Nearest station
+            </dt>
+            <dd className="mt-1 text-[13.5px] font-semibold text-ink">{stationName}</dd>
+
+            {alsoNearNames.length > 0 && (
+              <>
+                <dt className="mt-4 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+                  Also near
+                </dt>
+                <dd className="mt-1 text-[13.5px] font-semibold text-ink">
+                  {alsoNearNames.join(", ")}
+                </dd>
+              </>
+            )}
+          </dl>
+
+          <div className="px-5 pb-6 md:px-6">
+            <a
+              href="/"
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink"
+            >
+              <BackIcon />
+              All places
+            </a>
+          </div>
+        </section>
+
+        {/*
+          The route column. The map owns its box and the strip sits below it, never
+          over it — an overlay here would cover the frame and swallow Google's own
+          map controls.
+        */}
+        <section
+          aria-label="Route map"
+          className="order-1 flex flex-col md:order-2 md:min-h-0 md:flex-1"
+        >
+          {/* The phone's map label, because the route leads there. */}
+          <div className="shrink-0 border-b border-rule bg-paper px-4 py-3 md:hidden">
+            <p className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink">
+              {place.name}
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-ink-soft">near {stationName}</p>
+          </div>
+
+          <div className="relative h-[52vh] shrink-0 md:h-auto md:min-h-0 md:flex-1">
+            {routeFrameUrl ? (
+              <RouteFrame
+                src={routeFrameUrl}
+                mode={routeMode}
+                className="absolute inset-0 block h-full w-full border-0"
+              />
+            ) : null}
+          </div>
+
+          <div className="shrink-0 border-t border-rule bg-paper px-4 py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <TravelMode mode={routeMode} onChange={setRouteMode} />
+              <a
+                href={openRouteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
+              >
+                Open route
+              </a>
+              <a
+                href={placePinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
+              >
+                Place on Google Maps
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

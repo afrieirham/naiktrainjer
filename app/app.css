@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Archivo — self-hosted, variable 400–700. The corridor's own face: a signage
-   grotesque, with the tabular figures a list of stop counts and station codes needs. */
+   grotesque, with the tabular figures a page of stop counts and station codes needs. */
 @font-face {
   font-family: "Archivo";
   font-style: normal;
@@ -32,12 +32,11 @@
 }
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-browse: "Archivo", system-ui, sans-serif;
+  --font-sans: "Archivo", system-ui, sans-serif;
 
-  /* The Browse page's own world. Warm paper, near-black ink, hairline rules.
-     Every value below clears WCAG AA on `paper` at body size except the Line's
-     own colour, which is a spine and a marker and never text. */
+  /* One world, three surfaces. Warm paper, near-black ink, hairline rules.
+     Every value clears WCAG AA on `paper` at body size except the Line's own
+     colour, which is a spine, a marker and a ring and never text. */
   --color-paper: #faf9f7;
   --color-band: #f1efeb;
   --color-ink: #15171c;
@@ -48,54 +47,53 @@
 
 @layer base {
   body {
-    background-color: var(--color-slate-50);
-    color: var(--color-slate-800);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* The focus ring belongs to the corridor, so it takes the Line's own colour. */
   :focus-visible {
-    outline: 2px solid var(--color-sky-500);
+    outline: 2px solid var(--line-accent, var(--color-ink));
     outline-offset: 2px;
   }
 }
 
 @layer components {
-  .browse-app {
-    font-family: var(--font-browse);
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* The focus ring belongs to the corridor, so it takes the Line's own colour. */
-  .browse-app :focus-visible {
-    outline: 2px solid var(--browse-accent, var(--color-ink));
-    outline-offset: 2px;
-  }
-
   /* The selected Place's row, tinted from the Line rather than a fixed highlight. */
-  .browse-row[data-active="true"] {
-    background-color: color-mix(in srgb, var(--browse-accent) 8%, var(--color-paper));
+  .corridor-row[data-active="true"] {
+    background-color: color-mix(
+      in srgb,
+      var(--line-accent, var(--color-ink)) 8%,
+      var(--color-paper)
+    );
   }
-  .browse-row[data-active="true"]:hover {
-    background-color: color-mix(in srgb, var(--browse-accent) 12%, var(--color-paper));
+  .corridor-row[data-active="true"]:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--line-accent, var(--color-ink)) 12%,
+      var(--color-paper)
+    );
   }
 
-  .browse-app ::selection {
-    background-color: color-mix(in srgb, var(--browse-accent) 24%, var(--color-paper));
+  ::selection {
+    background-color: color-mix(
+      in srgb,
+      var(--line-accent, var(--color-ink)) 24%,
+      var(--color-paper)
+    );
     color: var(--color-ink);
   }
 
-  .browse-scroll {
+  .app-scroll {
     scrollbar-width: thin;
     scrollbar-color: var(--color-rule-strong) transparent;
   }
 
-  /* The one authored moment: the strip's answer arrives rather than blinking in. */
-  @keyframes browse-reveal {
+  /* The one authored moment: an answer arrives rather than blinking in. */
+  @keyframes app-reveal {
     from {
       opacity: 0;
       transform: translateY(6px);
@@ -106,12 +104,12 @@
     }
   }
 
-  .browse-reveal {
-    animation: browse-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  .app-reveal {
+    animation: app-reveal 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .browse-reveal {
+    .app-reveal {
       animation: none;
     }
   }

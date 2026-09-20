@@ -16,6 +16,9 @@ import {
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
+import { AppBar } from "../components/AppBar";
+import { TravelMode } from "../components/TravelMode";
+import { OpenIcon, BackIcon } from "../components/icons";
 import { TYPE_LABELS, metaLabel } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/browse";
@@ -49,82 +52,6 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-/** Authored, one stroke weight, one style — never a Unicode arrow standing in for an icon. */
-function OpenIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
-      <path
-        d="M6.25 3.5h6.25v6.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12.5 3.5 3.5 12.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
-      <path
-        d="M13.25 8H2.75M7 3.75 2.75 8 7 12.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/**
- * The travel mode, in the Browse page's own vocabulary. The Place page keeps the
- * shared `WalkDriveToggle`; this page's map owns a whole column and its controls
- * belong to that surface.
- */
-function TravelMode({
-  mode,
-  onChange,
-}: {
-  mode: RouteMode;
-  onChange: (mode: RouteMode) => void;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label="Travel mode"
-      className="inline-flex shrink-0 rounded-md border border-rule-strong p-[2px]"
-    >
-      {(
-        [
-          ["walk", "Walk"],
-          ["drive", "Drive"],
-        ] as const
-      ).map(([value, label]) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={mode === value}
-          onClick={() => onChange(value)}
-          className={`rounded-[4px] px-2.5 py-1 text-[12.5px] font-semibold transition-colors ${
-            mode === value ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
-          }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /**
  * What the map column holds before a Place is picked: the corridor itself, at
  * scale. Every stop, name and count comes from the data, so the stretch still to
@@ -141,10 +68,10 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
 
   return (
     <div className="flex h-full flex-col justify-center px-6 py-10 sm:px-12">
-      <h2 className="max-w-[22ch] text-[26px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[36px]">
+      <h2 className="max-w-[22ch] text-[26px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[34px]">
         How far I&rsquo;ve got
       </h2>
-      <p className="mt-4 text-[14px] font-medium tabular-nums text-ink-soft">
+      <p className="mt-4 text-[13.5px] font-medium tabular-nums text-ink-soft">
         {cov.checkedCount} of {cov.total} stops checked · {cov.unchecked.length} still to do
       </p>
 
@@ -157,7 +84,7 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
         <span
           aria-hidden="true"
           className="absolute left-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full"
-          style={{ width: `${boundary}%`, backgroundColor: "var(--browse-accent)" }}
+          style={{ width: `${boundary}%`, backgroundColor: "var(--line-accent)" }}
         />
         {stops.map((stop, index) => {
           const isChecked = checkedCodes.has(stop.code);
@@ -169,8 +96,8 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
               className="absolute top-0 h-[14px] w-[14px] -translate-x-1/2 rounded-full border-[3px] min-[1400px]:h-[18px] min-[1400px]:w-[18px] min-[1400px]:border-[4px]"
               style={{
                 left: `${position}%`,
-                borderColor: isChecked ? "var(--browse-accent)" : "var(--color-rule-strong)",
-                backgroundColor: isChecked ? "var(--browse-accent)" : "var(--color-paper)",
+                borderColor: isChecked ? "var(--line-accent)" : "var(--color-rule-strong)",
+                backgroundColor: isChecked ? "var(--line-accent)" : "var(--color-paper)",
               }}
             />
           );
@@ -284,47 +211,43 @@ export default function Browse() {
 
   return (
     <div
-      className="browse-app flex h-dvh flex-col overflow-hidden"
-      style={{ "--browse-accent": line.color } as React.CSSProperties}
+      className="flex h-dvh flex-col overflow-hidden"
+      style={{ "--line-accent": line.color } as React.CSSProperties}
     >
-      <header className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2.5 border-b border-rule px-4 py-3 sm:px-6">
-        <span className="text-[15px] font-bold tracking-[-0.03em] text-ink">
-          NaikTrainJer
-        </span>
-
-        <div className="flex items-center gap-2">
-          <label htmlFor="type-filter" className="text-[12.5px] font-medium text-ink-soft">
-            Type
-          </label>
-          <select
-            id="type-filter"
-            value={typeFilter}
-            onChange={(event) => {
-              setTypeFilter(event.target.value);
-              setSelectedSlug(null);
-            }}
-            className="rounded-md border border-rule-strong bg-paper py-1.5 pl-2.5 pr-2 text-[13px] font-medium text-ink"
+      <AppBar
+        counts={`${cov.checkedCount} of ${cov.total} stations · ${places.length} places`}
+        filter={
+          <div className="flex items-center gap-2">
+            <label htmlFor="type-filter" className="text-[12.5px] font-medium text-ink-soft">
+              Type
+            </label>
+            <select
+              id="type-filter"
+              value={typeFilter}
+              onChange={(event) => {
+                setTypeFilter(event.target.value);
+                setSelectedSlug(null);
+              }}
+              className="rounded-md border border-rule-strong bg-paper py-1.5 pl-2.5 pr-2 text-[12.5px] font-medium text-ink"
+            >
+              <option value="">All types</option>
+              {uniqueTypes.map((type) => (
+                <option key={type} value={type}>
+                  {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
+                </option>
+              ))}
+            </select>
+          </div>
+        }
+        action={
+          <a
+            href="/submit/"
+            className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
           >
-            <option value="">All types</option>
-            {uniqueTypes.map((type) => (
-              <option key={type} value={type}>
-                {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <p className="ml-auto hidden text-[12.5px] tabular-nums text-ink-soft sm:block">
-          {cov.checkedCount} of {cov.total} stations · {places.length} places
-        </p>
-
-        <a
-          href="/submit/"
-          className="rounded-md bg-ink px-3 py-1.5 text-[13px] font-semibold text-paper transition-opacity hover:opacity-85"
-        >
-          Suggest a place
-        </a>
-      </header>
+            Suggest a place
+          </a>
+        }
+      />
 
       <div className="flex min-h-0 flex-1">
         {/* The corridor */}
@@ -335,7 +258,7 @@ export default function Browse() {
           }`}
         >
           <div className="shrink-0 border-b border-rule px-5 pb-3.5 pt-4">
-            <h1 className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink">
+            <h1 className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
               {line.name} line
             </h1>
             <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
@@ -357,7 +280,7 @@ export default function Browse() {
               </button>
             </div>
           ) : (
-            <ol className="browse-scroll min-h-0 flex-1 overflow-y-auto">
+            <ol className="app-scroll min-h-0 flex-1 overflow-y-auto">
               {stationRows.map((row, index) => {
                 const checked = row.check === "checked";
                 const isLast = index === lastIndex;
@@ -378,7 +301,7 @@ export default function Browse() {
                         bottom: isLast ? "auto" : 0,
                         height: isLast ? "30px" : undefined,
                         backgroundColor: checked
-                          ? "var(--browse-accent)"
+                          ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
                       }}
                     />
@@ -387,10 +310,10 @@ export default function Browse() {
                       className="absolute left-[16px] top-[14px] z-20 h-[14px] w-[14px] rounded-full border-2"
                       style={{
                         borderColor: checked
-                          ? "var(--browse-accent)"
+                          ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
                         backgroundColor: checked
-                          ? "var(--browse-accent)"
+                          ? "var(--line-accent)"
                           : "var(--color-paper)",
                       }}
                     />
@@ -422,7 +345,7 @@ export default function Browse() {
                                       ? clearSelection()
                                       : setSelectedSlug(place.slug)
                                   }
-                                  className="browse-row flex w-full items-center py-3 pl-[52px] pr-12 text-left transition-colors hover:bg-band"
+                                  className="corridor-row flex w-full items-center py-3 pl-[52px] pr-12 text-left transition-colors hover:bg-band"
                                 >
                                   <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[13.5px] font-semibold text-ink">
@@ -452,7 +375,7 @@ export default function Browse() {
                         data-station-unchecked="true"
                         className="flex items-baseline justify-between gap-3 py-2 pl-[52px] pr-4"
                       >
-                        <span className="truncate text-[13px] font-medium text-ink-soft">
+                        <span className="truncate text-[13.5px] font-medium text-ink-soft">
                           {row.name}
                         </span>
                         <span className="shrink-0 text-[12px] text-ink-soft">
@@ -470,7 +393,7 @@ export default function Browse() {
         {/* The map, and the strip that answers */}
         <section
           aria-label="Place details"
-          className={`relative min-h-0 flex-1 flex-col bg-band ${
+          className={`min-h-0 flex-1 flex-col bg-band ${
             selectedPlace ? "flex" : "hidden md:flex"
           }`}
         >
@@ -486,8 +409,9 @@ export default function Browse() {
             )}
           </div>
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3">
-            <div className="pointer-events-auto rounded-lg border border-rule bg-paper px-4 py-3 shadow-[0_1px_2px_rgba(21,23,28,0.05),0_10px_28px_-14px_rgba(21,23,28,0.22)]">
+          {/* The strip sits below the map, never over it — an overlay would cover
+              the frame and swallow Google's own map controls. */}
+          <div className="shrink-0 border-t border-rule bg-paper px-4 py-3">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
                 {selectedPlace && (
                   <button
@@ -504,11 +428,11 @@ export default function Browse() {
                 <div className="min-w-0 flex-1" aria-live="polite">
                   <div
                     key={selectedPlace?.slug ?? "none"}
-                    className="browse-reveal"
+                    className="app-reveal"
                   >
                     {selectedPlace ? (
                       <>
-                        <p className="truncate text-[14px] font-semibold text-ink">
+                        <p className="truncate text-[13.5px] font-semibold text-ink">
                           {selectedPlace.name}
                         </p>
                         <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
@@ -519,7 +443,7 @@ export default function Browse() {
                         </p>
                       </>
                     ) : (
-                      <p className="text-[13px] text-ink-soft">
+                      <p className="text-[13.5px] text-ink-soft">
                         Pick a place from the corridor — its walk or drive route
                         appears here.
                       </p>
@@ -528,7 +452,7 @@ export default function Browse() {
                 </div>
 
                 {selectedPlace && (
-                  <div className="browse-reveal flex flex-wrap items-center gap-3">
+                  <div className="app-reveal flex flex-wrap items-center gap-3">
                     <TravelMode mode={routeMode} onChange={setRouteMode} />
                     <a
                       href={openRouteUrl}
@@ -555,7 +479,6 @@ export default function Browse() {
                   </div>
                 )}
               </div>
-            </div>
           </div>
         </section>
       </div>

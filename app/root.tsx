@@ -2,14 +2,11 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } f
 import type { Route } from "./+types/root";
 import "./app.css";
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
-  },
-];
+/**
+ * No web-font link here on purpose: the site's one face, Archivo, is self-hosted
+ * from `public/fonts/` and declared in `app.css`. That keeps a render-blocking
+ * third-party request out of the critical path.
+ */
 
 /**
  * The analytics token is read on the server only and handed to the layout as

@@ -172,10 +172,10 @@ describe("footer link", () => {
     );
   });
 
-  it("submit page footer links to /submit", () => {
+  it("submit page links back to the directory", () => {
     assert.ok(
-      submitHtml.includes('href="/submit/"'),
-      "Submit page footer must link to /submit",
+      submitHtml.includes('href="/"'),
+      "Submit page must offer a way back to the directory",
     );
   });
 
