@@ -32,14 +32,3 @@ export function metaLabel(place: { kind: string; type: string }): string {
   const type = TYPE_LABELS[place.type] ?? place.type;
   return kind === type ? type : `${kind} · ${type}`;
 }
-
-export function formatMeasurement(
-  walkMinutes: number,
-  walkMeters: number,
-  driveMinutes: number,
-): string {
-  const km = walkMeters / 1000;
-  const walkDistText = km < 1 ? `${walkMeters} m` : `${km.toFixed(1)} km`;
-  const walkMinText = walkMinutes === 1 ? "1 min" : `${walkMinutes} min`;
-  return `${walkMinText} / ${walkDistText} walk`;
-}

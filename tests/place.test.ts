@@ -307,9 +307,8 @@ describe("place page content", () => {
     }
   });
 
-  it("no unmeasured Place shows walk-time figures", () => {
+  it("no page shows a walk or drive figure", () => {
     for (const place of data.places) {
-      if (place.walkMinutes !== undefined) continue;
       const pagePath = resolve(
         BUILD_DIR,
         "places",
@@ -319,7 +318,11 @@ describe("place page content", () => {
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
         !html.includes("min walk") && !html.includes("min drive"),
-        `Unmeasured page "${place.slug}" should not show walk/drive time`,
+        `Page "${place.slug}" should not show a walk or drive figure`,
+      );
+      assert.ok(
+        !html.includes("Walk / drive"),
+        `Page "${place.slug}" should not carry a walk figure block`,
       );
     }
   });
@@ -405,47 +408,6 @@ describe("browse page place links", () => {
         `Browse page does not link to "${href}" for "${place.name}"`,
       );
     }
-  });
-});
-
-describe("measured Place rendering (unit test)", () => {
-  it("a Place with walkMinutes would show walk figure in rendering logic", () => {
-    const measuredPlace: Place = {
-      slug: "test-measured",
-      name: "Test Measured Place",
-      kind: "building",
-      type: "condominium",
-      station: "lrt-bangsar",
-      walkMinutes: 8,
-      walkMeters: 600,
-      driveMinutes: 3,
-    };
-
-    assert.ok(
-      measuredPlace.walkMinutes !== undefined,
-      "walkMinutes should be defined",
-    );
-    assert.ok(
-      measuredPlace.driveMinutes !== undefined,
-      "driveMinutes should be defined",
-    );
-    assert.equal(measuredPlace.walkMinutes, 8);
-    assert.equal(measuredPlace.walkMeters, 600);
-    assert.equal(measuredPlace.driveMinutes, 3);
-  });
-
-  it("an unmeasured Place has no walk/drive fields", () => {
-    const unmeasuredPlace: Place = {
-      slug: "test-unmeasured",
-      name: "Test Unmeasured Place",
-      kind: "area",
-      type: "area",
-      station: "lrt-bangsar",
-    };
-
-    assert.equal(unmeasuredPlace.walkMinutes, undefined);
-    assert.equal(unmeasuredPlace.walkMeters, undefined);
-    assert.equal(unmeasuredPlace.driveMinutes, undefined);
   });
 });
 

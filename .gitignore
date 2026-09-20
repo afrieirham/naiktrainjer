@@ -3,3 +3,8 @@ build/
 .react-router/
 *.log
 .DS_Store
+
+# Local tooling directories — agent config and design-exploration state, not site code
+.hermes/
+.opencode/
+.impeccable/

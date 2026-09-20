@@ -2,13 +2,14 @@ import { useState, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import propertiesData from "../../data/properties.json";
 import {
+  buildStationRows,
   filterPlaces,
-  groupByStation,
   getUniqueTypes,
   type Place,
-  type PlaceGroup,
   type SortMode,
+  type Station,
 } from "../lib/browse-filter";
+import { coveredLine, coverage, coverageCopy, type Line } from "../lib/lines";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -17,39 +18,50 @@ import {
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
 import { WalkDriveToggle } from "../components/WalkDriveToggle";
-import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel, formatMeasurement } from "../lib/labels";
+import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel } from "../lib/labels";
+import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/browse";
+
+const LINES = propertiesData.lines as Line[];
+const CHECKED_STATIONS = propertiesData.stations as Station[];
+const PLACES = propertiesData.places as Place[];
 
 export function loader() {
   return {
-    stations: propertiesData.stations,
-    places: propertiesData.places as Place[],
+    line: coveredLine(LINES, CHECKED_STATIONS),
+    stations: CHECKED_STATIONS,
+    places: PLACES,
   };
 }
 
 /**
  * The site's own page. The root layout no longer hardcodes a title or description,
  * so every route must supply its own — otherwise a page ships with no metadata at all.
+ * The Line's name comes from the data, so a second Line is a data change, not a copy change.
  */
-export const meta: Route.MetaFunction = () => [
-  { title: "NaikTrainJer — places near LRT stations on the Kelana Jaya line" },
-  {
-    name: "description",
-    content: `Browse ${propertiesData.places.length} places I checked near LRT stations on the Kelana Jaya line, from Putra Heights to KL Gateway. Walk or drive directions to the station.`,
-  },
-  { tagName: "link", rel: "canonical", href: "https://naiktrainjer.com/" },
-];
+export const meta: Route.MetaFunction = () => {
+  const line = coveredLine(LINES, CHECKED_STATIONS);
+  return [
+    { title: `NaikTrainJer — places near stations on the ${line.name} line` },
+    {
+      name: "description",
+      content: `Browse ${PLACES.length} places I checked near stations on the ${line.name} line, in the line's own order. Walk or drive directions to the station.`,
+    },
+    { tagName: "link", rel: "canonical", href: publicUrl("/") },
+  ];
+};
 
 export default function Browse() {
-  const { stations, places } = useLoaderData<typeof loader>();
+  const { line, stations, places } = useLoaderData<typeof loader>();
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
-  const [stationFilter, setStationFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("station");
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
+
+  const cov = useMemo(() => coverage(line, stations), [line, stations]);
 
   const stationNameMap = useMemo(
     () => new Map(stations.map((s) => [s.slug, s.name])),
@@ -57,13 +69,13 @@ export default function Browse() {
   );
 
   const filteredPlaces = useMemo(
-    () => filterPlaces(places, stationFilter, typeFilter),
-    [places, stationFilter, typeFilter],
+    () => filterPlaces(places, typeFilter),
+    [places, typeFilter],
   );
 
-  const stationGroups = useMemo(
-    () => groupByStation(filteredPlaces, stations, sortMode),
-    [filteredPlaces, stations, sortMode],
+  const stationRows = useMemo(
+    () => buildStationRows(line, stations, places, filteredPlaces, sortMode),
+    [line, stations, places, filteredPlaces, sortMode],
   );
 
   const selectedPlace = useMemo(
@@ -97,23 +109,13 @@ export default function Browse() {
     return buildPlacePinUrl(selectedPlace);
   }, [selectedPlace]);
 
-  const stationCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const place of places) {
-      if (typeFilter && place.type !== typeFilter) continue;
-      counts.set(place.station, (counts.get(place.station) ?? 0) + 1);
-    }
-    return counts;
-  }, [places, typeFilter]);
-
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const place of places) {
-      if (stationFilter && place.station !== stationFilter) continue;
       counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
     }
     return counts;
-  }, [places, stationFilter]);
+  }, [places]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -124,8 +126,13 @@ export default function Browse() {
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                 NaikTrainJer
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Places near LRT · Kelana Jaya line
+              <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: line.color }}
+                />
+                Places near the {line.name} line
               </p>
             </div>
             <WalkDriveToggle mode={routeMode} onChange={setRouteMode} />
@@ -135,9 +142,8 @@ export default function Browse() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 w-full">
         <p className="mb-4 text-sm text-slate-600 leading-relaxed">
-          A directory of places to rent near LRT stations on the Kelana Jaya line, from
-          Putra Heights to KL Gateway. Every place was checked while hunting for a rental — added
-          as they were found along the line.
+          A directory of places to rent near stations on the {line.name} line, checked by
+          hand while I was hunting for a rental. {coverageCopy(cov)}
         </p>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row md:h-[calc(100vh-11rem)]">
@@ -146,40 +152,22 @@ export default function Browse() {
             aria-label="Places list"
           >
             <div className="p-3 sm:p-4 border-b border-slate-100 space-y-2.5 shrink-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2">
-                <select
-                  id="station-filter"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-                  value={stationFilter}
-                  onChange={(e) => {
-                    setStationFilter(e.target.value);
-                    setSelectedSlug(null);
-                  }}
-                >
-                  <option value="">All stations</option>
-                  {stations.map((s) => (
-                    <option key={s.slug} value={s.slug}>
-                      {s.name} ({stationCounts.get(s.slug) ?? 0})
-                    </option>
-                  ))}
-                </select>
-                <select
-                  id="type-filter"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-                  value={typeFilter}
-                  onChange={(e) => {
-                    setTypeFilter(e.target.value);
-                    setSelectedSlug(null);
-                  }}
-                >
-                  <option value="">All types</option>
-                  {uniqueTypes.map((t) => (
-                    <option key={t} value={t}>
-                      {TYPE_LABELS[t] ?? t} ({typeCounts.get(t) ?? 0})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                id="type-filter"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                value={typeFilter}
+                onChange={(e) => {
+                  setTypeFilter(e.target.value);
+                  setSelectedSlug(null);
+                }}
+              >
+                <option value="">All types</option>
+                {uniqueTypes.map((t) => (
+                  <option key={t} value={t}>
+                    {TYPE_LABELS[t] ?? t} ({typeCounts.get(t) ?? 0})
+                  </option>
+                ))}
+              </select>
 
               <div className="flex items-center justify-between pt-0.5">
                 <p className="text-xs text-slate-500">
@@ -197,12 +185,11 @@ export default function Browse() {
                     <option value="az">A–Z</option>
                     <option value="most">Most places</option>
                   </select>
-                  {(stationFilter || typeFilter) && (
+                  {typeFilter && (
                     <button
                       type="button"
                       className="text-xs font-semibold text-sky-600 hover:text-sky-800"
                       onClick={() => {
-                        setStationFilter("");
                         setTypeFilter("");
                         setSelectedSlug(null);
                       }}
@@ -215,69 +202,79 @@ export default function Browse() {
             </div>
 
             <div className="overflow-y-auto flex-1 min-h-0" role="list">
-              {stationGroups.length === 0 && (
+              {filteredPlaces.length === 0 && (
                 <p className="p-8 text-sm text-slate-400 text-center">
                   No matches. Try clearing filters.
                 </p>
               )}
-              {stationGroups.map((group) => (
-                <div
-                  key={group.stationSlug}
-                  role="group"
-                  aria-label={group.stationName}
-                >
-                  <div className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 px-4 py-2.5">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      {group.stationName}{" "}
-                      <span className="font-semibold normal-case tracking-normal">
-                        ({group.count})
-                      </span>
-                    </h2>
+              {stationRows.map((row) =>
+                row.check === "unchecked" ? (
+                  <div
+                    key={row.code}
+                    data-station-code={row.code}
+                    data-station-unchecked="true"
+                    className="border-b border-slate-100 px-4 py-2.5"
+                  >
+                    <span className="block text-sm text-slate-400">{row.name}</span>
+                    <span className="block text-xs text-slate-400 mt-0.5">
+                      Not checked yet
+                    </span>
                   </div>
-                  <div className="divide-y divide-slate-100">
-                    {group.places.map((place) => {
-                      const isActive = place.slug === selectedSlug;
-                      return (
-                        <div
-                          key={place.slug}
-                          role="listitem"
-                          className={`relative ${
-                            isActive
-                              ? "bg-sky-50 border-l-4 border-l-sky-500"
-                              : "hover:bg-slate-50 border-l-4 border-l-transparent"
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSlug(place.slug)}
-                            aria-pressed={isActive}
-                            className="w-full text-left px-4 py-3.5 pr-12"
+                ) : (
+                  <div key={row.code} role="group" aria-label={row.name}>
+                    <div className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 px-4 py-2.5">
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                        {row.name}{" "}
+                        <span className="font-semibold normal-case tracking-normal">
+                          ({row.count})
+                        </span>
+                      </h2>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {row.places.map((place) => {
+                        const isActive = place.slug === selectedSlug;
+                        return (
+                          <div
+                            key={place.slug}
+                            role="listitem"
+                            className={`relative ${
+                              isActive
+                                ? "bg-sky-50 border-l-4 border-l-sky-500"
+                                : "hover:bg-slate-50 border-l-4 border-l-transparent"
+                            }`}
                           >
-                            <span
-                              className={`block font-semibold text-sm leading-snug ${
-                                isActive ? "text-sky-950" : "text-slate-900"
-                              }`}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSlug(place.slug)}
+                              aria-pressed={isActive}
+                              className="w-full text-left px-4 py-3.5 pr-12"
                             >
-                              {place.name}
-                            </span>
-                            <span className="block text-xs text-slate-500 mt-1">
-                              {metaLabel(place)}
-                            </span>
-                          </button>
-                          <a
-                            href={`/places/${place.slug}/`}
-                            aria-label={`Open the page for ${place.name}`}
-                            title="Open the full page for this place"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm font-semibold text-slate-400 hover:bg-slate-200 hover:text-sky-700 focus-visible:bg-slate-200"
-                          >
-                            ↗
-                          </a>
-                        </div>
-                      );
-                    })}
+                              <span
+                                className={`block font-semibold text-sm leading-snug ${
+                                  isActive ? "text-sky-950" : "text-slate-900"
+                                }`}
+                              >
+                                {place.name}
+                              </span>
+                              <span className="block text-xs text-slate-500 mt-1">
+                                {metaLabel(place)}
+                              </span>
+                            </button>
+                            <a
+                              href={`/places/${place.slug}/`}
+                              aria-label={`Open the page for ${place.name}`}
+                              title="Open the full page for this place"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm font-semibold text-slate-400 hover:bg-slate-200 hover:text-sky-700 focus-visible:bg-slate-200"
+                            >
+                              ↗
+                            </a>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </aside>
 
@@ -330,27 +327,6 @@ export default function Browse() {
                         </p>
                       </div>
                     )}
-                    {selectedPlace.walkMinutes !== undefined &&
-                      selectedPlace.walkMeters !== undefined &&
-                      selectedPlace.driveMinutes !== undefined && (
-                        <div>
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                            Walk / drive
-                          </span>
-                          <p className="font-semibold text-slate-900">
-                            {formatMeasurement(
-                              selectedPlace.walkMinutes,
-                              selectedPlace.walkMeters,
-                              selectedPlace.driveMinutes,
-                            )}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {selectedPlace.driveMinutes === 1
-                              ? "1 min drive"
-                              : `${selectedPlace.driveMinutes} min drive`}
-                          </p>
-                        </div>
-                      )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -457,7 +433,7 @@ export default function Browse() {
         </div>
 
         <p className="mt-5 text-center text-xs text-slate-400">
-          Grouped by station · Kelana Jaya line
+          Grouped by station · {line.name} line
         </p>
       </main>
 

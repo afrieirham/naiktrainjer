@@ -1,6 +1,9 @@
 # 0001 — Prerender the directory from one data file, and bake the measurements
 
-**Status:** accepted
+**Status:** accepted, amended by ADR-0002 (browse is line-scoped) and ADR-0003 (PocketBase is a
+read-only network reference). Decision 3's interface promise is **deferred**: no interface shows a
+walk or drive figure any more, and the data validator forbids the fields — the Measure script and
+its providers stay in the repo as a future enhancement.
 
 ## Context
 
@@ -21,10 +24,11 @@ The data is small (84 Places, one Line), owned by one person, and read-only to v
    at build time, served by Cloudflare Pages. No server, no database, no request-time API call
    and no key in the browser.
 3. **Measure once, offline.** Walk and drive figures are computed by a Measure script on the
-   maintainer's machine and written into the data file. The Browse page can then sort and
-   filter by walkability, the figures are page text, and production makes no routing calls.
-   The routing provider is undecided; the script is written behind a provider seam so either a
-   billing-enabled Google key or a free key-based provider can be plugged in.
+   maintainer's machine and written into the data file. The routing provider is undecided; the
+   script is written behind a provider seam so either a billing-enabled Google key or a free
+   key-based provider can be plugged in. *(Amended: the figures are no longer surfaced in the
+   interface — the Route frame is the answer to the walk question — so measurement is deferred as
+   a future enhancement and the data file cannot carry the fields.)*
 4. **The map is Google's frame, built at click time.** The Route frame URL is assembled from
    coordinates (`walk`/`drive`), needing no key, and is treated as replaceable: if the
    undocumented URL shape breaks, it becomes the keyed Embed API behind the same component.

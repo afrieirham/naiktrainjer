@@ -1,4 +1,4 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
 
@@ -11,9 +11,20 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-const CF_BEACON_TOKEN = process.env.CLOUDFLARE_ANALYTICS_TOKEN ?? "";
+/**
+ * The analytics token is read on the server only and handed to the layout as
+ * loader data. Reading `process.env` at module scope threw `process is not
+ * defined` in the browser bundle, which broke hydration for the whole app.
+ */
+export function loader() {
+  return {
+    cfBeaconToken: process.env.CLOUDFLARE_ANALYTICS_TOKEN ?? "",
+  };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData<typeof loader>("root");
+  const cfBeaconToken = data?.cfBeaconToken ?? "";
   return (
     <html lang="en">
       <head>
@@ -26,11 +37,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        {CF_BEACON_TOKEN && (
+        {cfBeaconToken && (
           <script
             defer
             src="https://static.cloudflareinsights.com/beacon.min.js"
-            data-cf-beacon={`{"token":"${CF_BEACON_TOKEN}"}`}
+            data-cf-beacon={`{"token":"${cfBeaconToken}"}`}
           />
         )}
       </body>
