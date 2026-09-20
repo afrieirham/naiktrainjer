@@ -67,13 +67,12 @@ describe("prerendered HTML", () => {
 
     for (const station of data.stations) {
       const expectedCount = stationCounts.get(station.slug) ?? 0;
-      const escaped = station.name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-      const pattern = new RegExp(
-        `aria-label="${escaped}"[^<]*<div class="sticky[^"]*"><h2[^>]*>.*?\\(\\s*${expectedCount}\\s*\\)`
-      );
+      const start = cleanHtml.indexOf(`aria-label="${asHtmlText(station.name)}"`);
+      assert.ok(start > -1, `Station "${station.name}" not found in HTML`);
+      const block = cleanHtml.slice(start, start + 400);
       assert.ok(
-        pattern.test(cleanHtml),
-        `Station "${station.name}" with count ${expectedCount} not found in HTML`
+        block.includes(`data-station-count="${expectedCount}"`),
+        `Station "${station.name}" should carry count ${expectedCount}`,
       );
     }
   });
@@ -88,14 +87,20 @@ describe("prerendered HTML", () => {
   });
 
   it("sum of group counts equals number of Places", () => {
-    const totalCount = data.places.length;
-    const groupPattern = /aria-label="[^"]+"><div class="sticky[^"]*"><h2[^>]*>.*?\((\s*\d+\s*)\)/g;
-    let sum = 0;
-    let match;
-    while ((match = groupPattern.exec(cleanHtml)) !== null) {
-      sum += parseInt(match[1], 10);
-    }
-    assert.equal(sum, totalCount, `Expected sum of group counts to equal ${totalCount}, got ${sum}`);
+    const counts = [...cleanHtml.matchAll(/data-station-count="(\d+)"/g)].map((match) =>
+      parseInt(match[1], 10),
+    );
+    assert.equal(
+      counts.length,
+      data.stations.length,
+      "Every checked Station should carry its count",
+    );
+    const sum = counts.reduce((total, count) => total + count, 0);
+    assert.equal(
+      sum,
+      data.places.length,
+      `Expected sum of group counts to equal ${data.places.length}, got ${sum}`,
+    );
   });
 
   it("renders a group for every checked Station", () => {
@@ -166,7 +171,7 @@ describe("prerendered HTML", () => {
 
     for (const station of unchecked) {
       const pattern = new RegExp(
-        `data-station-code="${station.code}"[^>]*>[\\s\\S]{0,160}?${escapeRegExp(asHtmlText(station.name))}`,
+        `data-station-code="${station.code}"[^>]*>[\\s\\S]{0,320}?${escapeRegExp(asHtmlText(station.name))}`,
       );
       assert.ok(
         pattern.test(cleanHtml),
@@ -250,11 +255,9 @@ describe("prerendered HTML", () => {
     }
   });
 
-  it("contains a sort control", () => {
-    assert.ok(cleanHtml.includes('id="sort-mode"'), "Sort control missing");
-    assert.ok(cleanHtml.includes("Station order"), "Station order option missing");
-    assert.ok(cleanHtml.includes("A–Z"), "A-Z option missing");
-    assert.ok(cleanHtml.includes("Most places"), "Most places option missing");
+  it("offers no sort control — the corridor's own order is the only order", () => {
+    assert.ok(!cleanHtml.includes('id="sort-mode"'), "Sort control should not exist");
+    assert.ok(!cleanHtml.includes("Most places"), "No sort options should render");
   });
 
   it("contains no search box", () => {
@@ -299,7 +302,7 @@ describe("pure filter/corridor functions", () => {
 
   describe("buildStationRows", () => {
     it("renders every Station on the Line in corridor order", () => {
-      const rows = buildStationRows(line, stations, places, places, "station");
+      const rows = buildStationRows(line, stations, places, places);
       const corridor = [...line.stations]
         .sort((a, b) => b.sort - a.sort)
         .map((s) => s.code);
@@ -308,13 +311,13 @@ describe("pure filter/corridor functions", () => {
     });
 
     it("carries every Place under its checked Station", () => {
-      const rows = buildStationRows(line, stations, places, places, "station");
+      const rows = buildStationRows(line, stations, places, places);
       const sum = rows.reduce((total, row) => total + row.count, 0);
       assert.equal(sum, places.length);
     });
 
     it("sorts places alphabetically within a Station", () => {
-      const rows = buildStationRows(line, stations, places, places, "station");
+      const rows = buildStationRows(line, stations, places, places);
       for (const row of rows) {
         for (let i = 1; i < row.places.length; i++) {
           assert.ok(
@@ -326,7 +329,7 @@ describe("pure filter/corridor functions", () => {
     });
 
     it("marks every Station with no checked counterpart as unchecked", () => {
-      const rows = buildStationRows(line, stations, places, places, "station");
+      const rows = buildStationRows(line, stations, places, places);
       const checkedCodes = new Set(stations.map((s) => s.code));
       const unchecked = rows.filter((row) => row.check === "unchecked");
       assert.deepEqual(
@@ -344,7 +347,7 @@ describe("pure filter/corridor functions", () => {
 
     it("keeps a checked Station a filter emptied, but only when the data holds nothing for it", () => {
       const empty = filterPlaces(places, "castle");
-      const rows = buildStationRows(line, stations, places, empty, "station");
+      const rows = buildStationRows(line, stations, places, empty);
       const checkedRows = rows.filter((row) => row.check === "checked");
       assert.equal(
         checkedRows.length,
@@ -352,7 +355,7 @@ describe("pure filter/corridor functions", () => {
         "A Station emptied by the filter is not shown as holding nothing",
       );
 
-      const noDataRows = buildStationRows(line, stations, [], [], "station");
+      const noDataRows = buildStationRows(line, stations, [], []);
       assert.equal(
         noDataRows.filter((row) => row.check === "checked").length,
         stations.length,
@@ -360,38 +363,6 @@ describe("pure filter/corridor functions", () => {
       );
       for (const row of noDataRows.filter((row) => row.check === "checked")) {
         assert.equal(row.count, 0);
-      }
-    });
-
-    it("az sort orders Stations by name", () => {
-      const rows = buildStationRows(line, stations, places, places, "az");
-      for (let i = 1; i < rows.length; i++) {
-        assert.ok(
-          rows[i - 1].name.localeCompare(rows[i].name) <= 0,
-          `Stations not A-Z: ${rows[i - 1].name} > ${rows[i].name}`,
-        );
-      }
-    });
-
-    it("most sort orders Stations by count descending", () => {
-      const rows = buildStationRows(line, stations, places, places, "most");
-      for (let i = 1; i < rows.length; i++) {
-        assert.ok(
-          rows[i - 1].count >= rows[i].count,
-          `Stations not by count: ${rows[i - 1].name} (${rows[i - 1].count}) < ${rows[i].name} (${rows[i].count})`,
-        );
-      }
-    });
-
-    it("most sort breaks ties by name", () => {
-      const rows = buildStationRows(line, stations, places, places, "most");
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i - 1].count === rows[i].count) {
-          assert.ok(
-            rows[i - 1].name.localeCompare(rows[i].name) <= 0,
-            `Tie not broken by name: ${rows[i - 1].name} > ${rows[i].name}`,
-          );
-        }
       }
     });
   });
@@ -569,27 +540,23 @@ describe("route URL builders", () => {
 describe("prerendered HTML — route frame", () => {
   it("contains the empty state before a Place is selected", () => {
     assert.ok(
-      cleanHtml.includes("Select a place"),
-      "Empty state title missing"
+      cleanHtml.includes("Pick a place from the corridor"),
+      "Empty state prompt missing"
     );
     assert.ok(
-      cleanHtml.includes("Details will appear here."),
-      "Empty state body missing"
+      cleanHtml.includes("walk or drive route appears here"),
+      "Empty state must say what will appear"
     );
   });
 
-  it("contains the Walk/Drive toggle", () => {
+  it("offers walk and drive, and holds the toggle until a Place is picked", () => {
     assert.ok(
-      cleanHtml.includes('aria-label="Travel mode"'),
-      "Travel mode toggle missing"
+      cleanHtml.includes("walk or drive route"),
+      "The empty state must name both travel modes"
     );
     assert.ok(
-      cleanHtml.includes("Walk"),
-      "Walk button missing"
-    );
-    assert.ok(
-      cleanHtml.includes("Drive"),
-      "Drive button missing"
+      !cleanHtml.includes('aria-label="Travel mode"'),
+      "The travel mode toggle must not render before a Place is picked — with no route it changes nothing visible"
     );
   });
 

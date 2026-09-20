@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData } from "react-router";
 import propertiesData from "../../data/properties.json";
 import {
@@ -6,10 +6,9 @@ import {
   filterPlaces,
   getUniqueTypes,
   type Place,
-  type SortMode,
   type Station,
 } from "../lib/browse-filter";
-import { coveredLine, coverage, coverageCopy, type Line } from "../lib/lines";
+import { coveredLine, corridorOrder, coverage, coverageCopy, type Coverage, type Line } from "../lib/lines";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -17,8 +16,7 @@ import {
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { WalkDriveToggle } from "../components/WalkDriveToggle";
-import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel } from "../lib/labels";
+import { TYPE_LABELS, metaLabel } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/browse";
 
@@ -51,16 +49,154 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
+/** Authored, one stroke weight, one style — never a Unicode arrow standing in for an icon. */
+function OpenIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
+      <path
+        d="M6.25 3.5h6.25v6.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.5 3.5 3.5 12.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+      <path
+        d="M13.25 8H2.75M7 3.75 2.75 8 7 12.25"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * The travel mode, in the Browse page's own vocabulary. The Place page keeps the
+ * shared `WalkDriveToggle`; this page's map owns a whole column and its controls
+ * belong to that surface.
+ */
+function TravelMode({
+  mode,
+  onChange,
+}: {
+  mode: RouteMode;
+  onChange: (mode: RouteMode) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Travel mode"
+      className="inline-flex shrink-0 rounded-md border border-rule-strong p-[2px]"
+    >
+      {(
+        [
+          ["walk", "Walk"],
+          ["drive", "Drive"],
+        ] as const
+      ).map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={mode === value}
+          onClick={() => onChange(value)}
+          className={`rounded-[4px] px-2.5 py-1 text-[12.5px] font-semibold transition-colors ${
+            mode === value ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * What the map column holds before a Place is picked: the corridor itself, at
+ * scale. Every stop, name and count comes from the data, so the stretch still to
+ * do is as legible as the stretch that is done — the page proves its coverage
+ * instead of claiming it.
+ */
+function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
+  const stops = corridorOrder(line);
+  const checkedCodes = new Set(cov.checked.map((station) => station.code));
+  const span = stops.length - 1;
+  const boundary = span > 0 ? ((cov.checkedCount - 1) / span) * 100 : 0;
+  const south = stops[0];
+  const north = stops[stops.length - 1];
+
+  return (
+    <div className="flex h-full flex-col justify-center px-6 py-10 sm:px-12">
+      <h2 className="max-w-[22ch] text-[26px] font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-[36px]">
+        How far I&rsquo;ve got
+      </h2>
+      <p className="mt-4 text-[14px] font-medium tabular-nums text-ink-soft">
+        {cov.checkedCount} of {cov.total} stops checked · {cov.unchecked.length} still to do
+      </p>
+
+      <div className="relative mt-12 h-[14px] min-[1400px]:h-[18px]">
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full"
+          style={{ backgroundColor: "var(--color-rule-strong)" }}
+        />
+        <span
+          aria-hidden="true"
+          className="absolute left-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full"
+          style={{ width: `${boundary}%`, backgroundColor: "var(--browse-accent)" }}
+        />
+        {stops.map((stop, index) => {
+          const isChecked = checkedCodes.has(stop.code);
+          const position = span > 0 ? (index / span) * 100 : 0;
+          return (
+            <span
+              key={stop.code}
+              aria-hidden="true"
+              className="absolute top-0 h-[14px] w-[14px] -translate-x-1/2 rounded-full border-[3px] min-[1400px]:h-[18px] min-[1400px]:w-[18px] min-[1400px]:border-[4px]"
+              style={{
+                left: `${position}%`,
+                borderColor: isChecked ? "var(--browse-accent)" : "var(--color-rule-strong)",
+                backgroundColor: isChecked ? "var(--browse-accent)" : "var(--color-paper)",
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <div className="mt-7 flex items-baseline justify-between gap-6">
+        <span className="truncate text-[16px] font-semibold tracking-[-0.01em] text-ink">
+          {south?.name}
+        </span>
+        <span className="truncate text-[16px] font-semibold tracking-[-0.01em] text-ink">
+          {north?.name}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Browse() {
   const { line, stations, places } = useLoaderData<typeof loader>();
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("");
-  const [sortMode, setSortMode] = useState<SortMode>("station");
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
-
   const cov = useMemo(() => coverage(line, stations), [line, stations]);
 
   const stationNameMap = useMemo(
@@ -74,8 +210,8 @@ export default function Browse() {
   );
 
   const stationRows = useMemo(
-    () => buildStationRows(line, stations, places, filteredPlaces, sortMode),
-    [line, stations, places, filteredPlaces, sortMode],
+    () => buildStationRows(line, stations, places, filteredPlaces),
+    [line, stations, places, filteredPlaces],
   );
 
   const selectedPlace = useMemo(
@@ -89,9 +225,7 @@ export default function Browse() {
 
   const selectedAlsoNear = useMemo(() => {
     if (!selectedPlace?.alsoNear?.length) return [];
-    return selectedPlace.alsoNear.map(
-      (slug) => stationNameMap.get(slug) ?? slug,
-    );
+    return selectedPlace.alsoNear.map((slug) => stationNameMap.get(slug) ?? slug);
   }, [selectedPlace, stationNameMap]);
 
   const routeFrameUrl = useMemo(() => {
@@ -111,340 +245,320 @@ export default function Browse() {
 
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const place of places) {
-      counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
-    }
+    for (const place of places) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
     return counts;
   }, [places]);
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                NaikTrainJer
-              </h1>
-              <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-1.5">
-                <span
-                  aria-hidden="true"
-                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: line.color }}
-                />
-                Places near the {line.name} line
-              </p>
-            </div>
-            <WalkDriveToggle mode={routeMode} onChange={setRouteMode} />
-          </div>
-        </div>
-      </header>
+  const nothingMatches = filteredPlaces.length === 0;
+  const lastIndex = stationRows.length - 1;
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 w-full">
-        <p className="mb-4 text-sm text-slate-600 leading-relaxed">
-          A directory of places to rent near stations on the {line.name} line, checked by
-          hand while I was hunting for a rental. {coverageCopy(cov)}
+  /**
+   * On a phone the route replaces the corridor, so the row that was just activated
+   * leaves the tree. Without this, focus falls to <body> and the change is silent.
+   */
+  const backRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!selectedSlug) return;
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    backRef.current?.focus();
+  }, [selectedSlug]);
+
+  /**
+   * Clearing unmounts the control that was just used, so focus is handed back to
+   * the row it came from rather than dropped on <body>.
+   */
+  const clearFocusRef = useRef<string | null>(null);
+  const clearSelection = () => {
+    clearFocusRef.current = selectedSlug;
+    setSelectedSlug(null);
+  };
+  useEffect(() => {
+    const slug = clearFocusRef.current;
+    if (selectedSlug !== null || !slug) return;
+    clearFocusRef.current = null;
+    document
+      .querySelector<HTMLButtonElement>(`[data-place-slug="${slug}"]`)
+      ?.focus();
+  }, [selectedSlug]);
+
+  return (
+    <div
+      className="browse-app flex h-dvh flex-col overflow-hidden"
+      style={{ "--browse-accent": line.color } as React.CSSProperties}
+    >
+      <header className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2.5 border-b border-rule px-4 py-3 sm:px-6">
+        <span className="text-[15px] font-bold tracking-[-0.03em] text-ink">
+          NaikTrainJer
+        </span>
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="type-filter" className="text-[12.5px] font-medium text-ink-soft">
+            Type
+          </label>
+          <select
+            id="type-filter"
+            value={typeFilter}
+            onChange={(event) => {
+              setTypeFilter(event.target.value);
+              setSelectedSlug(null);
+            }}
+            className="rounded-md border border-rule-strong bg-paper py-1.5 pl-2.5 pr-2 text-[13px] font-medium text-ink"
+          >
+            <option value="">All types</option>
+            {uniqueTypes.map((type) => (
+              <option key={type} value={type}>
+                {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <p className="ml-auto hidden text-[12.5px] tabular-nums text-ink-soft sm:block">
+          {cov.checkedCount} of {cov.total} stations · {places.length} places
         </p>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row md:h-[calc(100vh-11rem)]">
-          <aside
-            className="md:w-[380px] lg:w-[420px] border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-[70vh] md:max-h-none md:overflow-hidden"
-            aria-label="Places list"
-          >
-            <div className="p-3 sm:p-4 border-b border-slate-100 space-y-2.5 shrink-0">
-              <select
-                id="type-filter"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
-                value={typeFilter}
-                onChange={(e) => {
-                  setTypeFilter(e.target.value);
-                  setSelectedSlug(null);
-                }}
+        <a
+          href="/submit/"
+          className="rounded-md bg-ink px-3 py-1.5 text-[13px] font-semibold text-paper transition-opacity hover:opacity-85"
+        >
+          Suggest a place
+        </a>
+      </header>
+
+      <div className="flex min-h-0 flex-1">
+        {/* The corridor */}
+        <section
+          aria-label="Places along the line"
+          className={`min-h-0 w-full flex-col border-rule md:flex md:w-[420px] md:shrink-0 md:border-r ${
+            selectedPlace ? "hidden md:flex" : "flex"
+          }`}
+        >
+          <div className="shrink-0 border-b border-rule px-5 pb-3.5 pt-4">
+            <h1 className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink">
+              {line.name} line
+            </h1>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+              {coverageCopy(cov)}
+            </p>
+          </div>
+
+          {nothingMatches ? (
+            <div className="flex min-h-0 flex-1 flex-col items-start justify-center gap-3 px-6">
+              <p className="text-[13.5px] text-ink-soft">
+                No places match that type.
+              </p>
+              <button
+                type="button"
+                onClick={() => setTypeFilter("")}
+                className="rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink transition-colors hover:bg-band"
               >
-                <option value="">All types</option>
-                {uniqueTypes.map((t) => (
-                  <option key={t} value={t}>
-                    {TYPE_LABELS[t] ?? t} ({typeCounts.get(t) ?? 0})
-                  </option>
-                ))}
-              </select>
-
-              <div className="flex items-center justify-between pt-0.5">
-                <p className="text-xs text-slate-500">
-                  {filteredPlaces.length} place
-                  {filteredPlaces.length === 1 ? "" : "s"}
-                </p>
-                <div className="flex items-center gap-3">
-                  <select
-                    id="sort-mode"
-                    className="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white outline-none focus:border-sky-400"
-                    value={sortMode}
-                    onChange={(e) => setSortMode(e.target.value as SortMode)}
-                  >
-                    <option value="station">Station order</option>
-                    <option value="az">A–Z</option>
-                    <option value="most">Most places</option>
-                  </select>
-                  {typeFilter && (
-                    <button
-                      type="button"
-                      className="text-xs font-semibold text-sky-600 hover:text-sky-800"
-                      onClick={() => {
-                        setTypeFilter("");
-                        setSelectedSlug(null);
-                      }}
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-              </div>
+                Show every type
+              </button>
             </div>
+          ) : (
+            <ol className="browse-scroll min-h-0 flex-1 overflow-y-auto">
+              {stationRows.map((row, index) => {
+                const checked = row.check === "checked";
+                const isLast = index === lastIndex;
+                const active = checked && row.stationSlug === selectedSlug;
 
-            <div className="overflow-y-auto flex-1 min-h-0" role="list">
-              {filteredPlaces.length === 0 && (
-                <p className="p-8 text-sm text-slate-400 text-center">
-                  No matches. Try clearing filters.
-                </p>
-              )}
-              {stationRows.map((row) =>
-                row.check === "unchecked" ? (
-                  <div
+                return (
+                  <li
                     key={row.code}
-                    data-station-code={row.code}
-                    data-station-unchecked="true"
-                    className="border-b border-slate-100 px-4 py-2.5"
+                    role={checked ? "group" : undefined}
+                    aria-label={checked ? row.name : undefined}
+                    data-station-count={checked ? row.count : undefined}
+                    className="relative"
                   >
-                    <span className="block text-sm text-slate-400">{row.name}</span>
-                    <span className="block text-xs text-slate-400 mt-0.5">
-                      Not checked yet
-                    </span>
-                  </div>
-                ) : (
-                  <div key={row.code} role="group" aria-label={row.name}>
-                    <div className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 px-4 py-2.5">
-                      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        {row.name}{" "}
-                        <span className="font-semibold normal-case tracking-normal">
-                          ({row.count})
-                        </span>
-                      </h2>
-                    </div>
-                    <div className="divide-y divide-slate-100">
-                      {row.places.map((place) => {
-                        const isActive = place.slug === selectedSlug;
-                        return (
-                          <div
-                            key={place.slug}
-                            role="listitem"
-                            className={`relative ${
-                              isActive
-                                ? "bg-sky-50 border-l-4 border-l-sky-500"
-                                : "hover:bg-slate-50 border-l-4 border-l-transparent"
-                            }`}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setSelectedSlug(place.slug)}
-                              aria-pressed={isActive}
-                              className="w-full text-left px-4 py-3.5 pr-12"
-                            >
-                              <span
-                                className={`block font-semibold text-sm leading-snug ${
-                                  isActive ? "text-sky-950" : "text-slate-900"
-                                }`}
-                              >
-                                {place.name}
-                              </span>
-                              <span className="block text-xs text-slate-500 mt-1">
-                                {metaLabel(place)}
-                              </span>
-                            </button>
-                            <a
-                              href={`/places/${place.slug}/`}
-                              aria-label={`Open the page for ${place.name}`}
-                              title="Open the full page for this place"
-                              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-sm font-semibold text-slate-400 hover:bg-slate-200 hover:text-sky-700 focus-visible:bg-slate-200"
-                            >
-                              ↗
-                            </a>
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-[22px] top-0 z-10 w-[2px]"
+                      style={{
+                        bottom: isLast ? "auto" : 0,
+                        height: isLast ? "30px" : undefined,
+                        backgroundColor: checked
+                          ? "var(--browse-accent)"
+                          : "var(--color-rule-strong)",
+                      }}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-[16px] top-[14px] z-20 h-[14px] w-[14px] rounded-full border-2"
+                      style={{
+                        borderColor: checked
+                          ? "var(--browse-accent)"
+                          : "var(--color-rule-strong)",
+                        backgroundColor: checked
+                          ? "var(--browse-accent)"
+                          : "var(--color-paper)",
+                      }}
+                    />
+
+                    {checked ? (
+                      <>
+                        <div className="bg-band py-2.5 pl-[52px] pr-4">
+                          <div className="flex items-baseline justify-between gap-3">
+                            <h2 className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink">
+                              {row.name}
+                            </h2>
+                            <span className="shrink-0 text-[12px] font-semibold tabular-nums text-ink-soft">
+                              {row.count}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-          </aside>
-
-          <section
-            className="flex-1 flex flex-col min-w-0 min-h-[220px] md:min-h-0 md:h-full md:overflow-y-auto"
-            aria-label="Place details"
-          >
-            {selectedPlace ? (
-              <div className="px-4 sm:px-5 py-4 border-b border-slate-100 shrink-0">
-                <div className="space-y-3">
-                  <div className="min-w-0">
-                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-                      {selectedPlace.name}
-                    </h2>
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      <span
-                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
-                          TYPE_CLASSES[selectedPlace.type] ??
-                          "bg-slate-100 text-slate-600 ring-slate-500/10"
-                        }`}
+                        </div>
+                        <ul>
+                          {row.places.map((place) => {
+                            const isActive = place.slug === selectedSlug;
+                            return (
+                              <li key={place.slug} role="listitem" className="relative">
+                                <button
+                                  type="button"
+                                  data-place-slug={place.slug}
+                                  data-active={isActive}
+                                  aria-current={isActive ? "true" : undefined}
+                                  onClick={() =>
+                                    isActive
+                                      ? clearSelection()
+                                      : setSelectedSlug(place.slug)
+                                  }
+                                  className="browse-row flex w-full items-center py-3 pl-[52px] pr-12 text-left transition-colors hover:bg-band"
+                                >
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-[13.5px] font-semibold text-ink">
+                                      {place.name}
+                                    </span>
+                                    <span className="mt-0.5 block truncate text-[12px] text-ink-soft">
+                                      {metaLabel(place)}
+                                    </span>
+                                  </span>
+                                </button>
+                                <a
+                                  href={`/places/${place.slug}/`}
+                                  aria-label={`Open the full page for ${place.name}`}
+                                  title="Open the full page for this place"
+                                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded p-1.5 text-ink-soft transition-colors hover:bg-paper hover:text-ink"
+                                >
+                                  <OpenIcon />
+                                </a>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </>
+                    ) : (
+                      <div
+                        data-station-code={row.code}
+                        data-station-unchecked="true"
+                        className="flex items-baseline justify-between gap-3 py-2 pl-[52px] pr-4"
                       >
-                        {TYPE_LABELS[selectedPlace.type] ??
-                          selectedPlace.type}
-                      </span>
-                      {(KIND_LABELS[selectedPlace.kind] ?? selectedPlace.kind) !==
-                        (TYPE_LABELS[selectedPlace.type] ?? selectedPlace.type) && (
-                        <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-slate-100 text-slate-600 ring-slate-500/10">
-                          {KIND_LABELS[selectedPlace.kind] ?? selectedPlace.kind}
+                        <span className="truncate text-[13px] font-medium text-ink-soft">
+                          {row.name}
                         </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-3 sm:px-4 text-sm space-y-1.5">
-                    <div>
-                      <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                        Nearest station
-                      </span>
-                      <p className="font-semibold text-slate-900">
-                        {selectedStationName}
-                      </p>
-                    </div>
-                    {selectedAlsoNear.length > 0 && (
-                      <div>
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                          Also near
+                        <span className="shrink-0 text-[12px] text-ink-soft">
+                          Not checked yet
                         </span>
-                        <p className="font-semibold text-slate-900">
-                          {selectedAlsoNear.join(", ")}
-                        </p>
                       </div>
                     )}
-                  </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </section>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <a
-                      href={`/places/${selectedPlace.slug}/`}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-sky-50 px-2.5 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-100 hover:text-sky-900"
-                    >
-                      Open full page
-                      <span aria-hidden="true">&#x2197;</span>
-                    </a>
+        {/* The map, and the strip that answers */}
+        <section
+          aria-label="Place details"
+          className={`relative min-h-0 flex-1 flex-col bg-band ${
+            selectedPlace ? "flex" : "hidden md:flex"
+          }`}
+        >
+          <div className="relative min-h-0 flex-1">
+            {selectedPlace && routeFrameUrl ? (
+              <RouteFrame
+                src={routeFrameUrl}
+                mode={routeMode}
+                className="absolute inset-0 block h-full w-full border-0"
+              />
+            ) : (
+              <EmptyCorridor line={line} cov={cov} />
+            )}
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 p-3">
+            <div className="pointer-events-auto rounded-lg border border-rule bg-paper px-4 py-3 shadow-[0_1px_2px_rgba(21,23,28,0.05),0_10px_28px_-14px_rgba(21,23,28,0.22)]">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                {selectedPlace && (
+                  <button
+                    ref={backRef}
+                    type="button"
+                    onClick={clearSelection}
+                    className="-ml-1 inline-flex items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink"
+                  >
+                    <BackIcon />
+                    All places
+                  </button>
+                )}
+
+                <div className="min-w-0 flex-1" aria-live="polite">
+                  <div
+                    key={selectedPlace?.slug ?? "none"}
+                    className="browse-reveal"
+                  >
+                    {selectedPlace ? (
+                      <>
+                        <p className="truncate text-[14px] font-semibold text-ink">
+                          {selectedPlace.name}
+                        </p>
+                        <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
+                          {metaLabel(selectedPlace)} · {selectedStationName}
+                          {selectedAlsoNear.length > 0
+                            ? ` · also near ${selectedAlsoNear.join(", ")}`
+                            : ""}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[13px] text-ink-soft">
+                        Pick a place from the corridor — its walk or drive route
+                        appears here.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {selectedPlace && (
+                  <div className="browse-reveal flex flex-wrap items-center gap-3">
+                    <TravelMode mode={routeMode} onChange={setRouteMode} />
                     <a
                       href={openRouteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
+                      className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
                     >
                       Open route
-                      <span aria-hidden="true">&#x2197;</span>
+                    </a>
+                    <a
+                      href={`/places/${selectedPlace.slug}/`}
+                      className="text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
+                    >
+                      Full page
                     </a>
                     <a
                       href={placePinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900"
+                      className="hidden text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink sm:inline"
                     >
-                      Place on Google Maps
-                      <span aria-hidden="true">&#x2197;</span>
+                      On Maps
                     </a>
                   </div>
-                </div>
+                )}
               </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center p-6">
-                <div className="max-w-sm text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 border border-slate-200">
-                    <svg
-                      className="w-6 h-6 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="font-semibold text-slate-800">
-                    Select a place
-                  </p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Details will appear here.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="relative bg-slate-100 flex-1">
-              {selectedPlace && routeFrameUrl ? (
-                <RouteFrame src={routeFrameUrl} mode={routeMode} />
-              ) : (
-                <div className="w-full flex items-center justify-center p-6 min-h-[320px] md:min-h-[480px]">
-                  <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-200 shadow-sm">
-                      <svg
-                        className="w-6 h-6 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.75}
-                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                        />
-                      </svg>
-                    </div>
-                    <p className="font-semibold text-slate-800">
-                      {selectedPlace
-                        ? "Map coming soon"
-                        : "Select a place"}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {selectedPlace
-                        ? "Walking and driving routes to the station will appear here."
-                        : "Details will appear here."}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
-          </section>
-        </div>
-
-        <p className="mt-5 text-center text-xs text-slate-400">
-          Grouped by station · {line.name} line
-        </p>
-      </main>
-
-      <footer className="mt-auto border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
-          NaikTrainJer —{" "}
-          <a href="/submit/" className="font-semibold text-sky-600 hover:text-sky-800">
-            suggest a place
-          </a>
-        </div>
-      </footer>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

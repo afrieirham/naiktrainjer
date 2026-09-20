@@ -35,8 +35,6 @@ export type StationRow = {
   places: Place[];
 };
 
-export type SortMode = "station" | "az" | "most";
-
 export function filterPlaces(places: Place[], typeFilter: string): Place[] {
   return places.filter((place) => !typeFilter || place.type === typeFilter);
 }
@@ -49,13 +47,15 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
  * the data itself holds nothing for it — otherwise filtering by type would look
  * like the directory had never checked that Station. An unchecked Station is
  * never dropped: the page states what it has not done.
+ *
+ * The corridor's own order is the only order. There is deliberately no A–Z or
+ * "most places" sort: line order is real information, not a sort option.
  */
 export function buildStationRows(
   line: Line,
   checkedStations: Station[],
   allPlaces: Place[],
   matchedPlaces: Place[],
-  sortMode: SortMode,
 ): StationRow[] {
   const byCode = new Map(checkedStations.map((station) => [station.code, station]));
 
@@ -101,12 +101,6 @@ export function buildStationRows(
       count: places.length,
       places,
     });
-  }
-
-  if (sortMode === "az") {
-    rows.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sortMode === "most") {
-    rows.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   }
 
   return rows;

@@ -165,10 +165,10 @@ describe("footer link", () => {
     );
   });
 
-  it("browse page footer contains 'suggest a place'", () => {
+  it("browse page offers a way to suggest a place", () => {
     assert.ok(
-      browseHtml.includes("suggest a place"),
-      "Browse page footer must contain 'suggest a place'",
+      /suggest a place/i.test(browseHtml),
+      "Browse page must offer a way to suggest a place",
     );
   });
 
