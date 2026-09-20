@@ -11,7 +11,6 @@ import {
   type Provider,
 } from "../scripts/measure-providers.ts";
 import { measurePlaces, formatWalkTime, formatDriveTime } from "../scripts/measure.ts";
-import { formatMeasurement } from "../app/lib/labels.ts";
 
 const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 const BACKUP_PATH = resolve(import.meta.dirname, "../data/properties.json.bak");
@@ -324,21 +323,6 @@ describe("idempotence", () => {
 
     assert.equal(afterFirst, afterSecond);
     assert.equal(provider.getCallCount(), 1);
-  });
-});
-
-describe("formatMeasurement", () => {
-  it("formats walk time correctly", () => {
-    const result = formatMeasurement(14, 1000, 5);
-    assert.ok(result.includes("14 min"));
-    assert.ok(result.includes("1.0 km"));
-    assert.ok(result.includes("walk"));
-  });
-
-  it("formats meters for short distances", () => {
-    const result = formatMeasurement(5, 400, 2);
-    assert.ok(result.includes("5 min"));
-    assert.ok(result.includes("400 m"));
   });
 });
 

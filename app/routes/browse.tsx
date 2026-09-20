@@ -17,7 +17,7 @@ import {
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
 import { WalkDriveToggle } from "../components/WalkDriveToggle";
-import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel, formatMeasurement } from "../lib/labels";
+import { TYPE_LABELS, KIND_LABELS, TYPE_CLASSES, metaLabel } from "../lib/labels";
 import type { Route } from "./+types/browse";
 
 export function loader() {
@@ -330,27 +330,6 @@ export default function Browse() {
                         </p>
                       </div>
                     )}
-                    {selectedPlace.walkMinutes !== undefined &&
-                      selectedPlace.walkMeters !== undefined &&
-                      selectedPlace.driveMinutes !== undefined && (
-                        <div>
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                            Walk / drive
-                          </span>
-                          <p className="font-semibold text-slate-900">
-                            {formatMeasurement(
-                              selectedPlace.walkMinutes,
-                              selectedPlace.walkMeters,
-                              selectedPlace.driveMinutes,
-                            )}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {selectedPlace.driveMinutes === 1
-                              ? "1 min drive"
-                              : `${selectedPlace.driveMinutes} min drive`}
-                          </p>
-                        </div>
-                      )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">

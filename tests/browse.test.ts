@@ -171,6 +171,15 @@ describe("prerendered HTML", () => {
     assert.ok(!cleanHtml.includes('id="search"'), "Search box should not exist");
     assert.ok(!cleanHtml.includes('type="search"'), "Search input should not exist");
   });
+
+  it("shows no walk or drive figure", () => {
+    assert.ok(
+      !cleanHtml.includes("Walk / drive"),
+      "The detail panel must not carry a walk figure block",
+    );
+    assert.ok(!cleanHtml.includes("min walk"), "No walk figure may render");
+    assert.ok(!cleanHtml.includes("min drive"), "No drive figure may render");
+  });
 });
 
 describe("pure filter/sort functions", () => {
