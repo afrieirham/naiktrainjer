@@ -359,7 +359,7 @@ describe("place page content", () => {
     }
   });
 
-  it("every page has an Open route link", () => {
+  it("every page opens the route in Google Maps", () => {
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -369,8 +369,8 @@ describe("place page content", () => {
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
-        html.includes("Open route"),
-        `Page "${place.slug}" is missing the Open route link`,
+        html.includes("Open in Google Maps"),
+        `Page "${place.slug}" is missing the Google Maps route link`,
       );
     }
   });
@@ -385,7 +385,7 @@ describe("place page content", () => {
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
-        html.includes("google.com/maps/dir") && html.includes("Open route"),
+        html.includes("google.com/maps/dir") && html.includes("Open in Google Maps"),
         `Page "${place.slug}" must offer the route on Google Maps`,
       );
       assert.ok(

@@ -191,7 +191,7 @@ export default function PlacePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
               >
-                Open route
+                Open in Google Maps
                 <OpenIcon size={13} />
               </a>
             </div>

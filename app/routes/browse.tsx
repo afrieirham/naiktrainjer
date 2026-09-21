@@ -425,10 +425,14 @@ export default function Browse() {
                     ref={backRef}
                     type="button"
                     onClick={clearSelection}
+                    aria-label="All places"
+                    title="All places"
                     className="-ml-1 inline-flex items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink md:hidden"
                   >
                     <BackIcon />
-                    All places
+                    {/* The label rides with the wider viewports; on a phone the
+                        arrow plus `Google Maps` needs the room more. */}
+                    <span className="hidden sm:inline">All places</span>
                   </button>
                   <TravelMode mode={routeMode} onChange={setRouteMode} />
                   <a
@@ -437,7 +441,7 @@ export default function Browse() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
                   >
-                    Open route
+                    Open in Google Maps
                     <OpenIcon size={13} />
                   </a>
                 </div>
