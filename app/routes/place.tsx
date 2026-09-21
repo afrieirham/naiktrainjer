@@ -5,13 +5,12 @@ import type { Place, Station } from "../lib/browse-filter";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
-  buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar } from "../components/AppBar";
+import { AppBar, AppBarAction } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
-import { BackIcon } from "../components/icons";
+import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
 import { coveredLine, coverage, type Line } from "../lib/lines";
 import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
@@ -89,8 +88,6 @@ export default function PlacePage() {
     [place, stationName, routeMode],
   );
 
-  const placePinUrl = useMemo(() => buildPlacePinUrl(place), [place]);
-
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const isBuilding = place.kind === "building";
   const sentence = isBuilding
@@ -105,14 +102,7 @@ export default function PlacePage() {
       <AppBar
         subtitle={`${lineName} line`}
         counts={COUNTS}
-        action={
-          <a
-            href="/submit/"
-            className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
-          >
-            Suggest a place
-          </a>
-        }
+        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -192,24 +182,17 @@ export default function PlacePage() {
             ) : null}
           </div>
 
-          <div className="shrink-0 border-t border-rule bg-paper px-4 py-3">
+          <div className="shrink-0 border-t border-rule bg-paper px-3 py-2.5 sm:px-4 sm:py-3">
             <div className="flex flex-wrap items-center gap-3">
               <TravelMode mode={routeMode} onChange={setRouteMode} />
               <a
                 href={openRouteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
+                className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
               >
                 Open route
-              </a>
-              <a
-                href={placePinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
-              >
-                Place on Google Maps
+                <OpenIcon size={13} />
               </a>
             </div>
           </div>

@@ -12,11 +12,10 @@ import { coveredLine, corridorOrder, coverage, coverageCopy, type Coverage, type
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
-  buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar } from "../components/AppBar";
+import { AppBar, AppBarAction } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { OpenIcon, BackIcon } from "../components/icons";
 import { TYPE_LABELS, metaLabel } from "../lib/labels";
@@ -165,11 +164,6 @@ export default function Browse() {
     return buildOpenRouteUrl(selectedPlace, selectedStationName, routeMode);
   }, [selectedPlace, selectedStationName, routeMode]);
 
-  const placePinUrl = useMemo(() => {
-    if (!selectedPlace) return "";
-    return buildPlacePinUrl(selectedPlace);
-  }, [selectedPlace]);
-
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const place of places) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
@@ -216,37 +210,7 @@ export default function Browse() {
     >
       <AppBar
         counts={`${cov.checkedCount} of ${cov.total} stations · ${places.length} places`}
-        filter={
-          <div className="flex items-center gap-2">
-            <label htmlFor="type-filter" className="text-[12.5px] font-medium text-ink-soft">
-              Type
-            </label>
-            <select
-              id="type-filter"
-              value={typeFilter}
-              onChange={(event) => {
-                setTypeFilter(event.target.value);
-                setSelectedSlug(null);
-              }}
-              className="rounded-md border border-rule-strong bg-paper py-1.5 pl-2.5 pr-2 text-[12.5px] font-medium text-ink"
-            >
-              <option value="">All types</option>
-              {uniqueTypes.map((type) => (
-                <option key={type} value={type}>
-                  {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
-                </option>
-              ))}
-            </select>
-          </div>
-        }
-        action={
-          <a
-            href="/submit/"
-            className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
-          >
-            Suggest a place
-          </a>
-        }
+        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1">
@@ -257,11 +221,30 @@ export default function Browse() {
             selectedPlace ? "hidden md:flex" : "flex"
           }`}
         >
-          <div className="shrink-0 border-b border-rule px-5 pb-3.5 pt-4">
-            <h1 className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
-              {line.name} line
-            </h1>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-soft">
+          <div className="shrink-0 border-b border-rule px-4 pb-3.5 pt-3.5 sm:px-5 sm:pt-4">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
+                {line.name} line
+              </h1>
+              <select
+                id="type-filter"
+                aria-label="Type"
+                value={typeFilter}
+                onChange={(event) => {
+                  setTypeFilter(event.target.value);
+                  setSelectedSlug(null);
+                }}
+                className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
+              >
+                <option value="">All types</option>
+                {uniqueTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
               {coverageCopy(cov)}
             </p>
           </div>
@@ -334,7 +317,7 @@ export default function Browse() {
                           {row.places.map((place) => {
                             const isActive = place.slug === selectedSlug;
                             return (
-                              <li key={place.slug} role="listitem" className="relative">
+                              <li key={place.slug} role="listitem">
                                 <button
                                   type="button"
                                   data-place-slug={place.slug}
@@ -345,7 +328,7 @@ export default function Browse() {
                                       ? clearSelection()
                                       : setSelectedSlug(place.slug)
                                   }
-                                  className="corridor-row flex w-full items-center py-3 pl-[52px] pr-12 text-left transition-colors hover:bg-band"
+                                  className="corridor-row flex w-full items-center py-3 pl-[52px] pr-4 text-left transition-colors hover:bg-band"
                                 >
                                   <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[13.5px] font-semibold text-ink">
@@ -356,14 +339,6 @@ export default function Browse() {
                                     </span>
                                   </span>
                                 </button>
-                                <a
-                                  href={`/places/${place.slug}/`}
-                                  aria-label={`Open the full page for ${place.name}`}
-                                  title="Open the full page for this place"
-                                  className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded p-1.5 text-ink-soft transition-colors hover:bg-paper hover:text-ink"
-                                >
-                                  <OpenIcon />
-                                </a>
                               </li>
                             );
                           })}
@@ -411,70 +386,61 @@ export default function Browse() {
 
           {/* The strip sits below the map, never over it — an overlay would cover
               the frame and swallow Google's own map controls. */}
-          <div className="shrink-0 border-t border-rule bg-paper px-4 py-3">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-                {selectedPlace && (
-                  <button
-                    ref={backRef}
-                    type="button"
-                    onClick={clearSelection}
-                    className="-ml-1 inline-flex items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink"
-                  >
-                    <BackIcon />
-                    All places
-                  </button>
-                )}
+          <div className="shrink-0 border-t border-rule bg-paper px-3 py-2.5 sm:px-4 sm:py-3">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5 sm:gap-y-3">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  {selectedPlace && (
+                    <button
+                      ref={backRef}
+                      type="button"
+                      onClick={clearSelection}
+                      className="-ml-1 inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink md:hidden"
+                    >
+                      <BackIcon />
+                      All places
+                    </button>
+                  )}
 
-                <div className="min-w-0 flex-1" aria-live="polite">
-                  <div
-                    key={selectedPlace?.slug ?? "none"}
-                    className="app-reveal"
-                  >
-                    {selectedPlace ? (
-                      <>
-                        <p className="truncate text-[13.5px] font-semibold text-ink">
-                          {selectedPlace.name}
+                  <div className="min-w-0 flex-1" aria-live="polite">
+                    <div
+                      key={selectedPlace?.slug ?? "none"}
+                      className="app-reveal"
+                    >
+                      {selectedPlace ? (
+                        <>
+                          <p className="truncate text-[13.5px] font-semibold text-ink">
+                            {selectedPlace.name}
+                          </p>
+                          <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
+                            {metaLabel(selectedPlace)} · {selectedStationName}
+                            {selectedAlsoNear.length > 0
+                              ? ` · also near ${selectedAlsoNear.join(", ")}`
+                              : ""}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-[13.5px] text-ink-soft">
+                          Pick a place from the corridor — its walk or drive route
+                          appears here.
                         </p>
-                        <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
-                          {metaLabel(selectedPlace)} · {selectedStationName}
-                          {selectedAlsoNear.length > 0
-                            ? ` · also near ${selectedAlsoNear.join(", ")}`
-                            : ""}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-[13.5px] text-ink-soft">
-                        Pick a place from the corridor — its walk or drive route
-                        appears here.
-                      </p>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {selectedPlace && (
-                  <div className="app-reveal flex flex-wrap items-center gap-3">
+                  /* On a phone the controls take their own line: sharing one with
+                     the name left it as "Ser…", which is worse than a taller bar. */
+                  <div className="app-reveal flex shrink-0 basis-full items-center gap-3 sm:basis-auto">
                     <TravelMode mode={routeMode} onChange={setRouteMode} />
                     <a
                       href={openRouteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
+                      className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
                     >
                       Open route
-                    </a>
-                    <a
-                      href={`/places/${selectedPlace.slug}/`}
-                      className="text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
-                    >
-                      Full page
-                    </a>
-                    <a
-                      href={placePinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hidden text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink sm:inline"
-                    >
-                      On Maps
+                      <OpenIcon size={13} />
                     </a>
                   </div>
                 )}

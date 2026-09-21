@@ -2,7 +2,7 @@ import { publicUrl } from "../lib/routes";
 import { coveredLine, coverage, type Line } from "../lib/lines";
 import propertiesData from "../../data/properties.json";
 import type { Station } from "../lib/browse-filter";
-import { AppBar } from "../components/AppBar";
+import { AppBar, AppBarAction } from "../components/AppBar";
 import type { Route } from "./+types/submit";
 
 /** The Line the directory covers, so no page names a Line by hand. */
@@ -43,14 +43,7 @@ export default function SubmitPage() {
       <AppBar
         subtitle={`${COVERED_LINE.name} line`}
         counts={COUNTS}
-        action={
-          <a
-            href="/"
-            className="rounded-md bg-ink px-3 py-1.5 text-[12.5px] font-semibold text-paper transition-opacity hover:opacity-85"
-          >
-            Browse places
-          </a>
-        }
+        action={<AppBarAction href="/">Browse places</AppBarAction>}
       />
 
       <main className="mx-auto w-full max-w-[640px] px-5 py-10 sm:py-14">

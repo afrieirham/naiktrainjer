@@ -375,7 +375,7 @@ describe("place page content", () => {
     }
   });
 
-  it("every page has a Place on Google Maps link", () => {
+  it("every page routes to the station on Google Maps, with no separate pin link", () => {
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -385,8 +385,12 @@ describe("place page content", () => {
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
-        html.includes("Place on Google Maps"),
-        `Page "${place.slug}" is missing the Google Maps link`,
+        html.includes("google.com/maps/dir") && html.includes("Open route"),
+        `Page "${place.slug}" must offer the route on Google Maps`,
+      );
+      assert.ok(
+        !html.includes("Place on Google Maps"),
+        `Page "${place.slug}" must not carry a separate place pin link`,
       );
     }
   });
@@ -400,12 +404,11 @@ describe("browse page place links", () => {
     browseHtml = stripComments(readFileSync(browsePath, "utf-8"));
   });
 
-  it("every Place name in the browse page links to its place page", () => {
+  it("does not link the corridor out to Place pages", () => {
     for (const place of data.places) {
-      const href = `/places/${place.slug}/`;
       assert.ok(
-        browseHtml.includes(`href="${href}"`),
-        `Browse page does not link to "${href}" for "${place.name}"`,
+        !browseHtml.includes(`href="/places/${place.slug}/"`),
+        `Browse page must not link to "${place.slug}": a Place page is a search landing page that funnels into the app, not a destination from it`,
       );
     }
   });
