@@ -2,13 +2,18 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } f
 import type { Route } from "./+types/root";
 import "./app.css";
 
+/**
+ * No web-font link here on purpose: the site's one face, Archivo, is self-hosted
+ * from `public/fonts/` and declared in `app.css`. That keeps a render-blocking
+ * third-party request out of the critical path.
+ *
+ * The icons are cut from the train photograph by `npm run icons`; `/favicon.ico`
+ * is also what a browser asks for unprompted, so the file exists to answer it.
+ */
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
-  },
+  { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+  { rel: "icon", href: "/icon-192.png", type: "image/png", sizes: "192x192" },
+  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
 ];
 
 /**

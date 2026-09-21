@@ -1,14 +1,15 @@
 import { publicUrl } from "../lib/routes";
-import { coveredLine, type Line } from "../lib/lines";
+import { coveredLine, coverage, type Line } from "../lib/lines";
 import propertiesData from "../../data/properties.json";
 import type { Station } from "../lib/browse-filter";
+import { AppBar, AppBarAction } from "../components/AppBar";
 import type { Route } from "./+types/submit";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const COVERED_LINE = coveredLine(
-  propertiesData.lines as Line[],
-  propertiesData.stations as Station[],
-);
+const CHECKED_STATIONS = propertiesData.stations as Station[];
+const COVERED_LINE = coveredLine(propertiesData.lines as Line[], CHECKED_STATIONS);
+const COVERAGE = coverage(COVERED_LINE, CHECKED_STATIONS);
+const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${propertiesData.places.length} places`;
 
 export const meta: Route.MetaFunction = () => [
   { title: "Suggest a place — NaikTrainJer" },
@@ -35,33 +36,22 @@ const TALLY_EMBED_URL =
 
 export default function SubmitPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div>
-            <a
-              href="/"
-              className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight hover:text-sky-700 transition"
-            >
-              NaikTrainJer
-            </a>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Places near the {COVERED_LINE.name} line
-            </p>
-          </div>
-        </div>
-      </header>
+    <div
+      className="flex min-h-dvh flex-col"
+      style={{ "--line-accent": COVERED_LINE.color } as React.CSSProperties}
+    >
+      <AppBar
+        subtitle={`${COVERED_LINE.name} line`}
+        counts={COUNTS}
+        action={<AppBarAction href="/">Browse places</AppBarAction>}
+      />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 w-full">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+      <main className="mx-auto w-full max-w-[640px] px-5 py-10 sm:py-14">
+        <h1 className="text-[26px] font-bold leading-[1.1] tracking-[-0.02em] text-ink sm:text-[34px]">
           Suggest a place
         </h1>
-        <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-          Found a place I missed? Add it below — I check every suggestion myself
-          before it goes in.
-        </p>
 
-        <div className="mt-6">
+        <div className="mt-8">
           <iframe
             data-tally-src={TALLY_EMBED_URL}
             loading="lazy"
@@ -74,27 +64,19 @@ export default function SubmitPage() {
           <script async src="https://tally.so/widgets/embed.js" />
         </div>
 
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-6 text-[12.5px] text-ink-soft">
           If the form above does not load,{" "}
           <a
             href={TALLY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-sky-600 hover:text-sky-800"
+            className="font-semibold text-ink underline decoration-rule-strong underline-offset-4 transition-opacity hover:opacity-70"
           >
             open it in a new tab
-          </a>.
+          </a>
+          .
         </p>
       </main>
-
-      <footer className="mt-auto border-t border-slate-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-slate-500">
-          NaikTrainJer —{" "}
-          <a href="/submit/" className="font-semibold text-sky-600 hover:text-sky-800">
-            suggest a place
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }
