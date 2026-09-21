@@ -386,65 +386,63 @@ export default function Browse() {
 
           {/* The strip sits below the map, never over it — an overlay would cover
               the frame and swallow Google's own map controls. */}
-          <div className="shrink-0 border-t border-rule bg-paper px-3 py-2.5 sm:px-4 sm:py-3">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-5 sm:gap-y-3">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  {selectedPlace && (
-                    <button
-                      ref={backRef}
-                      type="button"
-                      onClick={clearSelection}
-                      className="-ml-1 inline-flex shrink-0 items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink md:hidden"
-                    >
-                      <BackIcon />
-                      All places
-                    </button>
+          <div className="shrink-0 border-t border-rule bg-paper px-3 py-3 sm:px-4 sm:py-3">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-x-5">
+              {/*
+                The answer has its own row so it has room to be read; the back
+                control then sits with the other controls rather than stealing
+                width from the name.
+              */}
+              <div className="min-w-0 sm:flex-1" aria-live="polite">
+                <div
+                  key={selectedPlace?.slug ?? "none"}
+                  className="app-reveal"
+                >
+                  {selectedPlace ? (
+                    <>
+                      <p className="truncate text-[13.5px] font-semibold text-ink">
+                        {selectedPlace.name}
+                      </p>
+                      <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
+                        {metaLabel(selectedPlace)} · {selectedStationName}
+                        {selectedAlsoNear.length > 0
+                          ? ` · also near ${selectedAlsoNear.join(", ")}`
+                          : ""}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-[13.5px] text-ink-soft">
+                      Pick a place from the corridor — its walk or drive route
+                      appears here.
+                    </p>
                   )}
-
-                  <div className="min-w-0 flex-1" aria-live="polite">
-                    <div
-                      key={selectedPlace?.slug ?? "none"}
-                      className="app-reveal"
-                    >
-                      {selectedPlace ? (
-                        <>
-                          <p className="truncate text-[13.5px] font-semibold text-ink">
-                            {selectedPlace.name}
-                          </p>
-                          <p className="mt-0.5 truncate text-[12.5px] text-ink-soft">
-                            {metaLabel(selectedPlace)} · {selectedStationName}
-                            {selectedAlsoNear.length > 0
-                              ? ` · also near ${selectedAlsoNear.join(", ")}`
-                              : ""}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-[13.5px] text-ink-soft">
-                          Pick a place from the corridor — its walk or drive route
-                          appears here.
-                        </p>
-                      )}
-                    </div>
-                  </div>
                 </div>
-
-                {selectedPlace && (
-                  /* On a phone the controls take their own line: sharing one with
-                     the name left it as "Ser…", which is worse than a taller bar. */
-                  <div className="app-reveal flex shrink-0 basis-full items-center gap-3 sm:basis-auto">
-                    <TravelMode mode={routeMode} onChange={setRouteMode} />
-                    <a
-                      href={openRouteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
-                    >
-                      Open route
-                      <OpenIcon size={13} />
-                    </a>
-                  </div>
-                )}
               </div>
+
+              {selectedPlace && (
+                <div className="app-reveal flex flex-wrap items-center gap-x-4 gap-y-2 sm:shrink-0">
+                  <button
+                    ref={backRef}
+                    type="button"
+                    onClick={clearSelection}
+                    className="-ml-1 inline-flex items-center gap-1.5 rounded px-1 py-1 text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink md:hidden"
+                  >
+                    <BackIcon />
+                    All places
+                  </button>
+                  <TravelMode mode={routeMode} onChange={setRouteMode} />
+                  <a
+                    href={openRouteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"
+                  >
+                    Open route
+                    <OpenIcon size={13} />
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </div>
