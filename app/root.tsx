@@ -6,7 +6,15 @@ import "./app.css";
  * No web-font link here on purpose: the site's one face, Archivo, is self-hosted
  * from `public/fonts/` and declared in `app.css`. That keeps a render-blocking
  * third-party request out of the critical path.
+ *
+ * The icons are cut from the train photograph by `npm run icons`; `/favicon.ico`
+ * is also what a browser asks for unprompted, so the file exists to answer it.
  */
+export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+  { rel: "icon", href: "/icon-192.png", type: "image/png", sizes: "192x192" },
+  { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+];
 
 /**
  * The analytics token is read on the server only and handed to the layout as

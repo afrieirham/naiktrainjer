@@ -125,7 +125,7 @@ The site does not present a directory that happens to list stations. It *is* the
 
 **Three surfaces, one world.** The Browse page is a full-height two-column app shell: the corridor list and the map column sit edge to edge below the app bar. A Place's own page is two columns above `md` and **route-first on a phone**, where the details column is ordered after the map and the map carries a phone-only label naming the Place and its station. The Submit page is a single measured column (`max-w-[640px]`) under the same app bar. The chrome is shared, not per-page: one `AppBar`, one `TravelMode`, one set of authored icons.
 
-Density is high and deliberate, and the world is **fully flat**: there are no shadows anywhere on the site. The map strip that once floated over the map and carried the system's single shadow is now a sibling *below* the map, separated by a `border-t`, so nothing covers the embedded route frame or swallows Google's own map controls. Separation comes from tone (paper against band) and from 1px rules. Motion is almost absent: hover and focus shifts are ordinary colour transitions, and one authored moment — the route strip's content arriving rather than blinking in — runs at 420ms and is disabled under `prefers-reduced-motion`. No raster asset is committed; the only binaries in the repo are the three Archivo `woff2` subsets.
+Density is high and deliberate, and the world is **fully flat**: there are no shadows anywhere on the site. The map strip that once floated over the map and carried the system's single shadow is now a sibling *below* the map, separated by a `border-t`, so nothing covers the embedded route frame or swallows Google's own map controls. Separation comes from tone (paper against band) and from 1px rules. Motion is almost absent: hover and focus shifts are ordinary colour transitions, and one authored moment — the route strip's content arriving rather than blinking in — runs at 420ms and is disabled under `prefers-reduced-motion`. No raster is used in the interface; the only page binaries are the three Archivo `woff2` subsets and a 47 KB favicon set cut from the train photograph, whose 772 KB source sits in `assets/` and is a build input rather than a shipped asset.
 
 **Key Characteristics:**
 - One Line, one corridor; line order is the only order ever shown.
@@ -134,7 +134,7 @@ Density is high and deliberate, and the world is **fully flat**: there are no sh
 - Fully flat: no shadows at all; depth is tone and 1px rules.
 - Through-composed from three surfaces sharing one app bar, one travel mode, and one icon set.
 - Archivo is the only typeface, self-hosted with no third-party font request.
-- No raster assets ship; the only binaries are the three Archivo `woff2` subsets.
+- No raster is used in the interface. The only rasters that ship are the favicon set cut from the train photograph; the 772 KB source lives in `assets/` and never reaches the build.
 
 ### One world, three surfaces
 
@@ -293,7 +293,7 @@ Every icon is an authored single-stroke SVG in `app/components/icons.tsx` (`Open
 - **Don't** reintroduce the `border-l-4` side-tab as a selection marker; use the tint plus filled marker.
 - **Don't** reintroduce Inter, a Google Fonts link, or any second type family, and don't add a seventh type size; reuse one of the six steps.
 - **Don't** overlay the map with a strip or anything else; the frame sits in its own box with the strip below it.
-- **Don't** ship raster assets or invent provenance for them; no illustrations, photographs, or textures are committed — the only binaries are the three Archivo `woff2` subsets.
+- **Don't** use a raster in the interface, and don't invent provenance for one. The only rasters that ship are the favicon set; the source photograph is a build input under `assets/`, never a page asset.
 - **Don't** show a walk or drive time figure; no page carries a Measurement, and the map route is the answer.
 - **Don't** use a `↗`/`←` text glyph as an icon; use the authored SVG.
 - **Don't** flatten the coverage fact into a single claim — the unchecked stretch is shown and named, never implied away.
