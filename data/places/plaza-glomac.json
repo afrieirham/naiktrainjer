@@ -1,0 +1,14 @@
+{
+  "slug": "plaza-glomac",
+  "name": "Plaza Glomac",
+  "kind": "building",
+  "type": "shop-office",
+  "station": "KJ27",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/12LjCjFhLFcGH6Sj9",
+  "coordinates": {
+    "lat": 3.0953536,
+    "lng": 101.5899401
+  },
+  "source": "owner"
+}

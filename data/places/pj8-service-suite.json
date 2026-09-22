@@ -1,0 +1,14 @@
+{
+  "slug": "pj8-service-suite",
+  "name": "PJ8 Service Suite",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ21",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/qEQkw2AarrzAdpff8",
+  "coordinates": {
+    "lat": 3.1014086,
+    "lng": 101.637247
+  },
+  "source": "owner"
+}

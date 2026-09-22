@@ -1,0 +1,14 @@
+{
+  "slug": "kl-gateway-premium-residence",
+  "name": "KL Gateway Premium Residence",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/We8ynrMbF1D85XQq8",
+  "coordinates": {
+    "lat": 3.1137539,
+    "lng": 101.6601379
+  },
+  "source": "owner"
+}

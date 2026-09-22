@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
 import { TYPE_LABELS, KIND_LABELS } from "../app/lib/labels.ts";
-import { stations, places } from "../app/data/directory.ts";
+import { stations, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const OG_DIR = resolve(BUILD_DIR, "og");
@@ -191,7 +191,7 @@ describe("place page metadata", () => {
 
   it("every description mentions the nearest station", () => {
     const stationNameMap = new Map(
-      data.stations.map((s) => [s.slug, s.name]),
+      data.stations.map((s) => [s.code, s.name]),
     );
     for (const place of data.places) {
       const page = pages.find((p) => p.slug === place.slug)!;
@@ -264,7 +264,7 @@ describe("place page content", () => {
 
   it("every page shows its Nearest station", () => {
     const stationNameMap = new Map(
-      data.stations.map((s) => [s.slug, s.name]),
+      data.stations.map((s) => [s.code, s.name]),
     );
     for (const place of data.places) {
       const pagePath = resolve(
@@ -284,7 +284,7 @@ describe("place page content", () => {
 
   it("every page with alsoNear shows the second station", () => {
     const stationNameMap = new Map(
-      data.stations.map((s) => [s.slug, s.name]),
+      data.stations.map((s) => [s.code, s.name]),
     );
     const placesWithAlsoNear = data.places.filter(
       (p) => p.alsoNear && p.alsoNear.length > 0,
@@ -297,8 +297,8 @@ describe("place page content", () => {
         "index.html",
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
-      for (const alsoNearSlug of place.alsoNear!) {
-        const stationName = stationNameMap.get(alsoNearSlug)!;
+      for (const alsoNearCode of place.alsoNear!) {
+        const stationName = stationNameMap.get(alsoNearCode)!;
         assert.ok(
           html.includes(stationName),
           `Page "${place.slug}" does not show alsoNear station "${stationName}"`,

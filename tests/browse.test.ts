@@ -9,13 +9,13 @@ import {
   type Place,
   type Station,
 } from "../app/lib/browse-filter.ts";
-import type { Line } from "../app/lib/lines.ts";
+import { coveredLine, type Line } from "../app/lib/lines.ts";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
   buildPlacePinUrl,
 } from "../app/lib/route-url.ts";
-import { lines, stations, places } from "../app/data/directory.ts";
+import { lines, stations, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const HTML_PATH = resolve(BUILD_DIR, "index.html");
@@ -66,7 +66,7 @@ describe("prerendered HTML", () => {
     }
 
     for (const station of data.stations) {
-      const expectedCount = stationCounts.get(station.slug) ?? 0;
+      const expectedCount = stationCounts.get(station.code) ?? 0;
       const start = cleanHtml.indexOf(`aria-label="${asHtmlText(station.name)}"`);
       assert.ok(start > -1, `Station "${station.name}" not found in HTML`);
       const block = cleanHtml.slice(start, start + 400);
@@ -138,7 +138,7 @@ describe("prerendered HTML", () => {
 
   it("renders every Station on the Line, in corridor order", () => {
     const checkedByCode = new Map(data.stations.map((s) => [s.code, s]));
-    const expected = [...data.lines[0].stations]
+    const expected = [...coveredLine(data.lines, data.stations).stations]
       .sort((a, b) => b.sort - a.sort)
       .map((station) => checkedByCode.get(station.code)?.name ?? station.code);
 
@@ -159,7 +159,7 @@ describe("prerendered HTML", () => {
 
   it("marks every unchecked Station as not checked yet", () => {
     const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+    const unchecked = coveredLine(data.lines, data.stations).stations.filter((s) => !checkedCodes.has(s.code));
     assert.ok(unchecked.length > 0, "This check is meaningless with no unchecked Station");
 
     const marks = [...cleanHtml.matchAll(/Not checked yet/g)];
@@ -182,7 +182,7 @@ describe("prerendered HTML", () => {
 
   it("keeps an unchecked Station row non-interactive", () => {
     const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+    const unchecked = coveredLine(data.lines, data.stations).stations.filter((s) => !checkedCodes.has(s.code));
 
     const firstRow = cleanHtml.indexOf('data-station-unchecked="true"');
     const asideEnd = cleanHtml.indexOf('aria-label="Place details"');
@@ -202,7 +202,7 @@ describe("prerendered HTML", () => {
 
   it("gives an unchecked Station no page of its own", () => {
     const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+    const unchecked = coveredLine(data.lines, data.stations).stations.filter((s) => !checkedCodes.has(s.code));
 
     assert.ok(
       !existsSync(resolve(BUILD_DIR, "stations")),
@@ -277,7 +277,7 @@ describe("prerendered HTML", () => {
 
 describe("pure filter/corridor functions", () => {
   const { lines, stations, places } = data;
-  const line = lines[0];
+  const line = coveredLine(lines, stations);
 
   describe("filterPlaces", () => {
     it("returns all places when no filter is set", () => {
@@ -378,7 +378,7 @@ describe("pure filter/corridor functions", () => {
 
 describe("route URL builders", () => {
   const { stations, places } = data;
-  const stationNameMap = new Map(stations.map((s) => [s.slug, s.name]));
+  const stationNameMap = new Map(stations.map((s) => [s.code, s.name]));
 
   describe("buildRouteFrameUrl", () => {
     it("uses coordinates as origin when present", () => {

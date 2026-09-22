@@ -1,0 +1,14 @@
+{
+  "slug": "saujana-residency",
+  "name": "Saujana Residency",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ28",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/Qth2RjxQKPor7gLx6",
+  "coordinates": {
+    "lat": 3.0828793,
+    "lng": 101.5818805
+  },
+  "source": "owner"
+}

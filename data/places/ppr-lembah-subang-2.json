@@ -1,0 +1,14 @@
+{
+  "slug": "ppr-lembah-subang-2",
+  "name": "PPR Lembah Subang 2",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ26",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/3WFt7gzytrRyhw1Y9",
+  "coordinates": {
+    "lat": 3.1093928,
+    "lng": 101.5852373
+  },
+  "source": "owner"
+}

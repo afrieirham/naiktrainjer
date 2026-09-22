@@ -1,0 +1,14 @@
+{
+  "slug": "vista-angkasa",
+  "name": "Vista Angkasa",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/tkqkmTT4RVrNkDJS7",
+  "coordinates": {
+    "lat": 3.1133433,
+    "lng": 101.6596193
+  },
+  "source": "owner"
+}

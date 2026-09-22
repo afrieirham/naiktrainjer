@@ -1,0 +1,14 @@
+{
+  "slug": "subang-ss-17",
+  "name": "Subang SS 17",
+  "kind": "area",
+  "type": "area",
+  "station": "KJ29",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/vvsMdPuvWyXJ6EHL6",
+  "coordinates": {
+    "lat": 3.076945,
+    "lng": 101.5773312
+  },
+  "source": "owner"
+}

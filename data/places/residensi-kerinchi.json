@@ -1,0 +1,14 @@
+{
+  "slug": "residensi-kerinchi",
+  "name": "Residensi Kerinchi",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/othaBG2Mw8wn3mw2A",
+  "coordinates": {
+    "lat": 3.1138749,
+    "lng": 101.6615042
+  },
+  "source": "owner"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "subang-perdana-goodyear-court-3",
+  "name": "Subang Perdana Goodyear Court 3",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ32",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/h5SXHEUpahhV27c38",
+  "coordinates": {
+    "lat": 3.0478112,
+    "lng": 101.59193
+  },
+  "source": "owner"
+}

@@ -4,7 +4,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
-import { lines, stations, places } from "../app/data/directory.ts";
+import { coveredLine } from "../app/lib/lines.ts";
+import { lines, stations, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 
@@ -47,7 +48,7 @@ describe("browse page intro copy", () => {
   let intro: string;
 
   before(() => {
-    line = data.lines[0];
+    line = coveredLine(data.lines, data.stations);
     ordered = [...line.stations].sort((a, b) => a.sort - b.sort);
     const checkedCodes = new Set(data.stations.map((s) => s.code));
     checked = ordered.filter((s) => checkedCodes.has(s.code));
@@ -130,7 +131,7 @@ describe("browse page intro copy", () => {
 // ---------------------------------------------------------------------------
 
 describe("the Line is read from the data", () => {
-  const line = data.lines[0];
+  const line = coveredLine(data.lines, data.stations);
 
   it("every prerendered page names the Line it covers", () => {
     assert.ok(

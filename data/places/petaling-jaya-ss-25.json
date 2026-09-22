@@ -1,0 +1,14 @@
+{
+  "slug": "petaling-jaya-ss-25",
+  "name": "Petaling Jaya SS 25",
+  "kind": "area",
+  "type": "area",
+  "station": "KJ25",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/puoSha9dn1D6mX8u8",
+  "coordinates": {
+    "lat": 3.1138812,
+    "lng": 101.5943596
+  },
+  "source": "owner"
+}
