@@ -2,6 +2,16 @@
 // deploy time and is not part of `npm run build` or `npm test`. Secrets
 // (GITHUB_TOKEN, TURNSTILE_SECRET) live as Pages environment values and are
 // named here only.
+//
+// Cloudflare Access is configured outside the repo, in the Cloudflare dashboard,
+// and is NOT set here. Before the admin area is safe to deploy, create one Access
+// application that protects BOTH:
+//   - /admin*        the admin pages (the `/admin` shell and every deep link)
+//   - /api/admin/*   the reads and writes those pages call
+// Add the maintainer's email as the only allowed policy. Do not protect
+// /api/contribute or /api/config: visitors must reach the public form without an
+// account. Access is the only auth scheme; the admin handlers assume requests
+// have already passed it.
 {
   "name": "naiktrainjer",
   "pages_build_output_dir": "./build/client",

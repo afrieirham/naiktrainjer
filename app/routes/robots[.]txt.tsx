@@ -3,6 +3,8 @@ import { SITE_URL } from "../lib/routes";
 export function loader() {
   const body = `User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/admin/
 
 Sitemap: ${SITE_URL}/sitemap.xml
 `;

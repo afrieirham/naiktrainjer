@@ -10,6 +10,8 @@ export type Place = {
   map?: string;
   coordinates?: { lat: number; lng: number };
   source?: string;
+  /** Present when the Place came from a Contribution; #40 renders the credit. */
+  contributor?: { name: string; href: string | null };
 };
 
 /**
