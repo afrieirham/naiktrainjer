@@ -184,70 +184,64 @@ finish() {
 # Replace the example below. Set TOTAL_STAGES to match the stages you write.
 # ──────────────────────────────────────────────────────────────────────────
 
-# Cloudflare's CLI edits wrangler.jsonc; the Contribute Functions read these.
+# Cloudflare's config lives in wrangler.jsonc; the dashboard is the source for
+# the values that go into it. wrangler is used only where it is already signed
+# in, since its login callback cannot cross machines.
 CONFIG="wrangler.jsonc"
 PROJECT="${PAGES_PROJECT:-naiktrainjer}"
 
 wrangler() { npx --yes wrangler "$@"; }
+wrangler_ready() { wrangler whoami >/dev/null 2>&1; }
 
 # patch_config PERL_PATTERN PERL_REPLACEMENT — rewrites $CONFIG in place.
-patch_config() {
-  perl -0pi -e "s/$1/$2/" "$CONFIG"
+patch_config() { perl -0pi -e "s/$1/$2/" "$CONFIG"; }
+
+# ask_text VAR "Prompt" [default] — a visible prompt with an editable default.
+ask_text() {
+  local key="$1" prompt="$2" default="${3:-}" reply
+  printf '  %s%s%s [%s]: ' "$BOLD" "$prompt" "$RESET" "$default"
+  read -r reply || true
+  [[ -n "${reply:-}" ]] || reply="$default"
+  printf -v "$key" '%s' "$reply"
 }
 
 TOTAL_STAGES=6
 
 banner "Contribute credentials setup"
 
-# ── 1. Cloudflare sign-in and the Pages project ───────────────────────────
-stage "Cloudflare: sign in and choose the Pages project"
-say "The Contribute form is a set of Cloudflare Pages Functions, so it needs a"
-say "Pages project with KV and Turnstile behind it."
-step "Sign in to wrangler. A browser will open:"
-note "npx wrangler login"
-open_url "https://dash.cloudflare.com/login"
-pause "Press Enter once you're signed in."
-if ! wrangler whoami >/dev/null 2>&1; then
-  warn "wrangler isn't signed in. Run 'npx wrangler login', then re-run this wizard."
-  exit 1
-fi
-say "Signed in. Your Pages projects (empty means none yet):"
-wrangler pages project list 2>/dev/null || warn "Couldn't list projects."
-printf '  %sPages project to use%s [%s]: ' "$BOLD" "$RESET" "$PROJECT"
-read -r _project_reply || true
-_typed=false
-if [[ -n "${_project_reply:-}" ]]; then
-  PROJECT="$_project_reply"
-  _typed=true
-fi
-if wrangler pages project list 2>/dev/null | grep -qE "(^|[[:space:]])${PROJECT}([[:space:]]|$)"; then
-  say "Using the existing project '$PROJECT'."
-elif [[ "$_typed" == "true" ]]; then
-  warn "'$PROJECT' is not one of your projects. Re-run and pick a name from the list."
-  exit 1
-elif confirm "No project named '$PROJECT'. Create it now?"; then
-  wrangler pages project create "$PROJECT" --production-branch main \
-    || { warn "Could not create '$PROJECT'."; exit 1; }
-else
-  warn "Stopping. Re-run and type the name of an existing project."
-  exit 1
-fi
+# ── 1. The Pages project ──────────────────────────────────────────────────
+stage "Cloudflare: the Pages project"
+say "The Contribute form runs as Cloudflare Pages Functions, so it needs the"
+say "Pages project that already serves naiktrainjer.com."
+open_url "https://dash.cloudflare.com/?to=/:account/workers-and-pages"
+step "Workers & Pages → the Pages tab."
+step "Find the project serving naiktrainjer.com and copy its exact name."
+ask_text PROJECT "Pages project name" "$PROJECT"
+say "Using Pages project '$PROJECT'."
 
 # ── 2. KV namespace for the rate limiter ──────────────────────────────────
 stage "Cloudflare: KV namespace for the rate limiter"
-say "The Contribute Function keeps a per-visitor counter in Workers KV, so a"
-say "determined human can't flood the review queue. Its id becomes the RATE_LIMIT"
-say "binding in $CONFIG."
+say "The Contribute Function keeps a per-visitor counter in Workers KV. The"
+say "namespace id becomes the RATE_LIMIT binding in $CONFIG."
 current_id=$(grep -oE '"binding": "RATE_LIMIT", "id": "[^"]*"' "$CONFIG" | grep -oE '[0-9a-f]{32}' | head -n1 || true)
 if [[ -n "$current_id" ]]; then
   say "'$CONFIG' already binds RATE_LIMIT to $current_id — leaving it alone."
 else
-  step "Creating the RATE_LIMIT namespace…"
-  kv_out=$(wrangler kv namespace create RATE_LIMIT 2>&1 || true)
-  kv_id=$(printf '%s\n' "$kv_out" | grep -oE 'id = "[0-9a-f]{32}"' | grep -oE '[0-9a-f]{32}' | head -n1 || true)
+  kv_id=""
+  if wrangler_ready; then
+    step "wrangler is signed in, so creating the namespace now…"
+    kv_out=$(wrangler kv namespace create RATE_LIMIT 2>&1 || true)
+    kv_id=$(printf '%s\n' "$kv_out" | grep -oE 'id = "[0-9a-f]{32}"' | grep -oE '[0-9a-f]{32}' | head -n1 || true)
+  fi
   if [[ -z "$kv_id" ]]; then
-    warn "Couldn't read a namespace id from wrangler."
-    warn "Run 'npx wrangler kv namespace create RATE_LIMIT', put its id in $CONFIG, and re-run."
+    open_url "https://dash.cloudflare.com/?to=/:account/workers/kv/namespaces"
+    step "Select Create instance, name it e.g. naiktrainjer-RATE_LIMIT, then Create."
+    step "Open the namespace and copy its ID (a 32-character hex string)."
+    ask KV_NAMESPACE_ID "Paste the KV namespace ID:"
+    kv_id="$KV_NAMESPACE_ID"
+  fi
+  if [[ -z "$kv_id" ]]; then
+    warn "No namespace id captured. Create one, put its id in $CONFIG, and re-run."
     exit 1
   fi
   say "Namespace id: $kv_id"
@@ -285,25 +279,30 @@ ask_secret GITHUB_TOKEN "Paste the fine-grained token:"
 
 # ── 5. Set the Pages secrets ──────────────────────────────────────────────
 stage "Cloudflare: set the Pages secrets"
-say "The two secrets go on the Pages project as encrypted environment values."
-say "wrangler reads them from stdin, so they never land in a file."
-if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-  if printf '%s' "$GITHUB_TOKEN" | wrangler pages secret put GITHUB_TOKEN --project-name "$PROJECT"; then
-    say "Set GITHUB_TOKEN."
-  else
-    warn "Could not set GITHUB_TOKEN; add it in the Pages dashboard."
+say "The token and the Turnstile secret go on the Pages project as Secret-type"
+say "variables, for the Production environment (add Preview too if you use it)."
+if wrangler_ready; then
+  step "wrangler is signed in, so setting both secrets now…"
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    if printf '%s' "$GITHUB_TOKEN" | wrangler pages secret put GITHUB_TOKEN --project-name "$PROJECT"; then
+      say "Set GITHUB_TOKEN."
+    else
+      warn "Could not set GITHUB_TOKEN."
+    fi
+  fi
+  if [[ -n "${TURNSTILE_SECRET:-}" ]]; then
+    if printf '%s' "$TURNSTILE_SECRET" | wrangler pages secret put TURNSTILE_SECRET --project-name "$PROJECT"; then
+      say "Set TURNSTILE_SECRET."
+    else
+      warn "Could not set TURNSTILE_SECRET."
+    fi
   fi
 else
-  warn "No GITHUB_TOKEN captured; skipping."
-fi
-if [[ -n "${TURNSTILE_SECRET:-}" ]]; then
-  if printf '%s' "$TURNSTILE_SECRET" | wrangler pages secret put TURNSTILE_SECRET --project-name "$PROJECT"; then
-    say "Set TURNSTILE_SECRET."
-  else
-    warn "Could not set TURNSTILE_SECRET; add it in the Pages dashboard."
-  fi
-else
-  warn "No TURNSTILE_SECRET captured; skipping."
+  open_url "https://dash.cloudflare.com/?to=/:account/workers-and-pages"
+  step "Workers & Pages → your Pages project '$PROJECT' → Settings → Variables and Secrets."
+  step "Add → Type: Secret → Variable name GITHUB_TOKEN → paste the token → Save."
+  step "Add → Type: Secret → Variable name TURNSTILE_SECRET → paste the Turnstile secret → Save."
+  pause "Press Enter once both secrets are saved."
 fi
 note "GITHUB_REPO is already a plain var in $CONFIG, so there is nothing to set for it."
 
