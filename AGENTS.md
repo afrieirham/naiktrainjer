@@ -11,7 +11,7 @@ under `/api/*` handle Contributions.
 ## Shape
 
 - The React Router (framework mode) app lives at the repo root.
-- `data/network.json` holds the whole network — every Line and its Stations — and
+- `data/network.ts` holds the whole network — every Line and its Stations — and
   `data/places/<slug>.json` holds one Place per file. Together they are the source of truth for
   every place in the directory; nothing else holds place data.
 - `docs/adr/` records the decisions behind that shape.

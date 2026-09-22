@@ -1,4 +1,4 @@
-import networkData from "../../data/network.json" with { type: "json" };
+import { lines } from "../../data/network.ts";
 import {
   CONTRIBUTION_TYPES,
   buildContributionFile,
@@ -17,12 +17,8 @@ import { verifyTurnstile } from "../lib/turnstile.ts";
 
 const CONTRIBUTIONS_PER_HOUR = 5;
 
-const NETWORK = networkData as {
-  lines: { stations: { code: string; name: string }[] }[];
-};
-
 const STATION_NAMES = new Map<string, string>();
-for (const line of NETWORK.lines) {
+for (const line of lines) {
   for (const station of line.stations) {
     STATION_NAMES.set(station.code, station.name);
   }

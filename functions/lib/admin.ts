@@ -1,4 +1,4 @@
-import networkData from "../../data/network.json" with { type: "json" };
+import { lines } from "../../data/network.ts";
 import {
   EMPTY_PLACE_DRAFT,
   type PlaceBuild,
@@ -36,9 +36,8 @@ export const defaultAdminDeps: AdminDeps = {
 };
 
 /** Every Station on the network, by code, from the same reference the public form uses. */
-export const STATION_CODES: string[] = networkData.lines.flatMap(
-  (line: { stations: { code: string }[] }) =>
-    line.stations.map((station) => station.code),
+export const STATION_CODES: string[] = lines.flatMap((line) =>
+  line.stations.map((station) => station.code),
 );
 
 /** The admin write path needs only the repository credentials. */

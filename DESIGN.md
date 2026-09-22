@@ -138,7 +138,7 @@ Density is high and deliberate, and the world is **fully flat**: there are no sh
 
 ### One world, shared surfaces
 
-Everything in this document governs the whole site: `app/app.css` (the `@layer base` block and the `@theme` tokens `--color-paper`, `--color-band`, `--color-ink`, `--color-ink-soft`, `--color-rule`, `--color-rule-strong`, and `--font-sans: Archivo`), and every route — `app/routes/browse.tsx`, `app/routes/place.tsx`, `app/routes/contribute.tsx`. The `--line-accent` token is set inline on the root of each page from the selected Line in `data/network.json`. There is no scope to stay inside and no old world to leave alone; a new surface inherits these tokens and rules directly.
+Everything in this document governs the whole site: `app/app.css` (the `@layer base` block and the `@theme` tokens `--color-paper`, `--color-band`, `--color-ink`, `--color-ink-soft`, `--color-rule`, `--color-rule-strong`, and `--font-sans: Archivo`), and every route — `app/routes/browse.tsx`, `app/routes/place.tsx`, `app/routes/contribute.tsx`. The `--line-accent` token is set inline on the root of each page from the selected Line in `data/network.ts`. There is no scope to stay inside and no old world to leave alone; a new surface inherits these tokens and rules directly.
 
 ### Known and unresolved
 
@@ -151,7 +151,7 @@ The Contribute page, the Contributors page, the Line selector, and the Access-ga
 The palette is a warm neutral family plus one loud, data-owned accent. Nothing is cool, nothing is pure white, and the accent is never chosen by hand.
 
 ### Primary
-- **Line Accent** (`#ed0f4c`, today the Kelana Jaya line's own colour): **read from `data/network.json` (`lines[].color`) and set as `--line-accent` on the root of every surface** — the Browse page, the Place page and the Contribute page, each from the Line it shows. It is never hardcoded in the stylesheet. Used as the corridor spine over the stops with Places, the filled stop marker, the coverage diagram's filled run and markers, the `color-mix` tint on the selected row (8% at rest, 12% on hover), the `::selection` wash (24%), and the global focus ring. **Never used as text.**
+- **Line Accent** (`#ed0f4c`, today the Kelana Jaya line's own colour): **read from `data/network.ts` (`lines[].color`) and set as `--line-accent` on the root of every surface** — the Browse page, the Place page and the Contribute page, each from the Line it shows. It is never hardcoded in the stylesheet. Used as the corridor spine over the stops with Places, the filled stop marker, the coverage diagram's filled run and markers, the `color-mix` tint on the selected row (8% at rest, 12% on hover), the `::selection` wash (24%), and the global focus ring. **Never used as text.**
 
 ### Neutral
 - **Warm Paper** (`#faf9f7`): the page ground of every surface, the route strip's surface, the unfilled stop marker's fill, and the base that all tints mix into.

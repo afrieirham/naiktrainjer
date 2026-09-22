@@ -1,4 +1,4 @@
-import networkData from "../../data/network.json" with { type: "json" };
+import { lines as networkLines } from "../../data/network";
 import type { Place } from "../lib/browse-filter";
 import type { Line } from "../lib/lines";
 
@@ -7,9 +7,9 @@ import type { Line } from "../lib/lines";
  * and Place records through this module, so the storage can move from one file
  * to one file per record without touching them.
  *
- * The directory is the network (`data/network.json`) plus the Place records.
- * There is no separate Station entity: a Station comes from the network, and a
- * Station is covered when it holds a Place.
+ * The directory is the network (`data/network.ts`, generated) plus the Place
+ * records. There is no separate Station entity: a Station comes from the network,
+ * and a Station is covered when it holds a Place.
  *
  * The app is bundled by Vite, so it globs the Place records with Vite's
  * `import.meta.glob`. Node cannot use that, and reads the same files through
@@ -20,5 +20,5 @@ const placeModules = import.meta.glob("../../data/places/*.json", {
   import: "default",
 }) as Record<string, Place>;
 
-export const lines = networkData.lines as Line[];
+export const lines = networkLines as Line[];
 export const places = Object.values(placeModules);

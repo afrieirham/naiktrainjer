@@ -76,7 +76,7 @@ was approved by hand."
 
 ## Evidence on Hand
 
-- `data/network.json` and `data/places/<slug>.json` — the source of truth: the whole network, and
+- `data/network.ts` and `data/places/<slug>.json` — the source of truth: the whole network, and
   one file per Place (84 today).
 - `CONTEXT.md` — the domain glossary (Place, Kind, Type, Station, Line, Corridor position, Nearest
   station, Also near, Measurement, Route frame, Browse page, Place page, Preview card, Contribute

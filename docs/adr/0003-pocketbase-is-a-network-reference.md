@@ -24,8 +24,12 @@ would break that promise and make every deploy depend on a box on the maintainer
 1. **PocketBase is read-only.** Nothing in the build, the site or the repo writes to it.
 2. **The export is manual and offline.** `npm run export-network`
    (`scripts/export-network.mjs`) pulls the network reference and writes it into
-   `data/network.json` as a top-level `lines[]` array; its output is committed. It is run by
-   hand and is never part of the build.
+   `data/network.ts` as a generated module exporting `lines[]`; its output is
+   committed. It is run by hand and is never part of the build. *(It is a
+   TypeScript module rather than JSON because Cloudflare's Pages Functions
+   bundler cannot parse JSON import attributes and Node refuses a JSON import
+   without one; a generated module loads unchanged in Vite, Node and the
+   bundler.)*
 3. **It is never part of `npm run build`.** A deploy cannot depend on PocketBase being reachable.
 4. **It carries PocketBase's own codes.** The export takes each Station's code from PocketBase;
    nothing is matched by name or slug, so there is no hand-maintained mapping left to drift.
@@ -34,11 +38,11 @@ would break that promise and make every deploy depend on a box on the maintainer
 5. **Coordinates are mapped explicitly.** PocketBase stores GeoJSON order (`geoPoint.lon`); the
    app reads `lng`. A naive copy produces `lng: undefined` and silently breaks every route frame.
 6. **The whole network is exported.** Every Line and Station PocketBase holds lands in
-   `data/network.json`, whether or not the directory has a Place there — the Contribution form
+   `data/network.ts`, whether or not the directory has a Place there — the Contribution form
    lets a visitor name any Station on any Line. Which Lines Browse renders is a rendering rule
    (ADR-0002), not an export filter. *(Amended by ADR-0004: the original decision exported only
    Lines with a checked Station.)*
-7. **The export carries no checked-ness.** `network.json` is a plain snapshot of the network; the
+7. **The export carries no checked-ness.** `network.ts` is a plain snapshot of the network; the
    directory's own data is Places only, and Coverage is derived from them (ADR-0002, as amended).
 
 ## Consequences

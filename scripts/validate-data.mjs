@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { lines } from '../data/network.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -19,8 +20,6 @@ const errors = [];
 function err(msg) { errors.push(msg); }
 
 try {
-  const network = JSON.parse(readFileSync(resolve(root, 'data/network.json'), 'utf-8'));
-
   const placesDir = resolve(root, 'data/places');
   const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
   const places = placeFiles.map((name) => {
@@ -33,10 +32,8 @@ try {
   }).filter(Boolean);
 
   // Top-level shape
-  if (!Array.isArray(network.lines)) err('data/network.json: missing or non-array "lines"');
+  if (!Array.isArray(lines)) err('data/network.ts: missing or non-array "lines"');
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
-
-  const lines = network.lines;
 
   // Line shape: every Line the network holds, with all of its Stations.
   const lineSlugs = new Set();

@@ -17,7 +17,7 @@ has to read around. The same argument rules out leaving the checked Stations in 
 
 Data is stored one record per file, and the app reads it through a single aggregate module:
 
-- `data/network.json` — the whole network: every Line and its Stations. The machine-written
+- `data/network.ts` — the whole network: every Line and its Stations. The machine-written
   PocketBase export (ADR-0003); never hand-edited.
 - `data/places/<slug>.json` — one file per Place.
 - `data/contributions/<id>.json` — a Contribution, written only on a PR branch and never merged.
@@ -34,5 +34,5 @@ an entity (ADR-0002, as amended).
 - `data/properties.json` is retired. The existing records were split by a one-off migration, which
   has since been removed: it also wrote the transitional checked-Stations file that the derived
   Coverage change (ADR-0002, as amended) deleted.
-- Anything a PR can add is its own file, and the one machine-written artifact (`network.json`) is
+- Anything a PR can add is its own file, and the one machine-written artifact (`network.ts`) is
   kept away from the records the maintainer and contributors write.
