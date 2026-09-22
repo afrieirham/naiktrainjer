@@ -5,8 +5,8 @@ naiktrainjer.com. The visitor's question is always the same: *can I walk to a st
 here?*
 
 The site is **prerendered**: the data records plus the app source build to plain static HTML,
-which Cloudflare Pages serves. No database and no request-time API for reading; a single Pages
-Function under `/api/*` handles Contributions.
+which Cloudflare Pages serves. No database and no request-time API for reading; Pages Functions
+under `/api/*` handle Contributions.
 
 ## Shape
 

@@ -97,10 +97,10 @@ describe("sitemap.xml", () => {
     );
   });
 
-  it("contains the Submit page URL", () => {
+  it("contains the Contribute page URL", () => {
     assert.ok(
-      sitemapXml.includes(`<loc>${SITE_URL}/submit/</loc>`),
-      "Submit page URL missing from sitemap",
+      sitemapXml.includes(`<loc>${SITE_URL}/contribute/</loc>`),
+      "Contribute page URL missing from sitemap",
     );
   });
 
@@ -180,9 +180,9 @@ describe("sitemap ↔ build parity", () => {
     if (existsSync(resolve(BUILD_DIR, "index.html"))) {
       builtPaths.add("/");
     }
-    // Submit page
-    if (existsSync(resolve(BUILD_DIR, "submit", "index.html"))) {
-      builtPaths.add("/submit");
+    // Contribute page
+    if (existsSync(resolve(BUILD_DIR, "contribute", "index.html"))) {
+      builtPaths.add("/contribute");
     }
     // Place pages
     const placesDir = resolve(BUILD_DIR, "places");
