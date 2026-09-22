@@ -5,7 +5,6 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "react-router dev",
-    "measure": "tsx scripts/measure.ts",
     "icons": "node scripts/generate-icons.mjs",
     "typecheck": "react-router typegen && tsc",
     "test": "node --test tests/",

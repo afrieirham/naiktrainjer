@@ -25,7 +25,7 @@ would break that promise and make every deploy depend on a box on the maintainer
 2. **The export is manual and offline.** `npm run export-network`
    (`scripts/export-network.mjs`) pulls the network reference and writes it into
    `data/network.json` as a top-level `lines[]` array; its output is committed. It is run by
-   hand, exactly like the Measure script (ADR-0001, decision 3).
+   hand and is never part of the build.
 3. **It is never part of `npm run build`.** A deploy cannot depend on PocketBase being reachable.
 4. **It keys on station code, never on name or slug.** `CHECKED_STATION_CODES` maps each checked
    Station's slug to its network code, and the coordinate check at export time (300 m) proves the
