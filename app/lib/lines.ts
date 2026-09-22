@@ -29,7 +29,28 @@ export function stationNamesByCode(lines: Line[]): Map<string, string> {
 }
 
 /**
- * The Line the directory covers: the one holding the most Places.
+ * The Lines the directory covers: those holding at least one Place, in the
+ * network's own order.
+ *
+ * A Line is covered when one of its Stations holds a Place, so the selector
+ * never offers a corridor with nothing on it. The network still knows every
+ * Line; this is only the subset worth browsing.
+ */
+export function coveredLines(lines: Line[], places: Place[]): Line[] {
+  const withPlaces = new Set(places.map((place) => place.station));
+  return lines.filter((line) =>
+    line.stations.some((station) => withPlaces.has(station.code)),
+  );
+}
+
+/** How many of a Line's Stations hold a Place. */
+function coveredStationCount(line: Line, places: Place[]): number {
+  const withPlaces = new Set(places.map((place) => place.station));
+  return line.stations.filter((station) => withPlaces.has(station.code)).length;
+}
+
+/**
+ * The Line the directory defaults to: covered, holding the most Places.
  *
  * Deliberately not "the Line with the lowest source position" — the network
  * reference carries Lines nobody has a Place on, and that rule would pick one of
@@ -37,21 +58,39 @@ export function stationNamesByCode(lines: Line[]): Map<string, string> {
  * deterministic.
  */
 export function coveredLine(lines: Line[], places: Place[]): Line {
-  let covered: Line | undefined;
-  let most = 0;
-  for (const line of lines) {
-    const codes = new Set(line.stations.map((station) => station.code));
-    const count = places.filter((place) => codes.has(place.station)).length;
-    if (count > most) {
-      most = count;
-      covered = line;
-    }
-  }
-
-  if (!covered) {
+  const covered = coveredLines(lines, places);
+  if (covered.length === 0) {
     throw new Error("No Line holds a Place — the directory has no coverage");
   }
-  return covered;
+
+  let best = covered[0];
+  let most = coveredStationCount(best, places);
+  for (const line of covered.slice(1)) {
+    const count = coveredStationCount(line, places);
+    if (count > most) {
+      most = count;
+      best = line;
+    }
+  }
+  return best;
+}
+
+/**
+ * The Line a `?line=` slug names, falling back to the default Line.
+ *
+ * Only a covered Line can be selected: an unknown, blank or missing slug lands
+ * on the default, so a stale or mistyped link still shows a corridor.
+ */
+export function selectedLine(
+  lines: Line[],
+  places: Place[],
+  slug: string | null | undefined,
+): Line {
+  if (slug) {
+    const found = coveredLines(lines, places).find((line) => line.slug === slug);
+    if (found) return found;
+  }
+  return coveredLine(lines, places);
 }
 
 /**

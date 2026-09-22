@@ -8,7 +8,13 @@ import {
   getUniqueTypes,
   type Place,
 } from "../app/lib/browse-filter.ts";
-import { coveredLine, stationNamesByCode, type Line } from "../app/lib/lines.ts";
+import {
+  coveredLine,
+  coveredLines,
+  selectedLine,
+  stationNamesByCode,
+  type Line,
+} from "../app/lib/lines.ts";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -289,6 +295,46 @@ describe("prerendered HTML", () => {
     assert.ok(!cleanHtml.includes("Most places"), "No sort options should render");
   });
 
+  it("offers a Line selector listing only the covered Lines", () => {
+    assert.ok(cleanHtml.includes('id="line-selector"'), "Line selector missing");
+
+    const covered = coveredLines(data.lines, data.places);
+    assert.ok(covered.length > 0, "There must be at least one covered Line");
+    for (const line of covered) {
+      assert.ok(
+        new RegExp(`<option[^>]*value="${escapeRegExp(line.slug)}"`).test(cleanHtml),
+        `Covered Line "${line.slug}" must be offered`,
+      );
+    }
+
+    for (const line of data.lines.filter((candidate) => !covered.includes(candidate))) {
+      assert.ok(
+        !new RegExp(`<option[^>]*value="${escapeRegExp(line.slug)}"`).test(cleanHtml),
+        `Uncovered Line "${line.slug}" must not be offered`,
+      );
+    }
+  });
+
+  it("defaults to the covered Line holding the most Places", () => {
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const counts = coveredLines(data.lines, data.places).map((line) => ({
+      line,
+      count: line.stations.filter((station) => withPlaces.has(station.code)).length,
+    }));
+    const most = Math.max(...counts.map((entry) => entry.count));
+    const defaultLine = selectedLine(data.lines, data.places, null);
+
+    assert.equal(
+      counts.find((entry) => entry.line.slug === defaultLine.slug)?.count,
+      most,
+      "The default Line must hold the most Places",
+    );
+    assert.ok(
+      cleanHtml.includes(`${defaultLine.name} line`),
+      `The default ${defaultLine.name} line must render on no param`,
+    );
+  });
+
   it("contains no search box", () => {
     assert.ok(!cleanHtml.includes('id="search"'), "Search box should not exist");
     assert.ok(!cleanHtml.includes('type="search"'), "Search input should not exist");
@@ -408,6 +454,96 @@ describe("pure filter/corridor functions", () => {
       const expected = [...new Set(places.map((p) => p.type))].sort();
       assert.deepEqual(types, expected);
     });
+  });
+});
+
+describe("line selection", () => {
+  const withPlaces = new Set(places.map((place) => place.station));
+
+  it("returns only the Lines that hold a Place, in network order", () => {
+    const covered = coveredLines(lines, places);
+    const expected = lines.filter((line) =>
+      line.stations.some((station) => withPlaces.has(station.code)),
+    );
+    assert.deepEqual(
+      covered.map((line) => line.slug),
+      expected.map((line) => line.slug),
+    );
+    for (const line of covered) {
+      assert.ok(
+        line.stations.some((station) => withPlaces.has(station.code)),
+        `"${line.slug}" is offered without a Place`,
+      );
+    }
+  });
+
+  /**
+   * The real network carries Lines nobody has covered yet, so a two-Line
+   * fixture is the only way to exercise a switch between covered Lines.
+   */
+  const lineA: Line = {
+    slug: "line-a",
+    code: "A",
+    name: "Line A",
+    color: "#111111",
+    stations: [
+      { code: "A1", name: "A One", sort: 1 },
+      { code: "A2", name: "A Two", sort: 2 },
+    ],
+  };
+  const lineB: Line = {
+    slug: "line-b",
+    code: "B",
+    name: "Line B",
+    color: "#222222",
+    stations: [
+      { code: "B1", name: "B One", sort: 1 },
+      { code: "B2", name: "B Two", sort: 2 },
+    ],
+  };
+  const lineC: Line = {
+    slug: "line-c",
+    code: "C",
+    name: "Line C",
+    color: "#333333",
+    stations: [{ code: "C1", name: "C One", sort: 1 }],
+  };
+  const network: Line[] = [lineA, lineB, lineC];
+  const fixturePlaces: Place[] = [
+    { slug: "a-one", name: "A One Place", kind: "building", type: "condominium", station: "A1" },
+    { slug: "a-two", name: "A Two Place", kind: "building", type: "apartment", station: "A2" },
+    { slug: "b-one", name: "B One Place", kind: "building", type: "flat", station: "B1" },
+  ];
+
+  it("defaults to the covered Line with the most Places, on network-order tie-break", () => {
+    assert.equal(coveredLine(network, fixturePlaces).slug, "line-a");
+  });
+
+  it("?line= selects that Line, and its whole corridor is built from it", () => {
+    const url = new URL("https://naiktrainjer.com/?line=line-b");
+    const selected = selectedLine(network, fixturePlaces, url.searchParams.get("line"));
+    assert.equal(selected.slug, "line-b");
+
+    const rows = buildStationRows(selected, fixturePlaces, fixturePlaces);
+    assert.deepEqual(rows.map((row) => row.code), ["B2", "B1"]);
+  });
+
+  it("an unknown param falls back to the default", () => {
+    const url = new URL("https://naiktrainjer.com/?line=line-does-not-exist");
+    assert.equal(
+      selectedLine(network, fixturePlaces, url.searchParams.get("line")).slug,
+      "line-a",
+    );
+  });
+
+  it("a blank or missing param falls back to the default", () => {
+    assert.equal(selectedLine(network, fixturePlaces, "").slug, "line-a");
+    assert.equal(selectedLine(network, fixturePlaces, null).slug, "line-a");
+    assert.equal(selectedLine(network, fixturePlaces, undefined).slug, "line-a");
+  });
+
+  it("never selects a Line with no Places, even when named", () => {
+    assert.equal(selectedLine(network, fixturePlaces, "line-c").slug, "line-a");
   });
 });
 

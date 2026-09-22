@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import {
   buildStationRows,
   filterPlaces,
@@ -7,9 +7,11 @@ import {
 } from "../lib/browse-filter";
 import {
   coveredLine,
+  coveredLines,
   corridorOrder,
   coverage,
   coverageCopy,
+  selectedLine,
   stationNamesByCode,
   type Coverage,
   type Line,
@@ -30,9 +32,17 @@ import type { Route } from "./+types/browse";
 
 export function loader() {
   return {
-    line: coveredLine(LINES, PLACES),
     places: PLACES,
   };
+}
+
+/**
+ * Every Line and Place is bundled, so the selected Line comes out of the data
+ * rather than a request. Skipping revalidation keeps a `?line=` switch a pure
+ * client-side render — there is no `.data` request to make on a static host.
+ */
+export function shouldRevalidate() {
+  return false;
 }
 
 /**
@@ -118,31 +128,68 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
 }
 
 export default function Browse() {
-  const { line, places } = useLoaderData<typeof loader>();
+  const { places } = useLoaderData<typeof loader>();
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("");
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
+  /**
+   * The URL is the source of truth for the selected Line, but a static host
+   * serves the one page prerendered for `/` — the default Line. Reading the
+   * param on the first client render would mismatch that HTML, so it is applied
+   * once mounted: the first paint matches what was served, then a shared or
+   * refreshed `?line=` takes over.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const covered = useMemo(() => coveredLines(LINES, places), [places]);
+  const defaultLine = useMemo(() => coveredLine(LINES, places), [places]);
+  const line = useMemo(
+    () => selectedLine(LINES, places, mounted ? searchParams.get("line") : null),
+    [places, searchParams, mounted],
+  );
+
+  /** Only the selected Line's Places sit on the corridor. */
+  const linePlaces = useMemo(() => {
+    const codes = new Set(line.stations.map((station) => station.code));
+    return places.filter((place) => codes.has(place.station));
+  }, [line, places]);
+
+  const uniqueTypes = useMemo(() => getUniqueTypes(linePlaces), [linePlaces]);
   const cov = useMemo(() => coverage(line, places), [line, places]);
 
   const stationNameMap = useMemo(() => stationNamesByCode(LINES), []);
 
   const filteredPlaces = useMemo(
-    () => filterPlaces(places, typeFilter),
-    [places, typeFilter],
+    () => filterPlaces(linePlaces, typeFilter),
+    [linePlaces, typeFilter],
   );
 
   const stationRows = useMemo(
-    () => buildStationRows(line, places, filteredPlaces),
-    [line, places, filteredPlaces],
+    () => buildStationRows(line, linePlaces, filteredPlaces),
+    [line, linePlaces, filteredPlaces],
   );
 
   const selectedPlace = useMemo(
-    () => places.find((p) => p.slug === selectedSlug) ?? null,
-    [places, selectedSlug],
+    () => linePlaces.find((p) => p.slug === selectedSlug) ?? null,
+    [linePlaces, selectedSlug],
   );
+
+  /**
+   * Switching Lines is a client-side render: the choice goes in the URL so
+   * Back, refresh and sharing all restore it. The default Line keeps a bare
+   * `/`; an unknown slug never reaches here because `selectedLine` resolves it.
+   */
+  const selectLine = (slug: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!slug || slug === defaultLine.slug) next.delete("line");
+    else next.set("line", slug);
+    setSearchParams(next);
+    setSelectedSlug(null);
+  };
 
   const selectedStationName = selectedPlace
     ? stationNameMap.get(selectedPlace.station) ?? selectedPlace.station
@@ -165,9 +212,9 @@ export default function Browse() {
 
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const place of places) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
+    for (const place of linePlaces) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
     return counts;
-  }, [places]);
+  }, [linePlaces]);
 
   const nothingMatches = filteredPlaces.length === 0;
   const lastIndex = stationRows.length - 1;
@@ -208,7 +255,7 @@ export default function Browse() {
       style={{ "--line-accent": line.color } as React.CSSProperties}
     >
       <AppBar
-        counts={`${cov.coveredCount} of ${cov.total} stations · ${places.length} places`}
+        counts={`${cov.coveredCount} of ${cov.total} stations · ${linePlaces.length} places`}
         action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
       />
 
@@ -221,27 +268,42 @@ export default function Browse() {
           }`}
         >
           <div className="shrink-0 border-b border-rule px-4 pb-3.5 pt-3.5 sm:px-5 sm:pt-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <h1 className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
                 {line.name} line
               </h1>
-              <select
-                id="type-filter"
-                aria-label="Type"
-                value={typeFilter}
-                onChange={(event) => {
-                  setTypeFilter(event.target.value);
-                  setSelectedSlug(null);
-                }}
-                className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
-              >
-                <option value="">All types</option>
-                {uniqueTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
-                  </option>
-                ))}
-              </select>
+              <div className="flex min-w-0 items-center gap-2">
+                <select
+                  id="line-selector"
+                  aria-label="Line"
+                  value={line.slug}
+                  onChange={(event) => selectLine(event.target.value)}
+                  className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
+                >
+                  {covered.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  id="type-filter"
+                  aria-label="Type"
+                  value={typeFilter}
+                  onChange={(event) => {
+                    setTypeFilter(event.target.value);
+                    setSelectedSlug(null);
+                  }}
+                  className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
+                >
+                  <option value="">All types</option>
+                  {uniqueTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
               {coverageCopy(cov)}
