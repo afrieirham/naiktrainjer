@@ -23,7 +23,7 @@ import {
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar, AppBarAction } from "../components/AppBar";
+import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { OpenIcon, BackIcon } from "../components/icons";
 import { TYPE_LABELS, metaLabel } from "../lib/labels";
@@ -256,6 +256,7 @@ export default function Browse() {
     >
       <AppBar
         counts={`${cov.coveredCount} of ${cov.total} stations · ${linePlaces.length} places`}
+        nav={<AppBarLink href="/contributors/">Contributors</AppBarLink>}
         action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 

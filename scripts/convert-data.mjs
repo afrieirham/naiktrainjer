@@ -5,17 +5,18 @@ import https from 'https';
 import http from 'http';
 
 /**
- * One-off migration: turns the maintainer's Notion export at `new/data.csv` into
- * `data/properties.json`, the single source of truth for every Place.
+ * One-off migration, historical: it turned the maintainer's Notion export at
+ * `new/data.csv` into `data/properties.json`.
  *
- * It has already been run, and the CSV it read has been deleted — this script is kept
- * for provenance, not for the build. It is not part of `npm run build` or the test
- * suite, and nothing else in the repo reads the CSV. To re-run it, restore the source
+ * Both ends are now retired: `data/properties.json` was split into one file per
+ * Place (ADR-0004), and the CSV was deleted. This script is kept only to show how
+ * the directory's first data was produced; it is not part of `npm run build` or
+ * the test suite, and nothing reads the CSV. To re-run it, restore the source
  * first: `git show <commit>:new/data.csv > new/data.csv`.
  *
  * It resolves each Place's coordinates by following its Google Maps short link and
  * reading the position out of the redirect target, so re-running it needs network
- * access and will overwrite `data/properties.json`.
+ * access and would recreate the retired single file.
  */
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

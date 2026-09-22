@@ -144,7 +144,7 @@ Everything in this document governs the whole site: `app/app.css` (the `@layer b
 
 Coverage copy is derived from Places — how many of a Line's Stations hold Places — and is stated more than once within the first viewport of the Browse page (the app bar's `N of M stations · P places`, the corridor header's paragraph, and the map column's coverage heading and its `N of M stops with places · K still empty` line). This repetition is **known and deliberately left for a future copy pass**; it is recorded here rather than silently omitted so no future edit mistakes it for an intended pattern.
 
-The Contribute page, the Contributors page, the Line selector, and the Access-gated `/admin` forms are **not designed here yet**. The vocabulary below is authoritative, but a future pass must design those surfaces on these tokens before they ship.
+The Contribute page, the Contributors page, the Line selector, and the Access-gated `/admin` forms shipped in a minimal form built from these tokens, but they were **not designed here yet**. A future pass (ticket #42) must design them properly on these tokens; until then they reuse the existing steps and rules and add nothing new.
 
 ## Colors
 
@@ -233,7 +233,7 @@ The form language is quiet and functional. Controls take a small radius: **6px**
 
 ### App Bar
 - **Shape:** full-width, flat, 1px `rule` bottom border; no radius, no shadow; `sticky top-0 z-30`.
-- **Contents:** the `NaikTrainJer` wordmark (16px/700, −0.03em, the way home), an optional Line subtitle (12.5px `ink-soft`), an optional per-surface `filter`, and a trailing group (`ml-auto`) holding the coverage counts (12.5px, `tabular-nums`, `ink-soft`, hidden below `sm`) and the bar's action.
+- **Contents:** the `NaikTrainJer` wordmark (16px/700, −0.03em, the way home), an optional quiet site link beside it (`AppBarLink`; `Contributors` on the public surfaces, none on admin), an optional Line subtitle (12.5px `ink-soft`), an optional per-surface `filter`, and a trailing group (`ml-auto`) holding the coverage counts (12.5px, `tabular-nums`, `ink-soft`, hidden below `sm`) and the bar's action.
 - **Behaviour:** wraps on narrow screens. On Browse the filter is the type filter and the action is `Contribute a place`; on Place and Contribute the action is a button (`Contribute a place` / `Browse places`). It is the site's only navigation chrome, so no page needs a separate back link in its body.
 
 ### Buttons

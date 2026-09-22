@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { lines, places } from "../data/directory";
+import { AppBar, AppBarAction } from "../components/AppBar";
+import { Field, FIELD_CLASS } from "../components/Field";
 import { TYPE_LABELS, KIND_LABELS } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
 import {
@@ -33,9 +35,6 @@ const STATION_CODES = lines.flatMap((line) =>
 
 const PLACE_SLUGS = new Set(places.map((place) => place.slug));
 
-const FIELD_CLASS =
-  "w-full rounded-md border border-rule-strong bg-paper px-2.5 py-1.5 text-[12.5px] font-medium text-ink outline-none focus-visible:border-ink";
-
 export default function AdminPage() {
   const location = useLocation();
   const [mounted, setMounted] = useState(false);
@@ -66,12 +65,7 @@ export default function AdminPage() {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-paper">
-      <header className="border-b border-rule px-5 py-3">
-        <a href="/" className="text-[16px] font-bold tracking-[-0.03em] text-ink">
-          NaikTrainJer
-        </a>
-        <span className="ml-3 text-[12.5px] font-medium text-ink-soft">Admin</span>
-      </header>
+      <AppBar subtitle="Admin" action={<AppBarAction href="/">Browse places</AppBarAction>} />
       <main className="mx-auto w-full max-w-[720px] px-5 py-8">{children}</main>
     </div>
   );
@@ -82,9 +76,9 @@ function AdminIndex() {
 
   return (
     <Shell>
-      <h1 className="text-[24px] font-bold leading-tight tracking-[-0.02em] text-ink">
-        Admin
-      </h1>
+        <h1 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-ink">
+          Admin
+        </h1>
       <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
         Approve a pending Contribution, or add and edit a Place by hand. Every
         change opens a pull request; merging publishes it on the next build.
@@ -131,7 +125,7 @@ function AdminIndex() {
           <li key={place.slug}>
             <a
               href={`/admin/place/${place.slug}`}
-              className="text-[13px] text-ink-soft hover:text-ink"
+              className="text-[12.5px] text-ink-soft hover:text-ink"
             >
               {place.name}
             </a>
@@ -192,7 +186,7 @@ function ApprovePage({ id }: { id: string }) {
   if (done) {
     return (
       <Shell>
-        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-ink">Approved</h1>
+        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-ink">Approved</h1>
         <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
           <strong>{done.slug}</strong> was added to the branch{" "}
           <code>{done.branch}</code> and the Contribution was removed. Merge the
@@ -204,7 +198,7 @@ function ApprovePage({ id }: { id: string }) {
 
   return (
     <Shell>
-      <h1 className="text-[24px] font-bold tracking-[-0.02em] text-ink">
+      <h1 className="text-[26px] font-bold tracking-[-0.02em] text-ink">
         Approve “{contributionName}”
       </h1>
       <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
@@ -284,7 +278,7 @@ function PlacePage({ slug }: { slug: string | null }) {
   if (prUrl) {
     return (
       <Shell>
-        <h1 className="text-[24px] font-bold tracking-[-0.02em] text-ink">
+        <h1 className="text-[26px] font-bold tracking-[-0.02em] text-ink">
           Filed for review
         </h1>
         <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
@@ -297,7 +291,7 @@ function PlacePage({ slug }: { slug: string | null }) {
 
   return (
     <Shell>
-      <h1 className="text-[24px] font-bold tracking-[-0.02em] text-ink">
+      <h1 className="text-[26px] font-bold tracking-[-0.02em] text-ink">
         {slug ? `Edit “${existing?.name}”` : "Add a Place"}
       </h1>
       <PlaceForm
@@ -467,24 +461,3 @@ function PlaceForm({
   );
 }
 
-function Field({
-  label,
-  error,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  error?: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
-        {label}
-      </label>
-      {children}
-      {error && <p role="alert" className="text-[12.5px] font-medium text-ink">{error}</p>}
-    </div>
-  );
-}

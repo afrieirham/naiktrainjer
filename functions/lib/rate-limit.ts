@@ -17,7 +17,7 @@ export interface RateLimitOptions {
  * A coarse fixed-window counter. Counters live in a shared store because each
  * request may run in a different isolate, and the store is eventually
  * consistent, so the limit is a speed bump rather than an exact quota. The bot
- * challenge is what keeps automated submissions out; this keeps a determined
+ * challenge is what keeps automated contributions out; this keeps a determined
  * human from filling the queue.
  */
 export async function withinRateLimit(

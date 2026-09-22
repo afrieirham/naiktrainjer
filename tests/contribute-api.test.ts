@@ -119,7 +119,7 @@ describe("POST /api/contribute", () => {
     assert.equal(wrote, false);
   });
 
-  it("files one pull request adding the Contribution on a clean submission", async () => {
+  it("files one pull request adding the Contribution on a clean contribution", async () => {
     const requests: ContributionPullRequest[] = [];
     const response = await onRequestPost(
       {

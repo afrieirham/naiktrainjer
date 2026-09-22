@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import { publicUrl } from "../lib/routes";
 import { coveredLine, coverage } from "../lib/lines";
 import { lines, places } from "../data/directory";
-import { AppBar, AppBarAction } from "../components/AppBar";
+import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
+import { Field, FIELD_CLASS } from "../components/Field";
 import { TYPE_LABELS } from "../lib/labels";
 import { useTurnstile } from "../hooks/use-turnstile";
 import {
@@ -42,9 +43,6 @@ const EMPTY_DRAFT: ContributionDraft = {
   contributorName: "",
   contributorHref: "",
 };
-
-const FIELD_CLASS =
-  "w-full rounded-md border border-rule-strong bg-paper px-2.5 py-1.5 text-[12.5px] font-medium text-ink outline-none focus-visible:border-ink";
 
 export default function ContributePage() {
   const [fields, setFields] = useState<ContributionDraft>(EMPTY_DRAFT);
@@ -116,6 +114,7 @@ export default function ContributePage() {
       <AppBar
         subtitle={`${COVERED_LINE.name} line`}
         counts={COUNTS}
+        nav={<AppBarLink href="/contributors/">Contributors</AppBarLink>}
         action={<AppBarAction href="/">Browse places</AppBarAction>}
       />
 
@@ -301,31 +300,4 @@ export default function ContributePage() {
   );
 }
 
-function Field({
-  label,
-  error,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  error?: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label
-        htmlFor={htmlFor}
-        className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft"
-      >
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p role="alert" className="text-[12.5px] font-medium text-ink">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-}
+

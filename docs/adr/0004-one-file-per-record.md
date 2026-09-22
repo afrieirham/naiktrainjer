@@ -22,8 +22,8 @@ Data is stored one record per file, and the app reads it through a single aggreg
 - `data/places/<slug>.json` — one file per Place.
 - `data/contributions/<id>.json` — a Contribution, written only on a PR branch and never merged.
 
-There is no aggregate file on disk. A module globs the records and returns
-`{ lines, stations, places }`, so routes and tests keep one import. A Place names its Station by
+There is no aggregate file on disk. A module globs the records and returns the network's Lines and
+the Places, so routes and tests keep one import. A Place names its Station by
 network **code**, not by a checked-Station slug, because the checked Station no longer exists as
 an entity (ADR-0002, as amended).
 
