@@ -1,7 +1,8 @@
 # 0001 — Prerender the directory from one data file, and bake the measurements
 
-**Status:** accepted, amended by ADR-0002 (browse is line-scoped) and ADR-0003 (PocketBase is a
-read-only network reference). Decision 3's interface promise is **deferred**: no interface shows a
+**Status:** accepted, amended by ADR-0002 (browse is line-scoped), ADR-0003 (PocketBase is a
+read-only network reference), ADR-0004 (one file per record) and ADR-0005 (contributions through
+one write path). Decision 3's interface promise is **deferred**: no interface shows a
 walk or drive figure any more, and the data validator forbids the fields — the Measure script and
 its providers stay in the repo as a future enhancement.
 
@@ -17,8 +18,9 @@ The data is small (84 Places, one Line), owned by one person, and read-only to v
 
 ## Decision
 
-1. **One data file is the source of truth.** `data/properties.json` in the repo holds every
-   Place; the CSV export and the Notion database are retired. Adding a Place is a commit.
+1. **The repository is the source of truth.** Every Place lives in the repo; the CSV export and
+   the Notion database are retired. Adding a Place is a commit. *(Amended by ADR-0004: the single
+   `data/properties.json` becomes one file per record, aggregated at build.)*
 2. **Prerender everything.** The React Router framework-mode app builds the Browse page, a
    Place page per Place, the Submit page, the sitemap, and the preview cards to static files
    at build time, served by Cloudflare Pages. No server, no database, no request-time API call

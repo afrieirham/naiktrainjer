@@ -4,14 +4,16 @@ A public directory of places to rent near rail stations in the Klang Valley, pub
 naiktrainjer.com. The visitor's question is always the same: *can I walk to a station from
 here?*
 
-The site is **prerendered**: one data file plus the app source build to plain static HTML,
-which Cloudflare Pages serves. There is no server, no database, and no API call at runtime.
+The site is **prerendered**: the data records plus the app source build to plain static HTML,
+which Cloudflare Pages serves. No database and no request-time API for reading; a single Pages
+Function under `/api/*` handles Contributions.
 
 ## Shape
 
 - The React Router (framework mode) app lives at the repo root.
-- `data/properties.json` is the single source of truth for every place in the directory.
-  Nothing else holds place data.
+- `data/network.json` holds the whole network — every Line and its Stations — and
+  `data/places/<slug>.json` holds one Place per file. Together they are the source of truth for
+  every place in the directory; nothing else holds place data.
 - `docs/adr/` records the decisions behind that shape.
 
 ## Agent skills

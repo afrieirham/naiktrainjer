@@ -1,6 +1,7 @@
 # 0003 — PocketBase is a read-only network reference, exported by hand
 
-**Status:** accepted
+**Status:** accepted, amended by ADR-0004 (the network is exported whole, and the directory no
+longer records checked-ness).
 
 ## Context
 
@@ -31,10 +32,13 @@ would break that promise and make every deploy depend on a box on the maintainer
    mapping, so a renamed Station still resolves and a wrong mapping fails loudly.
 5. **Coordinates are mapped explicitly.** PocketBase stores GeoJSON order (`geoPoint.lon`); the
    app reads `lng`. A naive copy produces `lng: undefined` and silently breaks every route frame.
-6. **Only Lines with at least one checked Station are exported.** Once a Line is there, all of its
-   Stations are (ADR-0002, decision 3).
-7. **Checked-ness stays in the directory.** `stations[]` remains *the Stations I have checked*;
-   `lines[].stations` is the network's shape. The export never decides what has been checked.
+6. **The whole network is exported.** Every Line and Station PocketBase holds lands in
+   `data/network.json`, whether or not the directory has a Place there — the Contribution form
+   lets a visitor name any Station on any Line. Which Lines Browse renders is a rendering rule
+   (ADR-0002), not an export filter. *(Amended by ADR-0004: the original decision exported only
+   Lines with a checked Station.)*
+7. **The export carries no checked-ness.** `network.json` is a plain snapshot of the network; the
+   directory's own data is Places only, and Coverage is derived from them (ADR-0002, as amended).
 
 ## Consequences
 

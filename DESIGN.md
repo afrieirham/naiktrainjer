@@ -1,6 +1,6 @@
 ---
 name: NaikTrainJer
-description: Warm-paper, near-black-ink corridor system for the whole site — one Line's own colour carried as spine, marker, tint and ring, never as text.
+description: Warm-paper, near-black-ink corridor system for the whole site — a Line's own colour carried as spine, marker, tint and ring, never as text.
 colors:
   paper: "#faf9f7"
   band: "#f1efeb"
@@ -121,43 +121,43 @@ components:
 
 **Creative North Star: "The Corridor Itself"**
 
-The site does not present a directory that happens to list stations. It *is* the corridor: one Line, every stop on it, drawn south to north as a single continuous spine, with checked stops carrying their Places and the unchecked tail still visible and named. That world was first built on the Browse page and is now the site's own world. The `@layer base` block in `app/app.css` carries it, so every surface — the Browse page, a Place's own page, the Submit page — stands on the same warm near-white paper ground, in near-black ink, separated by hairline rules and a warm-grey band. There is no longer a scoped world and no "old world": Inter, the Google Fonts link, the `slate`/`sky` palette, the `.browse-app` scope and the `--browse-accent` token are gone, as are the per-page `WalkDriveToggle` and the `TYPE_CLASSES` per-type colour map — the travel mode is now one shared component. The Line's own colour, read from the data and never written into the stylesheet, is the only accent on any surface, and it is never used as text.
+The site does not present a directory that happens to list stations. It *is* the corridor: the selected Line, every stop on it, drawn south to north as a single continuous spine, with the stops that hold Places carrying them and the rest still visible and named. That world was first built on the Browse page and is now the site's own world. The `@layer base` block in `app/app.css` carries it, so every surface — the Browse page, a Place's own page, the Contribute page — stands on the same warm near-white paper ground, in near-black ink, separated by hairline rules and a warm-grey band. There is no longer a scoped world and no "old world": Inter, the Google Fonts link, the `slate`/`sky` palette, the `.browse-app` scope and the `--browse-accent` token are gone, as are the per-page `WalkDriveToggle` and the `TYPE_CLASSES` per-type colour map — the travel mode is now one shared component. The Line's own colour, read from the data and never written into the stylesheet, is the only accent on any surface, and it is never used as text.
 
-**Three surfaces, one world.** The Browse page is a full-height two-column app shell: the corridor list and the map column sit edge to edge below the app bar. A Place's own page is two columns above `md` and **route-first on a phone**, where the details column is ordered after the map and the map carries a phone-only label naming the Place and its station. The Submit page is a single measured column (`max-w-[640px]`) under the same app bar. The chrome is shared, not per-page: one `AppBar`, one `TravelMode`, one set of authored icons.
+**One world, shared chrome.** The Browse page is a full-height two-column app shell: the corridor list and the map column sit edge to edge below the app bar. A Place's own page is two columns above `md` and **route-first on a phone**, where the details column is ordered after the map and the map carries a phone-only label naming the Place and its station. The Contribute page is a single measured column (`max-w-[640px]`) under the same app bar. The chrome is shared, not per-page: one `AppBar`, one `TravelMode`, one set of authored icons.
 
 Density is high and deliberate, and the world is **fully flat**: there are no shadows anywhere on the site. The map strip that once floated over the map and carried the system's single shadow is now a sibling *below* the map, separated by a `border-t`, so nothing covers the embedded route frame or swallows Google's own map controls. Separation comes from tone (paper against band) and from 1px rules. Motion is almost absent: hover and focus shifts are ordinary colour transitions, and one authored moment — the route strip's content arriving rather than blinking in — runs at 420ms and is disabled under `prefers-reduced-motion`. No raster is used in the interface; the only page binaries are the three Archivo `woff2` subsets and a 47 KB favicon set cut from the train photograph, whose 772 KB source sits in `assets/` and is a build input rather than a shipped asset.
 
 **Key Characteristics:**
-- One Line, one corridor; line order is the only order ever shown.
+- One corridor at a time; line order is the only order ever shown.
 - Warm paper (`#faf9f7`) ground, near-black ink (`#15171c`) text, hairline rules — site-wide, not scoped.
 - A single data-driven accent: the Line's colour, as spine, marker, diagram fill, tint, and focus ring — never text.
 - Fully flat: no shadows at all; depth is tone and 1px rules.
-- Through-composed from three surfaces sharing one app bar, one travel mode, and one icon set.
+- Through-composed from the surfaces sharing one app bar, one travel mode, and one icon set.
 - Archivo is the only typeface, self-hosted with no third-party font request.
 - No raster is used in the interface. The only rasters that ship are the favicon set cut from the train photograph; the 772 KB source lives in `assets/` and never reaches the build.
 
-### One world, three surfaces
+### One world, shared surfaces
 
-Everything in this document governs the whole site: `app/app.css` (the `@layer base` block and the `@theme` tokens `--color-paper`, `--color-band`, `--color-ink`, `--color-ink-soft`, `--color-rule`, `--color-rule-strong`, and `--font-sans: Archivo`), and every route — `app/routes/browse.tsx`, `app/routes/place.tsx`, `app/routes/submit.tsx`. The `--line-accent` token is set inline on the root of each page from the covered Line in `data/properties.json`. There is no scope to stay inside and no old world to leave alone; a new surface inherits these tokens and rules directly.
+Everything in this document governs the whole site: `app/app.css` (the `@layer base` block and the `@theme` tokens `--color-paper`, `--color-band`, `--color-ink`, `--color-ink-soft`, `--color-rule`, `--color-rule-strong`, and `--font-sans: Archivo`), and every route — `app/routes/browse.tsx`, `app/routes/place.tsx`, `app/routes/contribute.tsx`. The `--line-accent` token is set inline on the root of each page from the selected Line in `data/network.json`. There is no scope to stay inside and no old world to leave alone; a new surface inherits these tokens and rules directly.
 
 ### Known and unresolved
 
-The coverage fact is stated three times within the first viewport of the Browse page: (1) the app bar's `22 of 37 stations · 84 places`, (2) the corridor header's coverage paragraph (`I've checked 22 of the 37 stations so far …`), and (3) the map column's `How far I've got` heading with its `22 of 37 stops checked · 15 still to do` line. This repetition is **known and deliberately left for a future copy pass**; it is recorded here rather than silently omitted so no future edit mistakes it for an intended pattern.
+Coverage copy is derived from Places — how many of a Line's Stations hold Places — and is stated more than once within the first viewport of the Browse page (the app bar's `N of M stations · P places`, the corridor header's paragraph, and the map column's coverage heading and its `N of M stops with places · K still empty` line). This repetition is **known and deliberately left for a future copy pass**; it is recorded here rather than silently omitted so no future edit mistakes it for an intended pattern.
 
-The embedded Tally form on the Submit page renders in its own type and colours inside an iframe that the site cannot style. This is an **accepted boundary of the world, not a defect**: the frame is wrapped in the site's own app bar, heading, and measured column, and the fallback link below it is the site's own.
+The Contribute page, the Contributors page, the Line selector, and the Access-gated `/admin` forms are **not designed here yet**. The vocabulary below is authoritative, but a future pass must design those surfaces on these tokens before they ship.
 
 ## Colors
 
 The palette is a warm neutral family plus one loud, data-owned accent. Nothing is cool, nothing is pure white, and the accent is never chosen by hand.
 
 ### Primary
-- **Line Accent** (`#ed0f4c`, today the Kelana Jaya line's own colour): **read from `data/properties.json` (`lines[].color`) and set as `--line-accent` on the root of all three surfaces** — the Browse page from the covered Line, the Place page from the covered Line, the Submit page from the covered Line. It is never hardcoded in the stylesheet. Used as the corridor spine over checked stops, the filled stop marker, the coverage diagram's checked run and markers, the `color-mix` tint on the selected row (8% at rest, 12% on hover), the `::selection` wash (24%), and the global focus ring. **Never used as text.**
+- **Line Accent** (`#ed0f4c`, today the Kelana Jaya line's own colour): **read from `data/network.json` (`lines[].color`) and set as `--line-accent` on the root of every surface** — the Browse page, the Place page and the Contribute page, each from the Line it shows. It is never hardcoded in the stylesheet. Used as the corridor spine over the stops with Places, the filled stop marker, the coverage diagram's filled run and markers, the `color-mix` tint on the selected row (8% at rest, 12% on hover), the `::selection` wash (24%), and the global focus ring. **Never used as text.**
 
 ### Neutral
 - **Warm Paper** (`#faf9f7`): the page ground of every surface, the route strip's surface, the unfilled stop marker's fill, and the base that all tints mix into.
-- **Stop Band** (`#f1efeb`): the tone behind checked station headings and the Browse map column's backdrop; the hover wash on corridor rows and on the `Show every type` button. Separation without a card.
+- **Stop Band** (`#f1efeb`): the tone behind Station headings that carry Places and the Browse map column's backdrop; the hover wash on corridor rows and on the `Show every type` button. Separation without a card.
 - **Ink** (`#15171c`): primary text, the primary button's fill, the travel-mode active segment's fill, the coverage diagram's endpoint names. **17.04:1 on paper.**
-- **Ink Soft** (`#5c5f66`): secondary text — row meta, coverage paragraph, unchecked-station names, quiet links, app-bar subtitle and counts. **6.08:1 on paper** — clears AA at body size.
+- **Ink Soft** (`#5c5f66`): secondary text — row meta, coverage paragraph, Station names with no Places, quiet links, app-bar subtitle and counts. **6.08:1 on paper** — clears AA at body size.
 - **Rule** (`#e6e2db`): the default 1px hairline between regions and rows, and the `border-t` that separates the map from the route strip.
 - **Rule Strong** (`#d5d0c7`): the stronger hairline on interactive edges (select, travel-mode frame, quiet button), the unfilled spine and marker, the coverage diagram's unfilled track, scrollbar thumb, and underline decoration.
 
@@ -181,11 +181,11 @@ The site ships **exactly one typeface and makes no third-party font request**: `
 
 The ramp is **six pixel values across five roles**; no surface invents a seventh size.
 
-- **Display** (700, 26px → 34px at `sm`, line-height 1.05–1.1, letter-spacing −0.02em to −0.03em): the Browse page's `How far I've got` coverage heading, and the `h1` of the Place page and the Submit page. (On the Browse page the display statement is an `h2`; that page's `h1` is the 12px uppercase Line label below.)
+- **Display** (700, 26px → 34px at `sm`, line-height 1.05–1.1, letter-spacing −0.02em to −0.03em): the Browse page's coverage heading, and the `h1` of the Place page and the Contribute page. (On the Browse page the display statement is an `h2`; that page's `h1` is the 12px uppercase Line label below.)
 - **Section** (600–700, 16px, line-height ~1.2, letter-spacing −0.01em to −0.03em): the corridor diagram's south and north endpoint names, the app-bar `NaikTrainJer` wordmark, and a phone's route-column map label naming the Place.
-- **Body** (400; names and field values at 600; 13.5px, line-height 1.5–1.625): the corridor header's coverage prose, a Place's name in the corridor list, an unchecked station's name, the coverage counts line, the route strip's instruction and its named answer, a Place page's descriptive sentence and its field values, and the `No places match that type.` empty state.
-- **Control** (500–600, 12.5px): every control and quiet link — the app-bar subtitle and counts, the type filter's label and its native select, every primary and quiet button, the travel-mode segments, the `All places` back control, the `Full page` / `On Maps` / `Place on Google Maps` links, the route strip's `kind · type · station` meta, and the Submit page's fallback note.
-- **Label** (700, 12px, letter-spacing 0.1em–0.12em, uppercase): the `KELANA JAYA LINE` corridor heading, each checked station's name, and the Place page's `NEAREST STATION` / `ALSO NEAR` field labels. The same 12px step also carries the smallest tabular meta at 400–600 weight — a station's Place count, a row's `kind · type`, and the `Not checked yet` note.
+- **Body** (400; names and field values at 600; 13.5px, line-height 1.5–1.625): the corridor header's coverage prose, a Place's name in the corridor list, a Station's name with no Places, the coverage counts line, the route strip's instruction and its named answer, a Place page's descriptive sentence and its field values, and the `No places match that type.` empty state.
+- **Control** (500–600, 12.5px): every control and quiet link — the app-bar subtitle and counts, the type filter's label and its native select, every primary and quiet button, the travel-mode segments, the `All places` back control, the `Full page` / `On Maps` / `Place on Google Maps` links, the route strip's `kind · type · station` meta, and the Contribute form's fields and note.
+- **Label** (700, 12px, letter-spacing 0.1em–0.12em, uppercase): the `KELANA JAYA LINE` corridor heading, each Station heading that carries Places, and the Place page's `NEAREST STATION` / `ALSO NEAR` field labels. The same 12px step also carries the smallest tabular meta at 400–600 weight — a station's Place count, a row's `kind · type`, and the `No places yet` note.
 
 Counts, station codes, and coverage ratios render with `tabular-nums` so digits do not jitter as the list filters.
 
@@ -198,15 +198,15 @@ Counts, station codes, and coverage ratios render with `tabular-nums` so digits 
 
 ## Layout
 
-The site is an app shell. The Browse page is `h-dvh` and non-scrolling at the root (`overflow-hidden`), with each column scrolling inside itself; the Place page is `min-h-dvh` on a phone and `md:h-dvh md:overflow-hidden` above that; the Submit page is `min-h-dvh` and scrolls as one measured column. An `AppBar` spans the top of every surface and is `sticky top-0 z-30`, separated by a 1px `rule` bottom border and wrapping freely on narrow screens (`flex-wrap`, `gap-x-5`/`gap-y-2.5`, `px-4 py-3` → `sm:px-6`).
+The site is an app shell. The Browse page is `h-dvh` and non-scrolling at the root (`overflow-hidden`), with each column scrolling inside itself; the Place page is `min-h-dvh` on a phone and `md:h-dvh md:overflow-hidden` above that; the Contribute page is `min-h-dvh` and scrolls as one measured column. An `AppBar` spans the top of every surface and is `sticky top-0 z-30`, separated by a 1px `rule` bottom border and wrapping freely on narrow screens (`flex-wrap`, `gap-x-5`/`gap-y-2.5`, `px-4 py-3` → `sm:px-6`).
 
 On the Browse page, two columns sit edge to edge below the bar: the corridor list (`w-full` on a phone, `md:w-[420px] md:shrink-0`, `md:border-r`) and the map column (`flex-1`, `bg-band`). The split appears at `md` (768px); below that the two are mutually exclusive — the corridor fills the screen, and selecting a Place swaps in the map column (the corridor is `hidden md:flex` when a Place is selected, otherwise `flex`). The map column stacks the frame (`flex-1`) over the route strip (`shrink-0 border-t border-rule`), so the strip never covers the map.
 
 On the Place page the two columns are a `flex-col md:flex-row`: on a phone the route section is `order-1` and the details section is `order-2` (route-first, details below); at `md` the details column takes `md:order-1 md:w-[420px] md:border-r` and scrolls inside itself while the route column takes `md:order-2 md:flex-1`. The phone's map is `h-[52vh]`; the route strip (`shrink-0 border-t border-rule`, with the shared `TravelMode`, `Open route`, and `Place on Google Maps`) sits below it on every width.
 
-The Submit page's body is one column: `mx-auto w-full max-w-[640px] px-5 py-10 sm:py-14`, holding the `Suggest a place` display heading and the embedded Tally iframe, with a fallback link beneath.
+The Contribute page's body is one column: `mx-auto w-full max-w-[640px] px-5 py-10 sm:py-14`, holding the `Contribute a place` display heading and the native form beneath it.
 
-The corridor's rhythm is a fixed left rail of 52px (`pl-[52px]`) carrying the spine and stop markers, so names and counts align down the whole list. Station headings sit on a `band` strip with `py-2.5`; Place rows run `py-3` with `pr-12` to clear the trailing page-link icon; unchecked rows are a compact `py-2` line. The corridor header (`px-5 pb-3.5 pt-4`) carries the Line's identity and the coverage paragraph. Spacing is a 4px-based rhythm; the recurring steps are 2, 4, 6, 8, 10, 12, 16, 20, 24, 28, 40, 48, and the 52px rail. The corridor diagram's stops widen from 14px to 18px at `min-[1400px]` so the spine stays proportionate on a wide monitor.
+The corridor's rhythm is a fixed left rail of 52px (`pl-[52px]`) carrying the spine and stop markers, so names and counts align down the whole list. Station headings sit on a `band` strip with `py-2.5`; Place rows run `py-3` with `pr-12` to clear the trailing page-link icon; rows with no Places are a compact `py-2` line. The corridor header (`px-5 pb-3.5 pt-4`) carries the Line's identity and the coverage paragraph. Spacing is a 4px-based rhythm; the recurring steps are 2, 4, 6, 8, 10, 12, 16, 20, 24, 28, 40, 48, and the 52px rail. The corridor diagram's stops widen from 14px to 18px at `min-[1400px]` so the spine stays proportionate on a wide monitor.
 
 ### Named Rules
 **The Corridor Order Rule.** Line order — descending `sort`, south to north — is the only order the corridor is ever shown in. There is no A–Z sort and no "most places" sort; the corridor is real information, not a sort option.
@@ -234,16 +234,16 @@ The form language is quiet and functional. Controls take a small radius: **6px**
 ### App Bar
 - **Shape:** full-width, flat, 1px `rule` bottom border; no radius, no shadow; `sticky top-0 z-30`.
 - **Contents:** the `NaikTrainJer` wordmark (16px/700, −0.03em, the way home), an optional Line subtitle (12.5px `ink-soft`), an optional per-surface `filter`, and a trailing group (`ml-auto`) holding the coverage counts (12.5px, `tabular-nums`, `ink-soft`, hidden below `sm`) and the bar's action.
-- **Behaviour:** wraps on narrow screens. On Browse the filter is the type filter and the action is `Suggest a place`; on Place and Submit the action is a button (`Suggest a place` / `Browse places`). It is the site's only navigation chrome, so no page needs a separate back link in its body.
+- **Behaviour:** wraps on narrow screens. On Browse the filter is the type filter and the action is `Contribute a place`; on Place and Contribute the action is a button (`Contribute a place` / `Browse places`). It is the site's only navigation chrome, so no page needs a separate back link in its body.
 
 ### Buttons
 - **Shape:** 6px radius (`rounded-md`).
-- **Primary:** `ink` fill, `paper` text, 12.5px/600, `px-3 py-1.5`; used for `Suggest a place`, `Browse places`, and `Open route`.
+- **Primary:** `ink` fill, `paper` text, 12.5px/600, `px-3 py-1.5`; used for `Contribute a place`, `Browse places`, and `Open route`.
 - **Hover / Focus:** `hover:opacity-85` with an opacity transition; focus takes the global ring — `2px` `--line-accent` at `2px` offset (falling back to Ink).
 - **Quiet button:** `rule-strong` hairline, transparent fill, 12.5px/600, `px-3 py-1.5`, `hover:bg-band` — the `Show every type` reset.
 
 ### Quiet Links
-Text-only, 12.5px/600, `ink-soft → ink` on hover. `Full page`, `On Maps`, and `Place on Google Maps` are underlined with `decoration-rule-strong` at `underline-offset-4`; `All places` sits on a 16px authored back-arrow SVG; the Submit page's fallback link is `ink` underlined the same way and dims on hover.
+Text-only, 12.5px/600, `ink-soft → ink` on hover. `Full page`, `On Maps`, and `Place on Google Maps` are underlined with `decoration-rule-strong` at `underline-offset-4`; `All places` sits on a 16px authored back-arrow SVG.
 
 ### Travel Mode (shared control)
 - **Shape:** a 2px-padded frame (`rule-strong` hairline, 6px radius) holding two 4px-radius segments; `role="group"`, `aria-label="Travel mode"`.
@@ -253,21 +253,21 @@ Text-only, 12.5px/600, `ink-soft → ink` on hover. `Full page`, `On Maps`, and 
 - **Style:** `paper` fill, 1px `rule-strong`, 6px radius, 12.5px/500 `ink`, `py-1.5 pl-2.5 pr-2`; a 12.5px/500 `ink-soft` `Type` label sits beside it. Focus uses the global Line-coloured ring. Options carry `(n)` counts from the data; the select appears on the Browse page only.
 
 ### Station Band & Place Row
-- **Station Band:** the warm-grey heading strip for a checked stop — `band` fill, `py-2.5 pl-[52px] pr-4`, a 12px/700 uppercase 0.1em `ink` name and a 12px `tabular-nums` `ink-soft` Place count.
+- **Station Band:** the warm-grey heading strip for a stop that carries Places — `band` fill, `py-2.5 pl-[52px] pr-4`, a 12px/700 uppercase 0.1em `ink` name and a 12px `tabular-nums` `ink-soft` Place count.
 - **Place Row:** a full-width button, `py-3 pl-[52px] pr-12`, `hover:bg-band`; a 13.5px/600 `ink` name over a 12px `ink-soft` `kind · type` meta. The selected state is a `color-mix` tint from `--line-accent` (8% at rest, 12% on hover) plus a filled marker — never a side-tab. A trailing 15px authored `OpenIcon` link sits at `right-2`.
 
 ### Corridor Spine & Stop Marker (signature)
-The corridor is the site's identity: one vertical 2px spine at `left-[22px]` running the whole list, stepping with each stop. Checked stops take the Line accent spine and a 14px filled accent marker (`rounded-full`, 2px ring), and carry a `band` heading plus their Place rows. Unchecked stops take a `rule-strong` spine and an unfilled `paper` marker ring, and render one compact non-interactive line ending in `Not checked yet`. The final row's spine is truncated to 30px so the corridor ends cleanly. Everything about the corridor is derived from the data: stop order, which stops are checked, and the colour — the page proves its coverage instead of claiming it.
+The corridor is the site's identity: one vertical 2px spine at `left-[22px]` running the whole list, stepping with each stop. Stops with Places take the Line accent spine and a 14px filled accent marker (`rounded-full`, 2px ring), and carry a `band` heading plus their Place rows. Stops with no Places take a `rule-strong` spine and an unfilled `paper` marker ring, and render one compact non-interactive line ending in `No places yet`. The final row's spine is truncated to 30px so the corridor ends cleanly. Everything about the corridor is derived from the data: stop order, which stops hold Places, and the colour — the page proves its coverage instead of claiming it.
 
 ### Coverage Diagram (signature)
-Before a Place is picked, the Browse map column shows the whole corridor at scale: a `rule-strong` `rounded-full` track, the checked run filled in `--line-accent` to a width derived from the checked count, one marker per stop (accent-filled when checked, `paper`-ringed when not), and the two 16px endpoint names beneath. It is decorative to assistive tech (`aria-hidden`) because the same facts are stated in text.
+Before a Place is picked, the Browse map column shows the whole corridor at scale: a `rule-strong` `rounded-full` track, the run of stops with Places filled in `--line-accent` to a width derived from that count, one marker per stop (accent-filled when it holds Places, `paper`-ringed when not), and the two 16px endpoint names beneath. It is decorative to assistive tech (`aria-hidden`) because the same facts are stated in text.
 
 ### Route Strip & Route Frame
 - **Route Strip:** a `shrink-0 border-t border-rule` bar at the foot of the map column — `paper`, `px-4 py-3`, `flex-wrap gap-x-5 gap-y-3`. On the Browse page at rest it reads `Pick a place from the corridor — its walk or drive route appears here.`; once a Place is selected it carries `All places`, the Place name (13.5px/600) over its `kind · type · station` meta (12.5px `ink-soft`), the shared `TravelMode`, `Open route`, `Full page`, and `On Maps`. Its content arrives with the 420ms `app-reveal` (opacity + 6px rise, `cubic-bezier(0.16, 1, 0.3, 1)`; disabled under reduced motion). The Place page's strip is the same bar holding `TravelMode`, `Open route`, and `Place on Google Maps`.
 - **Route Frame:** the embedded Google Maps iframe, built client-side from a Place's coordinates and its nearest station in walk or drive mode. It fills its box (`absolute inset-0`, border-0) on Browse, and is `h-[52vh]` on a phone / `md:flex-1` on the Place page. It cannot be styled, read, or clicked into, and nothing is laid over it.
 
-### Submit Column
-The `Suggest a place` display heading sits in a `max-w-[640px]` column, with the embedded Tally iframe (`min-h-[780px] md:min-h-[620px]`) beneath it and a 12.5px fallback line below. The iframe renders in its own type and colours — an accepted boundary of the world, not a defect.
+### Contribute Column
+The `Contribute a place` display heading sits in a `max-w-[640px]` column, with the site's own native form beneath it. The form is built from the same controls and tokens as every other surface; nothing on it is a third-party frame.
 
 ### Icons
 Every icon is an authored single-stroke SVG in `app/components/icons.tsx` (`OpenIcon`, `BackIcon`, 1.5px stroke, `currentColor`, 15–16px) — never a Unicode arrow standing in for an icon.
@@ -279,7 +279,7 @@ Every icon is an authored single-stroke SVG in `app/components/icons.tsx` (`Open
 - **Do** express the Line's colour as a stripe, fill, marker, diagram run, tint, or focus ring.
 - **Do** separate structure with 1px `rule`/`rule-strong` hairlines and `paper`-against-`band` tone.
 - **Do** use Archivo only, with `tabular-nums` on every count, ratio, and station code.
-- **Do** state the unchecked corridor plainly and derive every count, name, and stretch from the data (`coverage()` / `coverageCopy()`).
+- **Do** state the stops with no Places plainly and derive every count and name from the data (`coverage()` / `coverageCopy()`).
 - **Do** keep a visible focus ring on every interactive element — `2px` accent at `2px` offset.
 - **Do** keep the route strip a sibling *below* the map, behind a `border-t`, so the route frame is never covered.
 - **Do** share the chrome — `AppBar`, `TravelMode`, and the authored icons — across surfaces rather than rebuilding it per page.
@@ -296,4 +296,4 @@ Every icon is an authored single-stroke SVG in `app/components/icons.tsx` (`Open
 - **Don't** use a raster in the interface, and don't invent provenance for one. The only rasters that ship are the favicon set; the source photograph is a build input under `assets/`, never a page asset.
 - **Don't** show a walk or drive time figure; no page carries a Measurement, and the map route is the answer.
 - **Don't** use a `↗`/`←` text glyph as an icon; use the authored SVG.
-- **Don't** flatten the coverage fact into a single claim — the unchecked stretch is shown and named, never implied away.
+- **Don't** flatten the coverage fact into a single claim — the stops with no Places are shown and named, never implied away.
