@@ -2,10 +2,10 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../app/lib/browse-filter.ts";
+import type { Place } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
-import { coveredLine } from "../app/lib/lines.ts";
-import { lines, stations, places } from "../app/data/directory.node.ts";
+import { coveredLine, coverage } from "../app/lib/lines.ts";
+import { lines, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 
@@ -23,7 +23,7 @@ function paragraphContaining(html: string, needle: string): string {
 
 let browseHtml: string;
 let submitHtml: string;
-let data: { lines: Line[]; stations: Station[]; places: Place[] };
+let data: { lines: Line[]; places: Place[] };
 
 before(() => {
   browseHtml = stripComments(
@@ -32,7 +32,7 @@ before(() => {
   submitHtml = stripComments(
     readFileSync(resolve(BUILD_DIR, "submit", "index.html"), "utf-8"),
   );
-  data = { lines, stations, places };
+  data = { lines, places };
 });
 
 // ---------------------------------------------------------------------------
@@ -42,20 +42,14 @@ before(() => {
 describe("browse page intro copy", () => {
   let line: Line;
   let ordered: Line["stations"];
-  let checked: Line["stations"];
-  let unchecked: Line["stations"];
-  let nameOf: (code: string) => string;
+  let cov: ReturnType<typeof coverage>;
   let intro: string;
 
   before(() => {
-    line = coveredLine(data.lines, data.stations);
+    line = coveredLine(data.lines, data.places);
     ordered = [...line.stations].sort((a, b) => a.sort - b.sort);
-    const checkedCodes = new Set(data.stations.map((s) => s.code));
-    checked = ordered.filter((s) => checkedCodes.has(s.code));
-    unchecked = ordered.filter((s) => !checkedCodes.has(s.code));
-    const stationByCode = new Map(data.stations.map((s) => [s.code, s]));
-    nameOf = (code: string) => stationByCode.get(code)!.name;
-    intro = paragraphContaining(browseHtml, "stations so far");
+    cov = coverage(line, data.places);
+    intro = paragraphContaining(browseHtml, "stations have places so far");
   });
 
   it("names the Line it covers", () => {
@@ -65,64 +59,55 @@ describe("browse page intro copy", () => {
     );
   });
 
-  it("names the checked count and the Line's total, from the data", () => {
+  it("names the covered count and the Line's total, from the data", () => {
     assert.ok(
-      intro.includes(`${checked.length} of the ${ordered.length} stations`),
-      `Intro must state "${checked.length} of the ${ordered.length} stations", got: ${intro}`,
+      intro.includes(`${cov.coveredCount} of the ${ordered.length} stations`),
+      `Intro must state "${cov.coveredCount} of the ${ordered.length} stations", got: ${intro}`,
     );
     assert.ok(
-      !intro.includes(`${checked.length} of the ${unchecked.length} stations`),
-      "Intro must not confuse the checked count with the unchecked count",
-    );
-  });
-
-  it("names the true northern end of the checked stretch", () => {
-    const northernEnd = nameOf(checked[0].code);
-    const southernEnd = nameOf(checked[checked.length - 1].code);
-    assert.ok(
-      intro.includes(northernEnd),
-      `Intro must name "${northernEnd}" as the checked stretch's northern end, got: ${intro}`,
-    );
-    assert.ok(
-      intro.includes(southernEnd),
-      `Intro must name "${southernEnd}" as the checked stretch's southern end, got: ${intro}`,
-    );
-    assert.ok(
-      !intro.includes("KL Gateway"),
-      `Intro must not name KL Gateway, which is three checked Stations short of the truth, got: ${intro}`,
+      !intro.includes(`${cov.coveredCount} of the ${cov.empty.length} stations`),
+      "Intro must not confuse the covered count with the empty count",
     );
   });
 
-  it("names where the unchecked stretch begins, from the data", () => {
-    assert.ok(
-      intro.includes(unchecked[0].name),
-      `Intro must name "${unchecked[0].name}", where the unchecked stretch begins, got: ${intro}`,
+  it("counts the Stations holding Places, derived from the data", () => {
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const expected = ordered.filter((station) => withPlaces.has(station.code)).length;
+    assert.equal(
+      cov.coveredCount,
+      expected,
+      "Coverage must count the Stations that hold Places",
     );
+    assert.equal(cov.total, ordered.length, "Coverage total must be the Line's Stations");
+  });
+
+  it("names how many Stations have no Places yet, from the data", () => {
+    assert.ok(cov.empty.length > 0, "This assertion is meaningless with no empty Station");
     assert.ok(
-      intro.includes(unchecked[unchecked.length - 1].name),
-      `Intro must name where the unchecked stretch ends, got: ${intro}`,
-    );
-    assert.ok(
-      intro.includes(String(unchecked.length)),
-      `Intro must state how many Stations are still to do, got: ${intro}`,
+      intro.includes(`${cov.empty.length} stations have no places yet`),
+      `Intro must state how many Stations have no places yet, got: ${intro}`,
     );
   });
 
-  it("every Station in the data belongs to the Line the page covers", () => {
-    for (const station of data.stations) {
-      assert.equal(
-        station.line,
-        line.slug,
-        `Station "${station.name}" has line "${station.line}", expected "${line.slug}"`,
-      );
-    }
-  });
-
-  it("does not claim walkability figures the data does not hold", () => {
+  it("never claims a stretch or a walk", () => {
     assert.ok(
       !intro.toLowerCase().includes("walk"),
       "Intro copy must not mention walkability figures",
     );
+    assert.ok(
+      !intro.includes(" up to "),
+      "Intro copy must not claim a span between two Stations",
+    );
+  });
+
+  it("every Place belongs to a Station on the Line the page covers", () => {
+    const codes = new Set(line.stations.map((station) => station.code));
+    for (const place of data.places) {
+      assert.ok(
+        codes.has(place.station),
+        `Place "${place.name}" has station "${place.station}", expected one on the ${line.slug} line`,
+      );
+    }
   });
 });
 
@@ -131,7 +116,7 @@ describe("browse page intro copy", () => {
 // ---------------------------------------------------------------------------
 
 describe("the Line is read from the data", () => {
-  const line = coveredLine(data.lines, data.stations);
+  const line = coveredLine(data.lines, data.places);
 
   it("every prerendered page names the Line it covers", () => {
     assert.ok(

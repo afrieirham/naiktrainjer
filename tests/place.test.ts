@@ -2,12 +2,14 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../app/lib/browse-filter.ts";
+import type { Place } from "../app/lib/browse-filter.ts";
 import { TYPE_LABELS, KIND_LABELS } from "../app/lib/labels.ts";
-import { stations, places } from "../app/data/directory.node.ts";
+import { stationNamesByCode } from "../app/lib/lines.ts";
+import { lines, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const OG_DIR = resolve(BUILD_DIR, "og");
+const STATION_NAMES = stationNamesByCode(lines);
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -41,10 +43,10 @@ function extractCanonical(html: string): string | null {
   return match?.[1] ?? null;
 }
 
-let data: { stations: Station[]; places: Place[] };
+let data: { places: Place[] };
 
 before(() => {
-  data = { stations, places };
+  data = { places };
 });
 
 describe("place page slugs", () => {
@@ -190,9 +192,7 @@ describe("place page metadata", () => {
   });
 
   it("every description mentions the nearest station", () => {
-    const stationNameMap = new Map(
-      data.stations.map((s) => [s.code, s.name]),
-    );
+    const stationNameMap = STATION_NAMES;
     for (const place of data.places) {
       const page = pages.find((p) => p.slug === place.slug)!;
       const stationName = stationNameMap.get(place.station)!;
@@ -263,9 +263,7 @@ describe("place page content", () => {
   });
 
   it("every page shows its Nearest station", () => {
-    const stationNameMap = new Map(
-      data.stations.map((s) => [s.code, s.name]),
-    );
+    const stationNameMap = STATION_NAMES;
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -283,9 +281,7 @@ describe("place page content", () => {
   });
 
   it("every page with alsoNear shows the second station", () => {
-    const stationNameMap = new Map(
-      data.stations.map((s) => [s.code, s.name]),
-    );
+    const stationNameMap = STATION_NAMES;
     const placesWithAlsoNear = data.places.filter(
       (p) => p.alsoNear && p.alsoNear.length > 0,
     );

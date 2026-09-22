@@ -1,4 +1,4 @@
-import type { Place, Station } from "./browse-filter";
+import type { Place } from "./browse-filter";
 
 export type RouteMode = "walk" | "drive";
 

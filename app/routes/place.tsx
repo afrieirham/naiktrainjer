@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import type { Place } from "../lib/browse-filter";
-import { lines, stations, places } from "../data/directory";
+import { lines, places } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -12,14 +12,15 @@ import { AppBar, AppBarAction } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
-import { coveredLine, coverage } from "../lib/lines";
+import { coveredLine, coverage, stationNamesByCode } from "../lib/lines";
 import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
 import type { Route } from "./+types/place";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const COVERED_LINE = coveredLine(lines, stations);
-const COVERAGE = coverage(COVERED_LINE, stations);
-const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${places.length} places`;
+const COVERED_LINE = coveredLine(lines, places);
+const COVERAGE = coverage(COVERED_LINE, places);
+const COUNTS = `${COVERAGE.coveredCount} of ${COVERAGE.total} stations · ${places.length} places`;
+const STATION_NAMES = stationNamesByCode(lines);
 
 export function loader({ params }: Route.LoaderArgs) {
   const slug = params.placeSlug as string;
@@ -27,14 +28,13 @@ export function loader({ params }: Route.LoaderArgs) {
   if (!place) {
     throw new Response("Not Found", { status: 404 });
   }
-  const station = stations.find((s) => s.code === place.station);
-  const alsoNearStations = (place.alsoNear ?? [])
-    .map((code) => stations.find((s) => s.code === code))
-    .filter(Boolean);
+  const alsoNearNames = (place.alsoNear ?? [])
+    .map((code) => STATION_NAMES.get(code))
+    .filter((name): name is string => Boolean(name));
   return {
     place: place as Place,
-    stationName: station?.name ?? place.station,
-    alsoNearNames: alsoNearStations.map((s) => s!.name),
+    stationName: STATION_NAMES.get(place.station) ?? place.station,
+    alsoNearNames,
     lineName: COVERED_LINE.name,
   };
 }

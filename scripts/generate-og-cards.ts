@@ -2,11 +2,12 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import sharp from "sharp";
 import { TYPE_LABELS } from "../app/lib/labels.ts";
-import { stations, places } from "../app/data/directory.node.ts";
+import { stationNamesByCode } from "../app/lib/lines.ts";
+import { lines, places } from "../app/data/directory.node.ts";
 
 const outDir = resolve(import.meta.dirname, "../build/client/og");
 
-const stationMap = new Map(stations.map((s) => [s.code, s.name]));
+const stationMap = stationNamesByCode(lines);
 
 function escapeXml(s: string): string {
   return s
