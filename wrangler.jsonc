@@ -1,0 +1,23 @@
+// This file configures the Cloudflare Pages project; it is read by wrangler at
+// deploy time and is not part of `npm run build` or `npm test`. Secrets
+// (GITHUB_TOKEN, TURNSTILE_SECRET) live as Pages environment values and are
+// named here only.
+{
+  "name": "naiktrainjer",
+  "pages_build_output_dir": "./build/client",
+  "compatibility_date": "2026-09-22",
+
+  // The rate-limit counter for the contribute path. Replace the id with the
+  // project's own KV namespace id before deploying.
+  "kv_namespaces": [
+    { "binding": "RATE_LIMIT", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ],
+
+  "vars": {
+    "GITHUB_REPO": "afrieirham/naiktrainjer",
+    // Public Turnstile site key, served to the browser by /api/config. While it
+    // is empty, the form refuses to submit rather than submitting without a bot
+    // check.
+    "TURNSTILE_SITE_KEY": ""
+  }
+}

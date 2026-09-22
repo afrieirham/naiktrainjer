@@ -209,7 +209,7 @@ export default function Browse() {
     >
       <AppBar
         counts={`${cov.coveredCount} of ${cov.total} stations · ${places.length} places`}
-        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
+        action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1">

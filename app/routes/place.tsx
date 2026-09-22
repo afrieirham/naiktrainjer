@@ -101,7 +101,7 @@ export default function PlacePage() {
       <AppBar
         subtitle={`${lineName} line`}
         counts={COUNTS}
-        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
+        action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
