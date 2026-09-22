@@ -31,7 +31,8 @@ an entity (ADR-0002, as amended).
 
 - ADR-0001 decision 1 is amended: the source of truth is the set of record files, not one file.
   The rest of ADR-0001 — prerender everything — is unchanged.
-- `data/properties.json` is retired. The existing records are split by a one-off migration, kept
-  for provenance like `convert-data.mjs`.
+- `data/properties.json` is retired. The existing records were split by a one-off migration, which
+  has since been removed: it also wrote the transitional checked-Stations file that the derived
+  Coverage change (ADR-0002, as amended) deleted.
 - Anything a PR can add is its own file, and the one machine-written artifact (`network.json`) is
   kept away from the records the maintainer and contributors write.

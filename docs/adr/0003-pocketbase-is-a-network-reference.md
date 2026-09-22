@@ -27,9 +27,10 @@ would break that promise and make every deploy depend on a box on the maintainer
    `data/network.json` as a top-level `lines[]` array; its output is committed. It is run by
    hand and is never part of the build.
 3. **It is never part of `npm run build`.** A deploy cannot depend on PocketBase being reachable.
-4. **It keys on station code, never on name or slug.** `CHECKED_STATION_CODES` maps each checked
-   Station's slug to its network code, and the coordinate check at export time (300 m) proves the
-   mapping, so a renamed Station still resolves and a wrong mapping fails loudly.
+4. **It carries PocketBase's own codes.** The export takes each Station's code from PocketBase;
+   nothing is matched by name or slug, so there is no hand-maintained mapping left to drift.
+   *(Amended by ADR-0004: an earlier version proved a hand-maintained `CHECKED_STATION_CODES`
+   table by coordinate drift; that table and the checked-Station list are gone.)*
 5. **Coordinates are mapped explicitly.** PocketBase stores GeoJSON order (`geoPoint.lon`); the
    app reads `lng`. A naive copy produces `lng: undefined` and silently breaks every route frame.
 6. **The whole network is exported.** Every Line and Station PocketBase holds lands in
@@ -46,7 +47,5 @@ would break that promise and make every deploy depend on a box on the maintainer
 - The snapshot can drift from the network until someone re-runs the export — accepted, because
   the network changes slowly and a stale Station list is more honest than a build that can fail.
 - `scripts/validate-data.mjs` enforces the shape (a duplicate code, an unresolvable code, a
-  missing corridor position or an invalid colour all fail it) but cannot know the network, so
-  the export script — not the validator — is the guard on mapping correctness.
-- The hand-maintained `CHECKED_STATION_CODES` table is a small, reviewable artifact that survives
-  station renames, and it fails loudly if the mapping and the checked Station list disagree.
+  missing corridor position or an invalid colour all fail it) but cannot know the network, so the
+  export script is the only guard on what the network actually holds.
