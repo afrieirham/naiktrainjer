@@ -30,6 +30,15 @@ export const meta: Route.MetaFunction = () => [
   { tagName: "link", rel: "canonical", href: publicUrl("/admin") },
 ];
 
+/**
+ * The shell's whole state is in the query string and read on the client, so a
+ * `?place=`/`?contribute=` switch is a pure client-side render. Skipping
+ * revalidation avoids a `.data` request, which a static host answers with HTML.
+ */
+export function shouldRevalidate() {
+  return false;
+}
+
 const STATION_CODES = lines.flatMap((line) =>
   line.stations.map((station) => station.code),
 );
