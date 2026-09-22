@@ -21,10 +21,9 @@
   "pages_build_output_dir": "./build/client",
   "compatibility_date": "2026-09-22",
 
-  // The rate-limit counter for the contribute path. Replace the id with the
-  // project's own KV namespace id before deploying.
+  // The rate-limit counter for the contribute path.
   "kv_namespaces": [
-    { "binding": "RATE_LIMIT", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+    { "binding": "RATE_LIMIT", "id": "eb918c876d314ce7b1796fa3bf8ab3a2" }
   ],
 
   "vars": {
@@ -32,6 +31,6 @@
     // Public Turnstile site key, served to the browser by /api/config. While it
     // is empty, the form refuses to submit rather than submitting without a bot
     // check.
-    "TURNSTILE_SITE_KEY": ""
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFAHX4uWPS-YRjti"
   }
 }
