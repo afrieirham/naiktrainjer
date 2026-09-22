@@ -1,37 +1,48 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLoaderData } from "react-router";
-import propertiesData from "../../data/properties.json";
+import { useLoaderData, useSearchParams } from "react-router";
 import {
   buildStationRows,
   filterPlaces,
   getUniqueTypes,
-  type Place,
-  type Station,
 } from "../lib/browse-filter";
-import { coveredLine, corridorOrder, coverage, coverageCopy, type Coverage, type Line } from "../lib/lines";
+import {
+  coveredLine,
+  coveredLines,
+  corridorOrder,
+  coverage,
+  coverageCopy,
+  selectedLine,
+  stationNamesByCode,
+  type Coverage,
+  type Line,
+} from "../lib/lines";
+import { lines as LINES, places as PLACES } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar, AppBarAction } from "../components/AppBar";
+import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { OpenIcon, BackIcon } from "../components/icons";
 import { TYPE_LABELS, metaLabel } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/browse";
 
-const LINES = propertiesData.lines as Line[];
-const CHECKED_STATIONS = propertiesData.stations as Station[];
-const PLACES = propertiesData.places as Place[];
-
 export function loader() {
   return {
-    line: coveredLine(LINES, CHECKED_STATIONS),
-    stations: CHECKED_STATIONS,
     places: PLACES,
   };
+}
+
+/**
+ * Every Line and Place is bundled, so the selected Line comes out of the data
+ * rather than a request. Skipping revalidation keeps a `?line=` switch a pure
+ * client-side render — there is no `.data` request to make on a static host.
+ */
+export function shouldRevalidate() {
+  return false;
 }
 
 /**
@@ -40,12 +51,12 @@ export function loader() {
  * The Line's name comes from the data, so a second Line is a data change, not a copy change.
  */
 export const meta: Route.MetaFunction = () => {
-  const line = coveredLine(LINES, CHECKED_STATIONS);
+  const line = coveredLine(LINES, PLACES);
   return [
     { title: `NaikTrainJer — places near stations on the ${line.name} line` },
     {
       name: "description",
-      content: `Browse ${PLACES.length} places I checked near stations on the ${line.name} line, in the line's own order. Walk or drive directions to the station.`,
+      content: `Browse ${PLACES.length} places near stations on the ${line.name} line, in the line's own order. Walk or drive directions to the station.`,
     },
     { tagName: "link", rel: "canonical", href: publicUrl("/") },
   ];
@@ -53,15 +64,15 @@ export const meta: Route.MetaFunction = () => {
 
 /**
  * What the map column holds before a Place is picked: the corridor itself, at
- * scale. Every stop, name and count comes from the data, so the stretch still to
- * do is as legible as the stretch that is done — the page proves its coverage
- * instead of claiming it.
+ * scale. Every stop, name and count comes from the data, so the Stations that
+ * hold Places are as legible as the ones that do not — the page proves its
+ * coverage instead of claiming it.
  */
 function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
   const stops = corridorOrder(line);
-  const checkedCodes = new Set(cov.checked.map((station) => station.code));
+  const coveredCodes = new Set(cov.covered.map((station) => station.code));
   const span = stops.length - 1;
-  const boundary = span > 0 ? ((cov.checkedCount - 1) / span) * 100 : 0;
+  const boundary = span > 0 ? ((cov.coveredCount - 1) / span) * 100 : 0;
   const south = stops[0];
   const north = stops[stops.length - 1];
 
@@ -71,7 +82,8 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
         How far I&rsquo;ve got
       </h2>
       <p className="mt-4 text-[13.5px] font-medium tabular-nums text-ink-soft">
-        {cov.checkedCount} of {cov.total} stops checked · {cov.unchecked.length} still to do
+        {cov.coveredCount} of {cov.total} stops have places · {cov.empty.length} with no
+        places yet
       </p>
 
       <div className="relative mt-12 h-[14px] min-[1400px]:h-[18px]">
@@ -86,7 +98,7 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
           style={{ width: `${boundary}%`, backgroundColor: "var(--line-accent)" }}
         />
         {stops.map((stop, index) => {
-          const isChecked = checkedCodes.has(stop.code);
+          const isCovered = coveredCodes.has(stop.code);
           const position = span > 0 ? (index / span) * 100 : 0;
           return (
             <span
@@ -95,8 +107,8 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
               className="absolute top-0 h-[14px] w-[14px] -translate-x-1/2 rounded-full border-[3px] min-[1400px]:h-[18px] min-[1400px]:w-[18px] min-[1400px]:border-[4px]"
               style={{
                 left: `${position}%`,
-                borderColor: isChecked ? "var(--line-accent)" : "var(--color-rule-strong)",
-                backgroundColor: isChecked ? "var(--line-accent)" : "var(--color-paper)",
+                borderColor: isCovered ? "var(--line-accent)" : "var(--color-rule-strong)",
+                backgroundColor: isCovered ? "var(--line-accent)" : "var(--color-paper)",
               }}
             />
           );
@@ -116,34 +128,68 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
 }
 
 export default function Browse() {
-  const { line, stations, places } = useLoaderData<typeof loader>();
+  const { places } = useLoaderData<typeof loader>();
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("");
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
-  const cov = useMemo(() => coverage(line, stations), [line, stations]);
+  /**
+   * The URL is the source of truth for the selected Line, but a static host
+   * serves the one page prerendered for `/` — the default Line. Reading the
+   * param on the first client render would mismatch that HTML, so it is applied
+   * once mounted: the first paint matches what was served, then a shared or
+   * refreshed `?line=` takes over.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  const stationNameMap = useMemo(
-    () => new Map(stations.map((s) => [s.slug, s.name])),
-    [stations],
+  const covered = useMemo(() => coveredLines(LINES, places), [places]);
+  const defaultLine = useMemo(() => coveredLine(LINES, places), [places]);
+  const line = useMemo(
+    () => selectedLine(LINES, places, mounted ? searchParams.get("line") : null),
+    [places, searchParams, mounted],
   );
 
+  /** Only the selected Line's Places sit on the corridor. */
+  const linePlaces = useMemo(() => {
+    const codes = new Set(line.stations.map((station) => station.code));
+    return places.filter((place) => codes.has(place.station));
+  }, [line, places]);
+
+  const uniqueTypes = useMemo(() => getUniqueTypes(linePlaces), [linePlaces]);
+  const cov = useMemo(() => coverage(line, places), [line, places]);
+
+  const stationNameMap = useMemo(() => stationNamesByCode(LINES), []);
+
   const filteredPlaces = useMemo(
-    () => filterPlaces(places, typeFilter),
-    [places, typeFilter],
+    () => filterPlaces(linePlaces, typeFilter),
+    [linePlaces, typeFilter],
   );
 
   const stationRows = useMemo(
-    () => buildStationRows(line, stations, places, filteredPlaces),
-    [line, stations, places, filteredPlaces],
+    () => buildStationRows(line, linePlaces, filteredPlaces),
+    [line, linePlaces, filteredPlaces],
   );
 
   const selectedPlace = useMemo(
-    () => places.find((p) => p.slug === selectedSlug) ?? null,
-    [places, selectedSlug],
+    () => linePlaces.find((p) => p.slug === selectedSlug) ?? null,
+    [linePlaces, selectedSlug],
   );
+
+  /**
+   * Switching Lines is a client-side render: the choice goes in the URL so
+   * Back, refresh and sharing all restore it. The default Line keeps a bare
+   * `/`; an unknown slug never reaches here because `selectedLine` resolves it.
+   */
+  const selectLine = (slug: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!slug || slug === defaultLine.slug) next.delete("line");
+    else next.set("line", slug);
+    setSearchParams(next);
+    setSelectedSlug(null);
+  };
 
   const selectedStationName = selectedPlace
     ? stationNameMap.get(selectedPlace.station) ?? selectedPlace.station
@@ -151,7 +197,7 @@ export default function Browse() {
 
   const selectedAlsoNear = useMemo(() => {
     if (!selectedPlace?.alsoNear?.length) return [];
-    return selectedPlace.alsoNear.map((slug) => stationNameMap.get(slug) ?? slug);
+    return selectedPlace.alsoNear.map((code) => stationNameMap.get(code) ?? code);
   }, [selectedPlace, stationNameMap]);
 
   const routeFrameUrl = useMemo(() => {
@@ -166,9 +212,9 @@ export default function Browse() {
 
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const place of places) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
+    for (const place of linePlaces) counts.set(place.type, (counts.get(place.type) ?? 0) + 1);
     return counts;
-  }, [places]);
+  }, [linePlaces]);
 
   const nothingMatches = filteredPlaces.length === 0;
   const lastIndex = stationRows.length - 1;
@@ -209,8 +255,9 @@ export default function Browse() {
       style={{ "--line-accent": line.color } as React.CSSProperties}
     >
       <AppBar
-        counts={`${cov.checkedCount} of ${cov.total} stations · ${places.length} places`}
-        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
+        counts={`${cov.coveredCount} of ${cov.total} stations · ${linePlaces.length} places`}
+        nav={<AppBarLink href="/contributors/">Contributors</AppBarLink>}
+        action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1">
@@ -222,27 +269,42 @@ export default function Browse() {
           }`}
         >
           <div className="shrink-0 border-b border-rule px-4 pb-3.5 pt-3.5 sm:px-5 sm:pt-4">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <h1 className="text-[12px] font-bold uppercase tracking-[0.12em] text-ink">
                 {line.name} line
               </h1>
-              <select
-                id="type-filter"
-                aria-label="Type"
-                value={typeFilter}
-                onChange={(event) => {
-                  setTypeFilter(event.target.value);
-                  setSelectedSlug(null);
-                }}
-                className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
-              >
-                <option value="">All types</option>
-                {uniqueTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
-                  </option>
-                ))}
-              </select>
+              <div className="flex min-w-0 items-center gap-2">
+                <select
+                  id="line-selector"
+                  aria-label="Line"
+                  value={line.slug}
+                  onChange={(event) => selectLine(event.target.value)}
+                  className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
+                >
+                  {covered.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  id="type-filter"
+                  aria-label="Type"
+                  value={typeFilter}
+                  onChange={(event) => {
+                    setTypeFilter(event.target.value);
+                    setSelectedSlug(null);
+                  }}
+                  className="min-w-0 rounded-md border border-rule-strong bg-paper py-1 pl-2 pr-1.5 text-[12.5px] font-medium text-ink"
+                >
+                  <option value="">All types</option>
+                  {uniqueTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {TYPE_LABELS[type] ?? type} ({typeCounts.get(type) ?? 0})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">
               {coverageCopy(cov)}
@@ -265,16 +327,15 @@ export default function Browse() {
           ) : (
             <ol className="app-scroll min-h-0 flex-1 overflow-y-auto">
               {stationRows.map((row, index) => {
-                const checked = row.check === "checked";
+                const covered = row.count > 0;
                 const isLast = index === lastIndex;
-                const active = checked && row.stationSlug === selectedSlug;
 
                 return (
                   <li
                     key={row.code}
-                    role={checked ? "group" : undefined}
-                    aria-label={checked ? row.name : undefined}
-                    data-station-count={checked ? row.count : undefined}
+                    role={covered ? "group" : undefined}
+                    aria-label={covered ? row.name : undefined}
+                    data-station-count={covered ? row.count : undefined}
                     className="relative"
                   >
                     <span
@@ -283,7 +344,7 @@ export default function Browse() {
                       style={{
                         bottom: isLast ? "auto" : 0,
                         height: isLast ? "30px" : undefined,
-                        backgroundColor: checked
+                        backgroundColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
                       }}
@@ -292,16 +353,16 @@ export default function Browse() {
                       aria-hidden="true"
                       className="absolute left-[16px] top-[14px] z-20 h-[14px] w-[14px] rounded-full border-2"
                       style={{
-                        borderColor: checked
+                        borderColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
-                        backgroundColor: checked
+                        backgroundColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-paper)",
                       }}
                     />
 
-                    {checked ? (
+                    {covered ? (
                       <>
                         <div className="bg-band py-2.5 pl-[52px] pr-4">
                           <div className="flex items-baseline justify-between gap-3">
@@ -347,14 +408,14 @@ export default function Browse() {
                     ) : (
                       <div
                         data-station-code={row.code}
-                        data-station-unchecked="true"
+                        data-station-empty="true"
                         className="flex items-baseline justify-between gap-3 py-2 pl-[52px] pr-4"
                       >
                         <span className="truncate text-[13.5px] font-medium text-ink-soft">
                           {row.name}
                         </span>
                         <span className="shrink-0 text-[12px] text-ink-soft">
-                          Not checked yet
+                          No places yet
                         </span>
                       </div>
                     )}

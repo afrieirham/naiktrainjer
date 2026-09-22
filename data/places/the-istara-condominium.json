@@ -1,0 +1,14 @@
+{
+  "slug": "the-istara-condominium",
+  "name": "The Istara Condominium",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ21",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/SzxDhzR6S2jv5kCB8",
+  "coordinates": {
+    "lat": 3.1048785,
+    "lng": 101.6326687
+  },
+  "source": "owner"
+}

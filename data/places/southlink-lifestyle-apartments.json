@@ -1,0 +1,11 @@
+{
+  "slug": "southlink-lifestyle-apartments",
+  "name": "SouthLink Lifestyle Apartments",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ19",
+  "alsoNear": [
+    "KJ18"
+  ],
+  "source": "owner"
+}

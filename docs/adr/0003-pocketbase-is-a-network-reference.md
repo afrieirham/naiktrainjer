@@ -1,6 +1,7 @@
 # 0003 — PocketBase is a read-only network reference, exported by hand
 
-**Status:** accepted
+**Status:** accepted, amended by ADR-0004 (the network is exported whole, and the directory no
+longer records checked-ness).
 
 ## Context
 
@@ -21,20 +22,28 @@ would break that promise and make every deploy depend on a box on the maintainer
 ## Decision
 
 1. **PocketBase is read-only.** Nothing in the build, the site or the repo writes to it.
-2. **The export is manual and offline.** `npm run export-line`
-   (`scripts/export-line-reference.mjs`) pulls the network reference and writes it into
-   `data/properties.json` as a top-level `lines[]` array; its output is committed. It is run by
-   hand, exactly like the Measure script (ADR-0001, decision 3).
+2. **The export is manual and offline.** `npm run export-network`
+   (`scripts/export-network.mjs`) pulls the network reference and writes it into
+   `data/network.ts` as a generated module exporting `lines[]`; its output is
+   committed. It is run by hand and is never part of the build. *(It is a
+   TypeScript module rather than JSON because Cloudflare's Pages Functions
+   bundler cannot parse JSON import attributes and Node refuses a JSON import
+   without one; a generated module loads unchanged in Vite, Node and the
+   bundler.)*
 3. **It is never part of `npm run build`.** A deploy cannot depend on PocketBase being reachable.
-4. **It keys on station code, never on name or slug.** `CHECKED_STATION_CODES` maps each checked
-   Station's slug to its network code, and the coordinate check at export time (300 m) proves the
-   mapping, so a renamed Station still resolves and a wrong mapping fails loudly.
+4. **It carries PocketBase's own codes.** The export takes each Station's code from PocketBase;
+   nothing is matched by name or slug, so there is no hand-maintained mapping left to drift.
+   *(Amended by ADR-0004: an earlier version proved a hand-maintained `CHECKED_STATION_CODES`
+   table by coordinate drift; that table and the checked-Station list are gone.)*
 5. **Coordinates are mapped explicitly.** PocketBase stores GeoJSON order (`geoPoint.lon`); the
    app reads `lng`. A naive copy produces `lng: undefined` and silently breaks every route frame.
-6. **Only Lines with at least one checked Station are exported.** Once a Line is there, all of its
-   Stations are (ADR-0002, decision 3).
-7. **Checked-ness stays in the directory.** `stations[]` remains *the Stations I have checked*;
-   `lines[].stations` is the network's shape. The export never decides what has been checked.
+6. **The whole network is exported.** Every Line and Station PocketBase holds lands in
+   `data/network.ts`, whether or not the directory has a Place there — the Contribution form
+   lets a visitor name any Station on any Line. Which Lines Browse renders is a rendering rule
+   (ADR-0002), not an export filter. *(Amended by ADR-0004: the original decision exported only
+   Lines with a checked Station.)*
+7. **The export carries no checked-ness.** `network.ts` is a plain snapshot of the network; the
+   directory's own data is Places only, and Coverage is derived from them (ADR-0002, as amended).
 
 ## Consequences
 
@@ -42,7 +51,5 @@ would break that promise and make every deploy depend on a box on the maintainer
 - The snapshot can drift from the network until someone re-runs the export — accepted, because
   the network changes slowly and a stale Station list is more honest than a build that can fail.
 - `scripts/validate-data.mjs` enforces the shape (a duplicate code, an unresolvable code, a
-  missing corridor position or an invalid colour all fail it) but cannot know the network, so
-  the export script — not the validator — is the guard on mapping correctness.
-- The hand-maintained `CHECKED_STATION_CODES` table is a small, reviewable artifact that survives
-  station renames, and it fails loudly if the mapping and the checked Station list disagree.
+  missing corridor position or an invalid colour all fail it) but cannot know the network, so the
+  export script is the only guard on what the network actually holds.

@@ -10,27 +10,17 @@ export type Place = {
   map?: string;
   coordinates?: { lat: number; lng: number };
   source?: string;
-};
-
-/** A Station that has been checked: it sits on a Line, by network code. */
-export type Station = {
-  slug: string;
-  name: string;
-  line: string;
-  code: string;
-  coordinates?: { lat: number; lng: number };
+  /** Present when the Place came from a Contribution; #40 renders the credit. */
+  contributor?: { name: string; href: string | null };
 };
 
 /**
- * One row of the corridor. A checked row carries its Places; an unchecked row
- * is a Station on the Line nobody has looked at yet, and carries none.
+ * One row of the corridor: a Station on the Line, with the Places it holds.
+ * A Station holding none carries an empty list.
  */
 export type StationRow = {
   code: string;
-  /** What the row is called: the checked Station's own name, else the Line's. */
   name: string;
-  check: "checked" | "unchecked";
-  stationSlug?: string;
   count: number;
   places: Place[];
 };
@@ -41,63 +31,42 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
 
 /**
  * Build the corridor: every Station on the Line, in the Line's own order, with
- * the Places that match the current filter under the Stations that have any.
+ * the Places that match the current filter under the Stations that hold any.
  *
- * A checked Station stays on the page when a filter empties it, but only where
- * the data itself holds nothing for it — otherwise filtering by type would look
- * like the directory had never checked that Station. An unchecked Station is
- * never dropped: the page states what it has not done.
+ * A Station the filter empties is dropped, so a type filter never looks like the
+ * directory has no Places there. A Station the data holds nothing for stays on
+ * the page as an empty row: the page states what it does not have.
  *
  * The corridor's own order is the only order. There is deliberately no A–Z or
  * "most places" sort: line order is real information, not a sort option.
  */
 export function buildStationRows(
   line: Line,
-  checkedStations: Station[],
   allPlaces: Place[],
   matchedPlaces: Place[],
 ): StationRow[] {
-  const byCode = new Map(checkedStations.map((station) => [station.code, station]));
-
-  const totalBySlug = new Map<string, number>();
+  const totalByCode = new Map<string, number>();
   for (const place of allPlaces) {
-    totalBySlug.set(place.station, (totalBySlug.get(place.station) ?? 0) + 1);
+    totalByCode.set(place.station, (totalByCode.get(place.station) ?? 0) + 1);
   }
 
-  const matchedBySlug = new Map<string, Place[]>();
+  const matchedByCode = new Map<string, Place[]>();
   for (const place of matchedPlaces) {
-    const list = matchedBySlug.get(place.station);
+    const list = matchedByCode.get(place.station);
     if (list) list.push(place);
-    else matchedBySlug.set(place.station, [place]);
+    else matchedByCode.set(place.station, [place]);
   }
 
   const rows: StationRow[] = [];
-  const stations = [...line.stations].sort((a, b) => b.sort - a.sort);
-
-  for (const station of stations) {
-    const checked = byCode.get(station.code);
-    if (!checked) {
-      rows.push({
-        code: station.code,
-        name: station.name,
-        check: "unchecked",
-        count: 0,
-        places: [],
-      });
-      continue;
-    }
-
-    const places = [...(matchedBySlug.get(checked.slug) ?? [])].sort((a, b) =>
+  for (const station of [...line.stations].sort((a, b) => b.sort - a.sort)) {
+    const places = [...(matchedByCode.get(station.code) ?? [])].sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-    const checkedAndEmpty = (totalBySlug.get(checked.slug) ?? 0) === 0;
-    if (places.length === 0 && !checkedAndEmpty) continue;
+    if (places.length === 0 && (totalByCode.get(station.code) ?? 0) > 0) continue;
 
     rows.push({
       code: station.code,
-      name: checked.name,
-      check: "checked",
-      stationSlug: checked.slug,
+      name: station.name,
       count: places.length,
       places,
     });

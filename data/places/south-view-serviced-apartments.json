@@ -1,0 +1,11 @@
+{
+  "slug": "south-view-serviced-apartments",
+  "name": "South View Serviced Apartments",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ19",
+  "alsoNear": [
+    "KJ18"
+  ],
+  "source": "owner"
+}

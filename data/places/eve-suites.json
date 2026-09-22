@@ -1,0 +1,14 @@
+{
+  "slug": "eve-suites",
+  "name": "Eve Suites",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ25",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/qS3z8yzf1F62aNUq5",
+  "coordinates": {
+    "lat": 3.1146145,
+    "lng": 101.5893776
+  },
+  "source": "owner"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "puncak-nusa-kelana-condominium",
+  "name": "Puncak Nusa Kelana Condominium",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ26",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/a1sqkbdGejShUL5J6",
+  "coordinates": {
+    "lat": 3.111733,
+    "lng": 101.5793213
+  },
+  "source": "owner"
+}

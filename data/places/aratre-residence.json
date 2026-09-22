@@ -1,0 +1,14 @@
+{
+  "slug": "aratre-residence",
+  "name": "AraTre’ Residence",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ26",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/9sJB31ZTi5DrJzvq8",
+  "coordinates": {
+    "lat": 3.1117284,
+    "lng": 101.5833682
+  },
+  "source": "owner"
+}

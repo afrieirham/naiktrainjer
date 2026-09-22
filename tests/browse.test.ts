@@ -7,18 +7,23 @@ import {
   filterPlaces,
   getUniqueTypes,
   type Place,
-  type Station,
 } from "../app/lib/browse-filter.ts";
-import type { Line } from "../app/lib/lines.ts";
+import {
+  coveredLine,
+  coveredLines,
+  selectedLine,
+  stationNamesByCode,
+  type Line,
+} from "../app/lib/lines.ts";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
   buildPlacePinUrl,
 } from "../app/lib/route-url.ts";
+import { lines, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const HTML_PATH = resolve(BUILD_DIR, "index.html");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -40,12 +45,12 @@ function asHtmlText(value: string): string {
 
 let html: string;
 let cleanHtml: string;
-let data: { lines: Line[]; stations: Station[]; places: Place[] };
+let data: { lines: Line[]; places: Place[] };
 
 before(() => {
   html = readFileSync(HTML_PATH, "utf-8");
   cleanHtml = stripComments(html);
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { lines, places };
 });
 
 describe("prerendered HTML", () => {
@@ -59,21 +64,37 @@ describe("prerendered HTML", () => {
     assert.equal(descriptions.length, 1, `Expected exactly one meta description, got ${descriptions.length}`);
   });
 
-  it("contains every Station name with its correct count", () => {
+  it("names every Station on the Line with its correct count", () => {
+    const line = coveredLine(data.lines, data.places);
     const stationCounts = new Map<string, number>();
     for (const place of data.places) {
       stationCounts.set(place.station, (stationCounts.get(place.station) ?? 0) + 1);
     }
 
-    for (const station of data.stations) {
-      const expectedCount = stationCounts.get(station.slug) ?? 0;
-      const start = cleanHtml.indexOf(`aria-label="${asHtmlText(station.name)}"`);
-      assert.ok(start > -1, `Station "${station.name}" not found in HTML`);
-      const block = cleanHtml.slice(start, start + 400);
-      assert.ok(
-        block.includes(`data-station-count="${expectedCount}"`),
-        `Station "${station.name}" should carry count ${expectedCount}`,
-      );
+    for (const station of line.stations) {
+      const expectedCount = stationCounts.get(station.code) ?? 0;
+      const name = asHtmlText(station.name);
+      if (expectedCount > 0) {
+        const start = cleanHtml.indexOf(`aria-label="${name}"`);
+        assert.ok(start > -1, `Station "${station.name}" not found in HTML`);
+        const block = cleanHtml.slice(start, start + 400);
+        assert.ok(
+          block.includes(`data-station-count="${expectedCount}"`),
+          `Station "${station.name}" should carry count ${expectedCount}`,
+        );
+      } else {
+        const start = cleanHtml.indexOf(`data-station-code="${station.code}"`);
+        assert.ok(start > -1, `Station "${station.name}" not found in HTML`);
+        const block = cleanHtml.slice(start, start + 400);
+        assert.ok(
+          block.includes(name),
+          `Station "${station.name}" should be named in its empty row`,
+        );
+        assert.ok(
+          block.includes("No places yet"),
+          `Station "${station.name}" should be marked "No places yet"`,
+        );
+      }
     }
   });
 
@@ -87,13 +108,18 @@ describe("prerendered HTML", () => {
   });
 
   it("sum of group counts equals number of Places", () => {
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const coveredStations = line.stations.filter((station) =>
+      withPlaces.has(station.code),
+    ).length;
     const counts = [...cleanHtml.matchAll(/data-station-count="(\d+)"/g)].map((match) =>
       parseInt(match[1], 10),
     );
     assert.equal(
       counts.length,
-      data.stations.length,
-      "Every checked Station should carry its count",
+      coveredStations,
+      "Every Station holding Places should carry its count",
     );
     const sum = counts.reduce((total, count) => total + count, 0);
     assert.equal(
@@ -103,14 +129,19 @@ describe("prerendered HTML", () => {
     );
   });
 
-  it("renders a group for every checked Station", () => {
+  it("renders a group for every Station holding Places", () => {
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const covered = line.stations.filter((station) =>
+      withPlaces.has(station.code),
+    ).length;
     const groupPattern = /role="group" aria-label="(?!Travel mode)/g;
     let count = 0;
     while (groupPattern.exec(cleanHtml) !== null) count++;
     assert.equal(
       count,
-      data.stations.length,
-      `Expected ${data.stations.length} checked Station groups, got ${count}`,
+      covered,
+      `Expected ${covered} Station groups, got ${count}`,
     );
   });
 
@@ -137,10 +168,11 @@ describe("prerendered HTML", () => {
   });
 
   it("renders every Station on the Line, in corridor order", () => {
-    const checkedByCode = new Map(data.stations.map((s) => [s.code, s]));
-    const expected = [...data.lines[0].stations]
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const expected = [...line.stations]
       .sort((a, b) => b.sort - a.sort)
-      .map((station) => checkedByCode.get(station.code)?.name ?? station.code);
+      .map((station) => (withPlaces.has(station.code) ? station.name : station.code));
 
     const marker = /role="group" aria-label="([^"]+)"|data-station-code="([A-Za-z0-9]+)"/g;
     const rendered: string[] = [];
@@ -157,58 +189,61 @@ describe("prerendered HTML", () => {
     );
   });
 
-  it("marks every unchecked Station as not checked yet", () => {
-    const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
-    assert.ok(unchecked.length > 0, "This check is meaningless with no unchecked Station");
+  it("marks every Station with no Places as 'No places yet'", () => {
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const empty = line.stations.filter((station) => !withPlaces.has(station.code));
+    assert.ok(empty.length > 0, "This assertion is meaningless with no empty Station");
 
-    const marks = [...cleanHtml.matchAll(/Not checked yet/g)];
+    const marks = [...cleanHtml.matchAll(/No places yet/g)];
     assert.equal(
       marks.length,
-      unchecked.length,
-      `Expected ${unchecked.length} "Not checked yet" markers, got ${marks.length}`,
+      empty.length,
+      `Expected ${empty.length} "No places yet" markers, got ${marks.length}`,
     );
 
-    for (const station of unchecked) {
+    for (const station of empty) {
       const pattern = new RegExp(
         `data-station-code="${station.code}"[^>]*>[\\s\\S]{0,320}?${escapeRegExp(asHtmlText(station.name))}`,
       );
       assert.ok(
         pattern.test(cleanHtml),
-        `Unchecked Station "${station.name}" (${station.code}) must be named on the page`,
+        `Station with no Places "${station.name}" (${station.code}) must be named on the page`,
       );
     }
   });
 
-  it("keeps an unchecked Station row non-interactive", () => {
-    const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+  it("keeps a Station with no Places non-interactive", () => {
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const empty = line.stations.filter((station) => !withPlaces.has(station.code));
 
-    const firstRow = cleanHtml.indexOf('data-station-unchecked="true"');
+    const firstRow = cleanHtml.indexOf('data-station-empty="true"');
     const asideEnd = cleanHtml.indexOf('aria-label="Place details"');
-    assert.ok(firstRow > -1 && asideEnd > firstRow, "The unchecked stretch is missing from the list");
+    assert.ok(firstRow > -1 && asideEnd > firstRow, "The empty Stations are missing from the list");
 
     const rows = cleanHtml
       .slice(firstRow, asideEnd)
-      .split('data-station-unchecked="true"')
+      .split('data-station-empty="true"')
       .slice(1);
-    assert.equal(rows.length, unchecked.length, "One row per unchecked Station");
+    assert.equal(rows.length, empty.length, "One row per Station with no Places");
 
     for (const row of rows) {
-      assert.ok(!row.includes("<button"), `An unchecked Station row must not be a button`);
-      assert.ok(!row.includes("<a "), `An unchecked Station row must not link anywhere`);
+      assert.ok(!row.includes("<button"), `A Station with no Places row must not be a button`);
+      assert.ok(!row.includes("<a "), `A Station with no Places row must not link anywhere`);
     }
   });
 
-  it("gives an unchecked Station no page of its own", () => {
-    const checkedCodes = new Set(data.stations.map((s) => s.code));
-    const unchecked = data.lines[0].stations.filter((s) => !checkedCodes.has(s.code));
+  it("gives a Station with no Places no page of its own", () => {
+    const line = coveredLine(data.lines, data.places);
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const empty = line.stations.filter((station) => !withPlaces.has(station.code));
 
     assert.ok(
       !existsSync(resolve(BUILD_DIR, "stations")),
-      "Unchecked Stations must not have a route, let alone a prerendered page",
+      "Stations must not have a route, let alone a prerendered page",
     );
-    for (const station of unchecked) {
+    for (const station of empty) {
       const slug = station.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
@@ -260,6 +295,46 @@ describe("prerendered HTML", () => {
     assert.ok(!cleanHtml.includes("Most places"), "No sort options should render");
   });
 
+  it("offers a Line selector listing only the covered Lines", () => {
+    assert.ok(cleanHtml.includes('id="line-selector"'), "Line selector missing");
+
+    const covered = coveredLines(data.lines, data.places);
+    assert.ok(covered.length > 0, "There must be at least one covered Line");
+    for (const line of covered) {
+      assert.ok(
+        new RegExp(`<option[^>]*value="${escapeRegExp(line.slug)}"`).test(cleanHtml),
+        `Covered Line "${line.slug}" must be offered`,
+      );
+    }
+
+    for (const line of data.lines.filter((candidate) => !covered.includes(candidate))) {
+      assert.ok(
+        !new RegExp(`<option[^>]*value="${escapeRegExp(line.slug)}"`).test(cleanHtml),
+        `Uncovered Line "${line.slug}" must not be offered`,
+      );
+    }
+  });
+
+  it("defaults to the covered Line holding the most Places", () => {
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const counts = coveredLines(data.lines, data.places).map((line) => ({
+      line,
+      count: line.stations.filter((station) => withPlaces.has(station.code)).length,
+    }));
+    const most = Math.max(...counts.map((entry) => entry.count));
+    const defaultLine = selectedLine(data.lines, data.places, null);
+
+    assert.equal(
+      counts.find((entry) => entry.line.slug === defaultLine.slug)?.count,
+      most,
+      "The default Line must hold the most Places",
+    );
+    assert.ok(
+      cleanHtml.includes(`${defaultLine.name} line`),
+      `The default ${defaultLine.name} line must render on no param`,
+    );
+  });
+
   it("contains no search box", () => {
     assert.ok(!cleanHtml.includes('id="search"'), "Search box should not exist");
     assert.ok(!cleanHtml.includes('type="search"'), "Search input should not exist");
@@ -276,8 +351,8 @@ describe("prerendered HTML", () => {
 });
 
 describe("pure filter/corridor functions", () => {
-  const { lines, stations, places } = data;
-  const line = lines[0];
+  const { lines, places } = data;
+  const line = coveredLine(lines, places);
 
   describe("filterPlaces", () => {
     it("returns all places when no filter is set", () => {
@@ -302,7 +377,7 @@ describe("pure filter/corridor functions", () => {
 
   describe("buildStationRows", () => {
     it("renders every Station on the Line in corridor order", () => {
-      const rows = buildStationRows(line, stations, places, places);
+      const rows = buildStationRows(line, places, places);
       const corridor = [...line.stations]
         .sort((a, b) => b.sort - a.sort)
         .map((s) => s.code);
@@ -310,14 +385,14 @@ describe("pure filter/corridor functions", () => {
       assert.deepEqual(rows.map((r) => r.code), corridor);
     });
 
-    it("carries every Place under its checked Station", () => {
-      const rows = buildStationRows(line, stations, places, places);
+    it("carries every Place under its Station", () => {
+      const rows = buildStationRows(line, places, places);
       const sum = rows.reduce((total, row) => total + row.count, 0);
       assert.equal(sum, places.length);
     });
 
     it("sorts places alphabetically within a Station", () => {
-      const rows = buildStationRows(line, stations, places, places);
+      const rows = buildStationRows(line, places, places);
       for (const row of rows) {
         for (let i = 1; i < row.places.length; i++) {
           assert.ok(
@@ -328,40 +403,46 @@ describe("pure filter/corridor functions", () => {
       }
     });
 
-    it("marks every Station with no checked counterpart as unchecked", () => {
-      const rows = buildStationRows(line, stations, places, places);
-      const checkedCodes = new Set(stations.map((s) => s.code));
-      const unchecked = rows.filter((row) => row.check === "unchecked");
+    it("marks every Station with no Places", () => {
+      const rows = buildStationRows(line, places, places);
+      const withPlaces = new Set(places.map((p) => p.station));
+      const empty = rows.filter((row) => row.count === 0);
       assert.deepEqual(
-        unchecked.map((row) => row.code),
+        empty.map((row) => row.code),
         line.stations
-          .filter((s) => !checkedCodes.has(s.code))
+          .filter((s) => !withPlaces.has(s.code))
           .sort((a, b) => b.sort - a.sort)
           .map((s) => s.code),
       );
-      for (const row of unchecked) {
-        assert.equal(row.count, 0);
+      for (const row of empty) {
         assert.equal(row.places.length, 0);
       }
     });
 
-    it("keeps a checked Station a filter emptied, but only when the data holds nothing for it", () => {
+    it("drops a Station the filter emptied, but keeps one the data holds nothing for", () => {
       const empty = filterPlaces(places, "castle");
-      const rows = buildStationRows(line, stations, places, empty);
-      const checkedRows = rows.filter((row) => row.check === "checked");
+      const rows = buildStationRows(line, places, empty);
+      const withPlaces = new Set(places.map((p) => p.station));
       assert.equal(
-        checkedRows.length,
+        rows.filter((row) => withPlaces.has(row.code)).length,
         0,
-        "A Station emptied by the filter is not shown as holding nothing",
+        "A Station emptied by the filter is not shown",
       );
 
-      const noDataRows = buildStationRows(line, stations, [], []);
+      const emptyStations = line.stations.filter((s) => !withPlaces.has(s.code));
       assert.equal(
-        noDataRows.filter((row) => row.check === "checked").length,
-        stations.length,
-        "A checked Station the data holds nothing for stays on the page",
+        rows.length,
+        emptyStations.length,
+        "Only the Stations the data holds nothing for remain",
       );
-      for (const row of noDataRows.filter((row) => row.check === "checked")) {
+
+      const noDataRows = buildStationRows(line, [], []);
+      assert.equal(
+        noDataRows.length,
+        line.stations.length,
+        "A Station the data holds nothing for stays on the page",
+      );
+      for (const row of noDataRows) {
         assert.equal(row.count, 0);
       }
     });
@@ -376,9 +457,99 @@ describe("pure filter/corridor functions", () => {
   });
 });
 
+describe("line selection", () => {
+  const withPlaces = new Set(places.map((place) => place.station));
+
+  it("returns only the Lines that hold a Place, in network order", () => {
+    const covered = coveredLines(lines, places);
+    const expected = lines.filter((line) =>
+      line.stations.some((station) => withPlaces.has(station.code)),
+    );
+    assert.deepEqual(
+      covered.map((line) => line.slug),
+      expected.map((line) => line.slug),
+    );
+    for (const line of covered) {
+      assert.ok(
+        line.stations.some((station) => withPlaces.has(station.code)),
+        `"${line.slug}" is offered without a Place`,
+      );
+    }
+  });
+
+  /**
+   * The real network carries Lines nobody has covered yet, so a two-Line
+   * fixture is the only way to exercise a switch between covered Lines.
+   */
+  const lineA: Line = {
+    slug: "line-a",
+    code: "A",
+    name: "Line A",
+    color: "#111111",
+    stations: [
+      { code: "A1", name: "A One", sort: 1 },
+      { code: "A2", name: "A Two", sort: 2 },
+    ],
+  };
+  const lineB: Line = {
+    slug: "line-b",
+    code: "B",
+    name: "Line B",
+    color: "#222222",
+    stations: [
+      { code: "B1", name: "B One", sort: 1 },
+      { code: "B2", name: "B Two", sort: 2 },
+    ],
+  };
+  const lineC: Line = {
+    slug: "line-c",
+    code: "C",
+    name: "Line C",
+    color: "#333333",
+    stations: [{ code: "C1", name: "C One", sort: 1 }],
+  };
+  const network: Line[] = [lineA, lineB, lineC];
+  const fixturePlaces: Place[] = [
+    { slug: "a-one", name: "A One Place", kind: "building", type: "condominium", station: "A1" },
+    { slug: "a-two", name: "A Two Place", kind: "building", type: "apartment", station: "A2" },
+    { slug: "b-one", name: "B One Place", kind: "building", type: "flat", station: "B1" },
+  ];
+
+  it("defaults to the covered Line with the most Places, on network-order tie-break", () => {
+    assert.equal(coveredLine(network, fixturePlaces).slug, "line-a");
+  });
+
+  it("?line= selects that Line, and its whole corridor is built from it", () => {
+    const url = new URL("https://naiktrainjer.com/?line=line-b");
+    const selected = selectedLine(network, fixturePlaces, url.searchParams.get("line"));
+    assert.equal(selected.slug, "line-b");
+
+    const rows = buildStationRows(selected, fixturePlaces, fixturePlaces);
+    assert.deepEqual(rows.map((row) => row.code), ["B2", "B1"]);
+  });
+
+  it("an unknown param falls back to the default", () => {
+    const url = new URL("https://naiktrainjer.com/?line=line-does-not-exist");
+    assert.equal(
+      selectedLine(network, fixturePlaces, url.searchParams.get("line")).slug,
+      "line-a",
+    );
+  });
+
+  it("a blank or missing param falls back to the default", () => {
+    assert.equal(selectedLine(network, fixturePlaces, "").slug, "line-a");
+    assert.equal(selectedLine(network, fixturePlaces, null).slug, "line-a");
+    assert.equal(selectedLine(network, fixturePlaces, undefined).slug, "line-a");
+  });
+
+  it("never selects a Line with no Places, even when named", () => {
+    assert.equal(selectedLine(network, fixturePlaces, "line-c").slug, "line-a");
+  });
+});
+
 describe("route URL builders", () => {
-  const { stations, places } = data;
-  const stationNameMap = new Map(stations.map((s) => [s.slug, s.name]));
+  const { lines, places } = data;
+  const stationNameMap = stationNamesByCode(lines);
 
   describe("buildRouteFrameUrl", () => {
     it("uses coordinates as origin when present", () => {

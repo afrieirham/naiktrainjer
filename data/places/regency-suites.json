@@ -1,0 +1,9 @@
+{
+  "slug": "regency-suites",
+  "name": "Regency Suites",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ18",
+  "alsoNear": [],
+  "source": "owner"
+}

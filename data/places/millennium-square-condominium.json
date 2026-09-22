@@ -1,0 +1,14 @@
+{
+  "slug": "millennium-square-condominium",
+  "name": "Millennium Square Condominium",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ21",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/gXHS6VH9gwYxkRAd9",
+  "coordinates": {
+    "lat": 3.1017,
+    "lng": 101.6126791
+  },
+  "source": "owner"
+}

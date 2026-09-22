@@ -1,0 +1,14 @@
+{
+  "slug": "subang-avenue",
+  "name": "Subang Avenue",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ28",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/oGkUeJuuuLNigGUK9",
+  "coordinates": {
+    "lat": 3.0831143,
+    "lng": 101.5862756
+  },
+  "source": "owner"
+}

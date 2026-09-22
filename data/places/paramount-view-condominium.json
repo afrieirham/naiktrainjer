@@ -1,0 +1,14 @@
+{
+  "slug": "paramount-view-condominium",
+  "name": "Paramount View Condominium",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ22",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/kbWrTf51R2YPxFSw9",
+  "coordinates": {
+    "lat": 3.105648,
+    "lng": 101.6177694
+  },
+  "source": "owner"
+}

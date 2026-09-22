@@ -1,0 +1,14 @@
+{
+  "slug": "centrestage-designer-suite",
+  "name": "Centrestage Designer Suite",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ21",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/C6yAtbNukhMaxeB29",
+  "coordinates": {
+    "lat": 3.1117289,
+    "lng": 101.6366555
+  },
+  "source": "owner"
+}

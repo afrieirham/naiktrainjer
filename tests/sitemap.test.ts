@@ -7,10 +7,10 @@ import {
   statSync,
 } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../app/lib/browse-filter.ts";
+import type { Place } from "../app/lib/browse-filter.ts";
+import { places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 const SITE_URL = "https://naiktrainjer.com";
 
 function stripComments(html: string): string {
@@ -49,12 +49,12 @@ function collectHtmlFiles(dir: string): string[] {
   return results;
 }
 
-let data: { stations: Station[]; places: Place[] };
+let data: { places: Place[] };
 let sitemapXml: string;
 let robotsTxt: string;
 
 before(() => {
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { places };
   sitemapXml = readFileSync(resolve(BUILD_DIR, "sitemap.xml"), "utf-8");
   robotsTxt = readFileSync(resolve(BUILD_DIR, "robots.txt"), "utf-8");
 });
@@ -97,10 +97,17 @@ describe("sitemap.xml", () => {
     );
   });
 
-  it("contains the Submit page URL", () => {
+  it("contains the Contribute page URL", () => {
     assert.ok(
-      sitemapXml.includes(`<loc>${SITE_URL}/submit/</loc>`),
-      "Submit page URL missing from sitemap",
+      sitemapXml.includes(`<loc>${SITE_URL}/contribute/</loc>`),
+      "Contribute page URL missing from sitemap",
+    );
+  });
+
+  it("contains the Contributors page URL", () => {
+    assert.ok(
+      sitemapXml.includes(`<loc>${SITE_URL}/contributors/</loc>`),
+      "Contributors page URL missing from sitemap",
     );
   });
 
@@ -180,9 +187,13 @@ describe("sitemap ↔ build parity", () => {
     if (existsSync(resolve(BUILD_DIR, "index.html"))) {
       builtPaths.add("/");
     }
-    // Submit page
-    if (existsSync(resolve(BUILD_DIR, "submit", "index.html"))) {
-      builtPaths.add("/submit");
+    // Contribute page
+    if (existsSync(resolve(BUILD_DIR, "contribute", "index.html"))) {
+      builtPaths.add("/contribute");
+    }
+    // Contributors page
+    if (existsSync(resolve(BUILD_DIR, "contributors", "index.html"))) {
+      builtPaths.add("/contributors");
     }
     // Place pages
     const placesDir = resolve(BUILD_DIR, "places");

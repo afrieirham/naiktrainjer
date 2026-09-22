@@ -2,11 +2,20 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../app/lib/browse-filter.ts";
+import type { Place } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
+import { coveredLine, coverage } from "../app/lib/lines.ts";
+import { CONTRIBUTION_TYPES } from "../app/lib/contribution.ts";
+import { lines, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
+
+/**
+ * The tokens the retire sweep forbids. Spelled by joining so this source file
+ * does not itself contain them and trip the sweep it documents.
+ */
+const RETIRED_FORM_HOST = ["tal", "ly"].join("");
+const RETIRED_ROUTE = ["/sub", "mit"].join("");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -21,17 +30,17 @@ function paragraphContaining(html: string, needle: string): string {
 }
 
 let browseHtml: string;
-let submitHtml: string;
-let data: { lines: Line[]; stations: Station[]; places: Place[] };
+let contributeHtml: string;
+let data: { lines: Line[]; places: Place[] };
 
 before(() => {
   browseHtml = stripComments(
     readFileSync(resolve(BUILD_DIR, "index.html"), "utf-8"),
   );
-  submitHtml = stripComments(
-    readFileSync(resolve(BUILD_DIR, "submit", "index.html"), "utf-8"),
+  contributeHtml = stripComments(
+    readFileSync(resolve(BUILD_DIR, "contribute", "index.html"), "utf-8"),
   );
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { lines, places };
 });
 
 // ---------------------------------------------------------------------------
@@ -41,20 +50,14 @@ before(() => {
 describe("browse page intro copy", () => {
   let line: Line;
   let ordered: Line["stations"];
-  let checked: Line["stations"];
-  let unchecked: Line["stations"];
-  let nameOf: (code: string) => string;
+  let cov: ReturnType<typeof coverage>;
   let intro: string;
 
   before(() => {
-    line = data.lines[0];
+    line = coveredLine(data.lines, data.places);
     ordered = [...line.stations].sort((a, b) => a.sort - b.sort);
-    const checkedCodes = new Set(data.stations.map((s) => s.code));
-    checked = ordered.filter((s) => checkedCodes.has(s.code));
-    unchecked = ordered.filter((s) => !checkedCodes.has(s.code));
-    const stationByCode = new Map(data.stations.map((s) => [s.code, s]));
-    nameOf = (code: string) => stationByCode.get(code)!.name;
-    intro = paragraphContaining(browseHtml, "stations so far");
+    cov = coverage(line, data.places);
+    intro = paragraphContaining(browseHtml, "stations have places so far");
   });
 
   it("names the Line it covers", () => {
@@ -64,64 +67,55 @@ describe("browse page intro copy", () => {
     );
   });
 
-  it("names the checked count and the Line's total, from the data", () => {
+  it("names the covered count and the Line's total, from the data", () => {
     assert.ok(
-      intro.includes(`${checked.length} of the ${ordered.length} stations`),
-      `Intro must state "${checked.length} of the ${ordered.length} stations", got: ${intro}`,
+      intro.includes(`${cov.coveredCount} of the ${ordered.length} stations`),
+      `Intro must state "${cov.coveredCount} of the ${ordered.length} stations", got: ${intro}`,
     );
     assert.ok(
-      !intro.includes(`${checked.length} of the ${unchecked.length} stations`),
-      "Intro must not confuse the checked count with the unchecked count",
-    );
-  });
-
-  it("names the true northern end of the checked stretch", () => {
-    const northernEnd = nameOf(checked[0].code);
-    const southernEnd = nameOf(checked[checked.length - 1].code);
-    assert.ok(
-      intro.includes(northernEnd),
-      `Intro must name "${northernEnd}" as the checked stretch's northern end, got: ${intro}`,
-    );
-    assert.ok(
-      intro.includes(southernEnd),
-      `Intro must name "${southernEnd}" as the checked stretch's southern end, got: ${intro}`,
-    );
-    assert.ok(
-      !intro.includes("KL Gateway"),
-      `Intro must not name KL Gateway, which is three checked Stations short of the truth, got: ${intro}`,
+      !intro.includes(`${cov.coveredCount} of the ${cov.empty.length} stations`),
+      "Intro must not confuse the covered count with the empty count",
     );
   });
 
-  it("names where the unchecked stretch begins, from the data", () => {
-    assert.ok(
-      intro.includes(unchecked[0].name),
-      `Intro must name "${unchecked[0].name}", where the unchecked stretch begins, got: ${intro}`,
+  it("counts the Stations holding Places, derived from the data", () => {
+    const withPlaces = new Set(data.places.map((place) => place.station));
+    const expected = ordered.filter((station) => withPlaces.has(station.code)).length;
+    assert.equal(
+      cov.coveredCount,
+      expected,
+      "Coverage must count the Stations that hold Places",
     );
+    assert.equal(cov.total, ordered.length, "Coverage total must be the Line's Stations");
+  });
+
+  it("names how many Stations have no Places yet, from the data", () => {
+    assert.ok(cov.empty.length > 0, "This assertion is meaningless with no empty Station");
     assert.ok(
-      intro.includes(unchecked[unchecked.length - 1].name),
-      `Intro must name where the unchecked stretch ends, got: ${intro}`,
-    );
-    assert.ok(
-      intro.includes(String(unchecked.length)),
-      `Intro must state how many Stations are still to do, got: ${intro}`,
+      intro.includes(`${cov.empty.length} stations have no places yet`),
+      `Intro must state how many Stations have no places yet, got: ${intro}`,
     );
   });
 
-  it("every Station in the data belongs to the Line the page covers", () => {
-    for (const station of data.stations) {
-      assert.equal(
-        station.line,
-        line.slug,
-        `Station "${station.name}" has line "${station.line}", expected "${line.slug}"`,
-      );
-    }
-  });
-
-  it("does not claim walkability figures the data does not hold", () => {
+  it("never claims a stretch or a walk", () => {
     assert.ok(
       !intro.toLowerCase().includes("walk"),
       "Intro copy must not mention walkability figures",
     );
+    assert.ok(
+      !intro.includes(" up to "),
+      "Intro copy must not claim a span between two Stations",
+    );
+  });
+
+  it("every Place belongs to a Station on the Line the page covers", () => {
+    const codes = new Set(line.stations.map((station) => station.code));
+    for (const place of data.places) {
+      assert.ok(
+        codes.has(place.station),
+        `Place "${place.name}" has station "${place.station}", expected one on the ${line.slug} line`,
+      );
+    }
   });
 });
 
@@ -130,7 +124,7 @@ describe("browse page intro copy", () => {
 // ---------------------------------------------------------------------------
 
 describe("the Line is read from the data", () => {
-  const line = data.lines[0];
+  const line = coveredLine(data.lines, data.places);
 
   it("every prerendered page names the Line it covers", () => {
     assert.ok(
@@ -138,8 +132,8 @@ describe("the Line is read from the data", () => {
       `Browse page must name the ${line.name} line`,
     );
     assert.ok(
-      submitHtml.includes(`${line.name} line`),
-      `Submit page must name the ${line.name} line`,
+      contributeHtml.includes(`${line.name} line`),
+      `Contribute page must name the ${line.name} line`,
     );
     for (const place of data.places) {
       const html = stripComments(
@@ -158,28 +152,28 @@ describe("the Line is read from the data", () => {
 // ---------------------------------------------------------------------------
 
 describe("footer link", () => {
-  it("browse page footer links to /submit", () => {
+  it("browse page links to the Contribute page", () => {
     assert.ok(
-      browseHtml.includes('href="/submit/"'),
-      "Browse page footer must link to /submit",
+      browseHtml.includes('href="/contribute/"'),
+      "Browse page must link to /contribute/",
     );
   });
 
-  it("browse page offers a way to suggest a place", () => {
+  it("browse page offers a way to contribute a place", () => {
     assert.ok(
-      /suggest a place/i.test(browseHtml),
-      "Browse page must offer a way to suggest a place",
+      /contribute a place/i.test(browseHtml),
+      "Browse page must offer a way to contribute a place",
     );
   });
 
-  it("submit page links back to the directory", () => {
+  it("contribute page links back to the directory", () => {
     assert.ok(
-      submitHtml.includes('href="/"'),
-      "Submit page must offer a way back to the directory",
+      contributeHtml.includes('href="/"'),
+      "Contribute page must offer a way back to the directory",
     );
   });
 
-  it("place pages have a footer link to /submit", () => {
+  it("place pages have a footer link to the Contribute page", () => {
     const firstPlace = data.places[0];
     const placeHtml = stripComments(
       readFileSync(
@@ -188,95 +182,134 @@ describe("footer link", () => {
       ),
     );
     assert.ok(
-      placeHtml.includes('href="/submit/"'),
-      `Place page "${firstPlace.slug}" footer must link to /submit`,
+      placeHtml.includes('href="/contribute/"'),
+      `Place page "${firstPlace.slug}" footer must link to /contribute/`,
     );
   });
 });
 
 // ---------------------------------------------------------------------------
-// Submit page
+// Contribute page
 // ---------------------------------------------------------------------------
 
-describe("submit page", () => {
-  it("index.html exists at build/client/submit/index.html", () => {
+describe("contribute page", () => {
+  it("index.html exists at build/client/contribute/index.html", () => {
     assert.ok(
-      existsSync(resolve(BUILD_DIR, "submit", "index.html")),
-      "Submit page not found in build output",
+      existsSync(resolve(BUILD_DIR, "contribute", "index.html")),
+      "Contribute page not found in build output",
     );
   });
 
-  it("has a title", () => {
-    const titles = [...submitHtml.matchAll(/<title>([^<]*)<\/title>/g)];
-    assert.ok(titles.length >= 1, "Submit page must have a <title>");
+  it("has a title naming the Contribute page", () => {
+    const titles = [...contributeHtml.matchAll(/<title>([^<]*)<\/title>/g)];
+    assert.ok(titles.length >= 1, "Contribute page must have a <title>");
     assert.ok(
-      titles[0][1].includes("Suggest"),
-      `Title "${titles[0][1]}" should mention "Suggest"`,
+      titles[0][1].includes("Contribute"),
+      `Title "${titles[0][1]}" should mention "Contribute"`,
     );
   });
 
   it("has a meta description", () => {
     assert.ok(
-      submitHtml.includes('name="description"'),
-      "Submit page must have a meta description",
+      contributeHtml.includes('name="description"'),
+      "Contribute page must have a meta description",
     );
   });
 
-  it("has a canonical link to /submit", () => {
+  it("has a canonical link to /contribute/", () => {
     assert.ok(
-      submitHtml.includes('rel="canonical" href="https://naiktrainjer.com/submit/"'),
-      "Submit page canonical must point to /submit",
+      contributeHtml.includes(
+        'rel="canonical" href="https://naiktrainjer.com/contribute/"',
+      ),
+      "Contribute page canonical must point to /contribute/",
     );
   });
 
-  it("contains the Tally iframe embed", () => {
+  it("holds a native form, not a third-party frame", () => {
     assert.ok(
-      submitHtml.includes('data-tally-src="https://tally.so/embed/0Q4oRN'),
-      "Submit page must embed the Tally form through its self-sizing embed URL",
+      contributeHtml.includes("<form"),
+      "Contribute page must hold the site's own form",
     );
     assert.ok(
-      submitHtml.includes("dynamicHeight=1"),
-      "The embed must let Tally size the frame, or the Submit button falls below an inner scrollbar",
+      !contributeHtml.includes("<iframe"),
+      "Contribute page must not embed a frame",
     );
     assert.ok(
-      submitHtml.includes("hideTitle=1"),
-      "The form's own heading duplicates the page heading, so it must be hidden",
+      !contributeHtml.includes(RETIRED_FORM_HOST),
+      "No retired form embed may remain on the Contribute page",
     );
-  });
-
-  it("the Tally iframe has loading='lazy'", () => {
     assert.ok(
-      submitHtml.includes("loading=\"lazy\""),
-      "Tally iframe must have loading='lazy'",
+      !contributeHtml.includes(RETIRED_ROUTE),
+      "No retired route path may remain on the Contribute page",
     );
   });
 
-  it("the Tally iframe has a title attribute", () => {
-    const iframeMatch = submitHtml.match(
-      /<iframe[^>]*data-tally-src="https:\/\/tally\.so\/embed\/0Q4oRN[^"]*"[^>]*>/,
-    );
-    assert.ok(iframeMatch, "Tally iframe not found");
+  it("requires a place name", () => {
     assert.ok(
-      iframeMatch![0].includes("title="),
-      "Tally iframe must have a title attribute",
+      contributeHtml.includes('id="name"'),
+      "Contribute page must ask for the place name",
     );
   });
 
-  it("contains a fallback link to the Tally form", () => {
+  it("offers every Station on every Line, grouped by Line", () => {
     assert.ok(
-      submitHtml.includes('href="https://tally.so/r/0Q4oRN"'),
-      "Submit page must have a fallback link to the Tally form",
+      contributeHtml.includes('id="station"'),
+      "Contribute page must hold the Station picker",
     );
     assert.ok(
-      submitHtml.includes('target="_blank"'),
-      "Fallback link must open in a new tab",
+      contributeHtml.includes('aria-required="true"'),
+      "The Station picker (and the name) must be marked required",
     );
+
+    for (const line of data.lines) {
+      assert.ok(
+        contributeHtml.includes(`<optgroup label="${line.name}">`),
+        `Station picker must group the ${line.name} line`,
+      );
+      for (const station of line.stations) {
+        const option = `value="${station.code}"`;
+        assert.ok(
+          contributeHtml.includes(option),
+          `Station ${station.code} (${station.name}) missing from the picker`,
+        );
+      }
+    }
   });
 
-  it("the Tally embed appears only on the Submit page", () => {
+  it("offers the controlled Type list, but not as a requirement", () => {
     assert.ok(
-      !browseHtml.includes("tally.so"),
-      "Browse page must not contain the Tally embed or its script",
+      contributeHtml.includes('id="type"'),
+      "Contribute page must hold the optional Type picker",
+    );
+    for (const type of CONTRIBUTION_TYPES) {
+      assert.ok(
+        contributeHtml.includes(`value="${type}"`),
+        `Type option "${type}" missing from the form`,
+      );
+    }
+  });
+
+  it("offers the optional map link, note, and Contributor fields", () => {
+    for (const id of ["map", "note", "contributorName", "contributorHref"]) {
+      assert.ok(
+        contributeHtml.includes(`id="${id}"`),
+        `Contribute form is missing the "${id}" field`,
+      );
+    }
+  });
+
+  it("has no reference to the old submit route or third-party form", () => {
+    assert.ok(
+      !existsSync(resolve(BUILD_DIR, RETIRED_ROUTE.slice(1))),
+      "The retired route must not be prerendered",
+    );
+    assert.ok(
+      !browseHtml.includes(RETIRED_FORM_HOST),
+      "Browse page must not contain a third-party form embed or its script",
+    );
+    assert.ok(
+      !browseHtml.includes(RETIRED_ROUTE),
+      "Browse page must not link to the retired route",
     );
 
     const firstPlace = data.places[0];
@@ -287,15 +320,12 @@ describe("submit page", () => {
       ),
     );
     assert.ok(
-      !placeHtml.includes("tally.so"),
-      "Place page must not contain the Tally embed or its script",
+      !placeHtml.includes(RETIRED_FORM_HOST),
+      "Place page must not contain a third-party form embed or its script",
     );
-  });
-
-  it("uses Tally's embed script, because a fixed iframe height cuts the form off", () => {
     assert.ok(
-      submitHtml.includes("https://tally.so/widgets/embed.js"),
-      "The Submit page must load Tally's embed script so the frame matches the form's height",
+      !placeHtml.includes(RETIRED_ROUTE),
+      "Place page must not link to the retired route",
     );
   });
 });

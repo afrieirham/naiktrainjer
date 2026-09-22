@@ -1,0 +1,14 @@
+{
+  "slug": "starville-apartment",
+  "name": "Starville Apartment",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ33",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/iKUGysQyQfTi6UGq8",
+  "coordinates": {
+    "lat": 3.0269746,
+    "lng": 101.5787319
+  },
+  "source": "owner"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "rhythm-avenue",
+  "name": "Rhythm Avenue",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ33",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/2yAEwRVsBH2WcBNQA",
+  "coordinates": {
+    "lat": 3.0344304,
+    "lng": 101.589643
+  },
+  "source": "owner"
+}

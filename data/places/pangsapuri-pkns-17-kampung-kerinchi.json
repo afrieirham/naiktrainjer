@@ -1,0 +1,14 @@
+{
+  "slug": "pangsapuri-pkns-17-kampung-kerinchi",
+  "name": "Pangsapuri PKNS 17 Kampung Kerinchi",
+  "kind": "building",
+  "type": "flat",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/BhfcL56ewtBsXwFh9",
+  "coordinates": {
+    "lat": 3.1121867,
+    "lng": 101.6623458
+  },
+  "source": "owner"
+}

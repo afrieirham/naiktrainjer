@@ -1,0 +1,14 @@
+{
+  "slug": "pinnacle-petaling-jaya",
+  "name": "Pinnacle Petaling Jaya",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ21",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/kEY6umHbBJGRQ3kHA",
+  "coordinates": {
+    "lat": 3.1056062,
+    "lng": 101.637209
+  },
+  "source": "owner"
+}

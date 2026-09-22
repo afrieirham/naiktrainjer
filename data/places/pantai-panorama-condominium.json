@@ -1,0 +1,14 @@
+{
+  "slug": "pantai-panorama-condominium",
+  "name": "Pantai Panorama Condominium",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/RVzgmg2V5uEijrXa6",
+  "coordinates": {
+    "lat": 3.1095606,
+    "lng": 101.6600423
+  },
+  "source": "owner"
+}

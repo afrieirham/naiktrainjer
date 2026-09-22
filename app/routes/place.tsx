@@ -1,41 +1,41 @@
 import { useState, useMemo } from "react";
 import { useLoaderData } from "react-router";
-import propertiesData from "../../data/properties.json";
-import type { Place, Station } from "../lib/browse-filter";
+import type { Place } from "../lib/browse-filter";
+import { lines, places } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar, AppBarAction } from "../components/AppBar";
+import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
-import { coveredLine, coverage, type Line } from "../lib/lines";
+import { coveredLine, coverage, stationNamesByCode } from "../lib/lines";
 import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
+import { placeContributor } from "../lib/contributors";
 import type { Route } from "./+types/place";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const CHECKED_STATIONS = propertiesData.stations as Station[];
-const COVERED_LINE = coveredLine(propertiesData.lines as Line[], CHECKED_STATIONS);
-const COVERAGE = coverage(COVERED_LINE, CHECKED_STATIONS);
-const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${propertiesData.places.length} places`;
+const COVERED_LINE = coveredLine(lines, places);
+const COVERAGE = coverage(COVERED_LINE, places);
+const COUNTS = `${COVERAGE.coveredCount} of ${COVERAGE.total} stations · ${places.length} places`;
+const STATION_NAMES = stationNamesByCode(lines);
 
 export function loader({ params }: Route.LoaderArgs) {
   const slug = params.placeSlug as string;
-  const place = propertiesData.places.find((p) => p.slug === slug);
+  const place = places.find((p) => p.slug === slug);
   if (!place) {
     throw new Response("Not Found", { status: 404 });
   }
-  const station = propertiesData.stations.find((s) => s.slug === place.station);
-  const alsoNearStations = (place.alsoNear ?? [])
-    .map((slug) => propertiesData.stations.find((s) => s.slug === slug))
-    .filter(Boolean);
+  const alsoNearNames = (place.alsoNear ?? [])
+    .map((code) => STATION_NAMES.get(code))
+    .filter((name): name is string => Boolean(name));
   return {
     place: place as Place,
-    stationName: station?.name ?? place.station,
-    alsoNearNames: alsoNearStations.map((s) => s!.name),
+    stationName: STATION_NAMES.get(place.station) ?? place.station,
+    alsoNearNames,
     lineName: COVERED_LINE.name,
   };
 }
@@ -90,6 +90,7 @@ export default function PlacePage() {
 
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const isBuilding = place.kind === "building";
+  const contributor = placeContributor(place);
   const sentence = isBuilding
     ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName}, on the ${lineName} line.`
     : `${place.name} is a neighbourhood near ${stationName}, on the ${lineName} line.`;
@@ -102,7 +103,8 @@ export default function PlacePage() {
       <AppBar
         subtitle={`${lineName} line`}
         counts={COUNTS}
-        action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
+        nav={<AppBarLink href="/contributors/">Contributors</AppBarLink>}
+        action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
@@ -139,6 +141,28 @@ export default function PlacePage() {
                 </dt>
                 <dd className="mt-1 text-[13.5px] font-semibold text-ink">
                   {alsoNearNames.join(", ")}
+                </dd>
+              </>
+            )}
+
+            {contributor && (
+              <>
+                <dt className="mt-4 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+                  Contributed by
+                </dt>
+                <dd className="mt-1 text-[13.5px] font-semibold text-ink">
+                  {contributor.href ? (
+                    <a
+                      href={contributor.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-rule-strong underline-offset-4 transition-opacity hover:opacity-70"
+                    >
+                      {contributor.name}
+                    </a>
+                  ) : (
+                    contributor.name
+                  )}
                 </dd>
               </>
             )}

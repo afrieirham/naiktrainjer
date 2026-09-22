@@ -1,0 +1,9 @@
+{
+  "slug": "viia-residences",
+  "name": "ViiA Residences",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ17",
+  "alsoNear": [],
+  "source": "owner"
+}
