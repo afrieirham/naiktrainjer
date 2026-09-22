@@ -3,6 +3,10 @@
 // (GITHUB_TOKEN, TURNSTILE_SECRET) live as Pages environment values and are
 // named here only.
 //
+// Run scripts/setup-contribute-credentials.sh to provision all of this — the KV
+// namespace, the Turnstile keys, the pages secrets and the Access application.
+// It edits this file in place for the parts that live here.
+//
 // Cloudflare Access is configured outside the repo, in the Cloudflare dashboard,
 // and is NOT set here. Before the admin area is safe to deploy, create one Access
 // application that protects BOTH:
