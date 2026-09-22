@@ -22,9 +22,9 @@ would break that promise and make every deploy depend on a box on the maintainer
 ## Decision
 
 1. **PocketBase is read-only.** Nothing in the build, the site or the repo writes to it.
-2. **The export is manual and offline.** `npm run export-line`
-   (`scripts/export-line-reference.mjs`) pulls the network reference and writes it into
-   `data/properties.json` as a top-level `lines[]` array; its output is committed. It is run by
+2. **The export is manual and offline.** `npm run export-network`
+   (`scripts/export-network.mjs`) pulls the network reference and writes it into
+   `data/network.json` as a top-level `lines[]` array; its output is committed. It is run by
    hand, exactly like the Measure script (ADR-0001, decision 3).
 3. **It is never part of `npm run build`.** A deploy cannot depend on PocketBase being reachable.
 4. **It keys on station code, never on name or slug.** `CHECKED_STATION_CODES` maps each checked

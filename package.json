@@ -10,7 +10,7 @@
     "typecheck": "react-router typegen && tsc",
     "test": "node --test tests/",
     "build:once": "react-router build && tsx scripts/generate-og-cards.ts",
-    "export-line": "node scripts/export-line-reference.mjs"
+    "export-network": "node scripts/export-network.mjs"
   },
   "dependencies": {
     "@react-router/node": "^8",

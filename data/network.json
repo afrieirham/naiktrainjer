@@ -1,0 +1,1751 @@
+{
+  "lines": [
+    {
+      "slug": "ampang",
+      "code": "AG",
+      "name": "Ampang",
+      "color": "#f5911f",
+      "stations": [
+        {
+          "code": "AG1",
+          "name": "Sentul Timur",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.185897,
+            "lng": 101.695217
+          }
+        },
+        {
+          "code": "AG2",
+          "name": "Sentul",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.178484,
+            "lng": 101.695542
+          }
+        },
+        {
+          "code": "AG3",
+          "name": "Titiwangsa",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.173497,
+            "lng": 101.695367
+          }
+        },
+        {
+          "code": "AG4",
+          "name": "PWTC",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.166333,
+            "lng": 101.693586
+          }
+        },
+        {
+          "code": "AG5",
+          "name": "Sultan Ismail",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.161245,
+            "lng": 101.694109
+          }
+        },
+        {
+          "code": "AG6",
+          "name": "Bandaraya",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.155567,
+            "lng": 101.694485
+          }
+        },
+        {
+          "code": "AG7",
+          "name": "Masjid Jamek",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.14927,
+            "lng": 101.696377
+          }
+        },
+        {
+          "code": "AG8",
+          "name": "Plaza Rakyat",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.144049,
+            "lng": 101.702105
+          }
+        },
+        {
+          "code": "AG9",
+          "name": "Hang Tuah",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.140012,
+            "lng": 101.705984
+          }
+        },
+        {
+          "code": "AG10",
+          "name": "Pudu",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.134879,
+            "lng": 101.711957
+          }
+        },
+        {
+          "code": "AG11",
+          "name": "Chan Sow Lin",
+          "sort": 11,
+          "coordinates": {
+            "lat": 3.128105,
+            "lng": 101.715637
+          }
+        },
+        {
+          "code": "AG12",
+          "name": "Miharja",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.120973,
+            "lng": 101.717922
+          }
+        },
+        {
+          "code": "AG13",
+          "name": "Maluri",
+          "sort": 13,
+          "coordinates": {
+            "lat": 3.12329,
+            "lng": 101.727283
+          }
+        },
+        {
+          "code": "AG14",
+          "name": "Pandan Jaya",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.130141,
+            "lng": 101.739122
+          }
+        },
+        {
+          "code": "AG15",
+          "name": "Pandan Indah",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.134581,
+            "lng": 101.746509
+          }
+        },
+        {
+          "code": "AG16",
+          "name": "Cempaka",
+          "sort": 16,
+          "coordinates": {
+            "lat": 3.138324,
+            "lng": 101.752979
+          }
+        },
+        {
+          "code": "AG17",
+          "name": "Cahaya",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.140575,
+            "lng": 101.756677
+          }
+        },
+        {
+          "code": "AG18",
+          "name": "Ampang",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.150318,
+            "lng": 101.760049
+          }
+        }
+      ]
+    },
+    {
+      "slug": "sri-petaling",
+      "code": "SP",
+      "name": "Sri Petaling",
+      "color": "#8d0c06",
+      "stations": [
+        {
+          "code": "SP1",
+          "name": "Sentul Timur",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.185897,
+            "lng": 101.695217
+          }
+        },
+        {
+          "code": "SP2",
+          "name": "Sentul",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.178484,
+            "lng": 101.695542
+          }
+        },
+        {
+          "code": "SP3",
+          "name": "Titiwangsa",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.173497,
+            "lng": 101.695367
+          }
+        },
+        {
+          "code": "SP4",
+          "name": "PWTC",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.166333,
+            "lng": 101.693586
+          }
+        },
+        {
+          "code": "SP5",
+          "name": "Sultan Ismail",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.161245,
+            "lng": 101.694109
+          }
+        },
+        {
+          "code": "SP6",
+          "name": "Bandaraya",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.155567,
+            "lng": 101.694485
+          }
+        },
+        {
+          "code": "SP7",
+          "name": "Masjid Jamek",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.14927,
+            "lng": 101.696377
+          }
+        },
+        {
+          "code": "SP8",
+          "name": "Plaza Rakyat",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.144049,
+            "lng": 101.702105
+          }
+        },
+        {
+          "code": "SP9",
+          "name": "Hang Tuah",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.140012,
+            "lng": 101.705984
+          }
+        },
+        {
+          "code": "SP10",
+          "name": "Pudu",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.134879,
+            "lng": 101.711957
+          }
+        },
+        {
+          "code": "SP11",
+          "name": "Chan Sow Lin",
+          "sort": 11,
+          "coordinates": {
+            "lat": 3.128105,
+            "lng": 101.715637
+          }
+        },
+        {
+          "code": "SP12",
+          "name": "Cheras",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.112609,
+            "lng": 101.714178
+          }
+        },
+        {
+          "code": "SP13",
+          "name": "Salak Selatan",
+          "sort": 13,
+          "coordinates": {
+            "lat": 3.102201,
+            "lng": 101.706179
+          }
+        },
+        {
+          "code": "SP14",
+          "name": "Bandar Tun Razak",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.089576,
+            "lng": 101.712466
+          }
+        },
+        {
+          "code": "SP15",
+          "name": "Bandar Tasik Selatan",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.076058,
+            "lng": 101.711107
+          }
+        },
+        {
+          "code": "SP16",
+          "name": "Sungai Besi",
+          "sort": 16,
+          "coordinates": {
+            "lat": 3.063842,
+            "lng": 101.708062
+          }
+        },
+        {
+          "code": "SP17",
+          "name": "Bukit Jalil",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.058196,
+            "lng": 101.692125
+          }
+        },
+        {
+          "code": "SP18",
+          "name": "Sri Petaling",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.061445,
+            "lng": 101.687074
+          }
+        },
+        {
+          "code": "SP19",
+          "name": "Awan Besar",
+          "sort": 19,
+          "coordinates": {
+            "lat": 3.062131,
+            "lng": 101.670555
+          }
+        },
+        {
+          "code": "SP20",
+          "name": "Muhibbah",
+          "sort": 20,
+          "coordinates": {
+            "lat": 3.062229,
+            "lng": 101.662552
+          }
+        },
+        {
+          "code": "SP21",
+          "name": "Alam Sutera",
+          "sort": 21,
+          "coordinates": {
+            "lat": 3.0547,
+            "lng": 101.656468
+          }
+        },
+        {
+          "code": "SP22",
+          "name": "Kinrara",
+          "sort": 22,
+          "coordinates": {
+            "lat": 3.050506,
+            "lng": 101.644294
+          }
+        },
+        {
+          "code": "SP24",
+          "name": "IOI Puchong Jaya",
+          "sort": 24,
+          "coordinates": {
+            "lat": 3.048101,
+            "lng": 101.62095
+          }
+        },
+        {
+          "code": "SP25",
+          "name": "Pusat Bandar Puchong",
+          "sort": 25,
+          "coordinates": {
+            "lat": 3.033194,
+            "lng": 101.616057
+          }
+        },
+        {
+          "code": "SP26",
+          "name": "Taman Perindustrian Puchong",
+          "sort": 26,
+          "coordinates": {
+            "lat": 3.022814,
+            "lng": 101.613514
+          }
+        },
+        {
+          "code": "SP27",
+          "name": "Bandar Puteri",
+          "sort": 27,
+          "coordinates": {
+            "lat": 3.017111,
+            "lng": 101.612855
+          }
+        },
+        {
+          "code": "SP28",
+          "name": "Puchong Perdana",
+          "sort": 28,
+          "coordinates": {
+            "lat": 3.007913,
+            "lng": 101.605021
+          }
+        },
+        {
+          "code": "SP29",
+          "name": "Puchong Prima",
+          "sort": 29,
+          "coordinates": {
+            "lat": 2.999808,
+            "lng": 101.596692
+          }
+        },
+        {
+          "code": "SP31",
+          "name": "Putra Heights",
+          "sort": 31,
+          "coordinates": {
+            "lat": 2.996016,
+            "lng": 101.575521
+          }
+        }
+      ]
+    },
+    {
+      "slug": "kelana-jaya",
+      "code": "KJ",
+      "name": "Kelana Jaya",
+      "color": "#ed0f4c",
+      "stations": [
+        {
+          "code": "KJ1",
+          "name": "Gombak",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.231793,
+            "lng": 101.724427
+          }
+        },
+        {
+          "code": "KJ2",
+          "name": "Taman Melati",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.219558,
+            "lng": 101.72197
+          }
+        },
+        {
+          "code": "KJ3",
+          "name": "Wangsa Maju",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.205751,
+            "lng": 101.731796
+          }
+        },
+        {
+          "code": "KJ4",
+          "name": "Sri Rampai",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.199176,
+            "lng": 101.73747
+          }
+        },
+        {
+          "code": "KJ5",
+          "name": "Setiawangsa",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.17576,
+            "lng": 101.73584
+          }
+        },
+        {
+          "code": "KJ6",
+          "name": "Jelatek",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.167204,
+            "lng": 101.735344
+          }
+        },
+        {
+          "code": "KJ7",
+          "name": "Dato' Keramat",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.16509,
+            "lng": 101.73184
+          }
+        },
+        {
+          "code": "KJ8",
+          "name": "Damai",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.164406,
+            "lng": 101.724489
+          }
+        },
+        {
+          "code": "KJ9",
+          "name": "Ampang Park",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.159894,
+            "lng": 101.719017
+          }
+        },
+        {
+          "code": "KJ10",
+          "name": "KLCC",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.158935,
+            "lng": 101.713287
+          }
+        },
+        {
+          "code": "KJ11",
+          "name": "Kampung Baru",
+          "sort": 11,
+          "coordinates": {
+            "lat": 3.161386,
+            "lng": 101.706608
+          }
+        },
+        {
+          "code": "KJ12",
+          "name": "Dang Wangi",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.156942,
+            "lng": 101.701975
+          }
+        },
+        {
+          "code": "KJ13",
+          "name": "Masjid Jamek",
+          "sort": 13,
+          "coordinates": {
+            "lat": 3.149714,
+            "lng": 101.696815
+          }
+        },
+        {
+          "code": "KJ14",
+          "name": "Pasar Seni",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.142439,
+            "lng": 101.69531
+          }
+        },
+        {
+          "code": "KJ15",
+          "name": "KL Sentral",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.13442,
+            "lng": 101.68625
+          }
+        },
+        {
+          "code": "KJ16",
+          "name": "Bank Rakyat Bangsar",
+          "sort": 16,
+          "coordinates": {
+            "lat": 3.127588,
+            "lng": 101.679062
+          }
+        },
+        {
+          "code": "KJ17",
+          "name": "Abdullah Hukum",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.118735,
+            "lng": 101.672897
+          }
+        },
+        {
+          "code": "KJ18",
+          "name": "Kerinchi",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.115506,
+            "lng": 101.668572
+          }
+        },
+        {
+          "code": "KJ19",
+          "name": "Universiti",
+          "sort": 19,
+          "coordinates": {
+            "lat": 3.114616,
+            "lng": 101.661639
+          }
+        },
+        {
+          "code": "KJ20",
+          "name": "Taman Jaya",
+          "sort": 20,
+          "coordinates": {
+            "lat": 3.104086,
+            "lng": 101.645248
+          }
+        },
+        {
+          "code": "KJ21",
+          "name": "Asia Jaya",
+          "sort": 21,
+          "coordinates": {
+            "lat": 3.104343,
+            "lng": 101.637695
+          }
+        },
+        {
+          "code": "KJ22",
+          "name": "Taman Paramount",
+          "sort": 22,
+          "coordinates": {
+            "lat": 3.104716,
+            "lng": 101.623192
+          }
+        },
+        {
+          "code": "KJ23",
+          "name": "Taman Bahagia",
+          "sort": 23,
+          "coordinates": {
+            "lat": 3.11079,
+            "lng": 101.612856
+          }
+        },
+        {
+          "code": "KJ24",
+          "name": "Kelana Jaya",
+          "sort": 24,
+          "coordinates": {
+            "lat": 3.112497,
+            "lng": 101.6043
+          }
+        },
+        {
+          "code": "KJ25",
+          "name": "Lembah Subang",
+          "sort": 25,
+          "coordinates": {
+            "lat": 3.112094,
+            "lng": 101.591034
+          }
+        },
+        {
+          "code": "KJ26",
+          "name": "Ara Damansara",
+          "sort": 26,
+          "coordinates": {
+            "lat": 3.108643,
+            "lng": 101.586372
+          }
+        },
+        {
+          "code": "KJ27",
+          "name": "CGC Glenmarie",
+          "sort": 27,
+          "coordinates": {
+            "lat": 3.094732,
+            "lng": 101.590622
+          }
+        },
+        {
+          "code": "KJ28",
+          "name": "Subang Jaya",
+          "sort": 28,
+          "coordinates": {
+            "lat": 3.08466,
+            "lng": 101.588127
+          }
+        },
+        {
+          "code": "KJ29",
+          "name": "SS 15",
+          "sort": 29,
+          "coordinates": {
+            "lat": 3.075972,
+            "lng": 101.585983
+          }
+        },
+        {
+          "code": "KJ30",
+          "name": "SS 18",
+          "sort": 30,
+          "coordinates": {
+            "lat": 3.067182,
+            "lng": 101.585945
+          }
+        },
+        {
+          "code": "KJ31",
+          "name": "USJ 7",
+          "sort": 31,
+          "coordinates": {
+            "lat": 3.054956,
+            "lng": 101.592194
+          }
+        },
+        {
+          "code": "KJ32",
+          "name": "Taipan",
+          "sort": 32,
+          "coordinates": {
+            "lat": 3.04815,
+            "lng": 101.590233
+          }
+        },
+        {
+          "code": "KJ33",
+          "name": "Wawasan",
+          "sort": 33,
+          "coordinates": {
+            "lat": 3.035062,
+            "lng": 101.588348
+          }
+        },
+        {
+          "code": "KJ34",
+          "name": "USJ 21",
+          "sort": 34,
+          "coordinates": {
+            "lat": 3.029881,
+            "lng": 101.581711
+          }
+        },
+        {
+          "code": "KJ35",
+          "name": "Alam Megah",
+          "sort": 35,
+          "coordinates": {
+            "lat": 3.023151,
+            "lng": 101.572029
+          }
+        },
+        {
+          "code": "KJ36",
+          "name": "Subang Alam",
+          "sort": 36,
+          "coordinates": {
+            "lat": 3.009421,
+            "lng": 101.572281
+          }
+        },
+        {
+          "code": "KJ37",
+          "name": "Putra Heights",
+          "sort": 37,
+          "coordinates": {
+            "lat": 2.996227,
+            "lng": 101.575462
+          }
+        }
+      ]
+    },
+    {
+      "slug": "kajang",
+      "code": "KG",
+      "name": "Kajang",
+      "color": "#008640",
+      "stations": [
+        {
+          "code": "KG4",
+          "name": "Kwasa Damansara",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.176146,
+            "lng": 101.572052
+          }
+        },
+        {
+          "code": "KG5",
+          "name": "Kwasa Sentral",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.170112,
+            "lng": 101.564651
+          }
+        },
+        {
+          "code": "KG6",
+          "name": "Kota Damansara",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.150134,
+            "lng": 101.57869
+          }
+        },
+        {
+          "code": "KG7",
+          "name": "Surian",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.14948,
+            "lng": 101.593925
+          }
+        },
+        {
+          "code": "KG8",
+          "name": "Mutiara Damansara",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.155301,
+            "lng": 101.609077
+          }
+        },
+        {
+          "code": "KG9",
+          "name": "Bandar Utama",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.14671,
+            "lng": 101.618599
+          }
+        },
+        {
+          "code": "KG10",
+          "name": "Taman Tun Dr Ismail",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.13613,
+            "lng": 101.630539
+          }
+        },
+        {
+          "code": "KG12",
+          "name": "Phileo Damansara",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.129864,
+            "lng": 101.642471
+          }
+        },
+        {
+          "code": "KG13",
+          "name": "Pusat Bandar Damansara",
+          "sort": 13,
+          "coordinates": {
+            "lat": 3.143444,
+            "lng": 101.662857
+          }
+        },
+        {
+          "code": "KG14",
+          "name": "Semantan",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.150977,
+            "lng": 101.665497
+          }
+        },
+        {
+          "code": "KG15",
+          "name": "Muzium Negara",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.137317,
+            "lng": 101.687336
+          }
+        },
+        {
+          "code": "KG16",
+          "name": "Pasar Seni",
+          "sort": 16,
+          "coordinates": {
+            "lat": 3.142293265,
+            "lng": 101.6955642
+          }
+        },
+        {
+          "code": "KG17",
+          "name": "Merdeka",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.141969,
+            "lng": 101.70205
+          }
+        },
+        {
+          "code": "KG18",
+          "name": "Bukit Bintang",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.146503,
+            "lng": 101.710947
+          }
+        },
+        {
+          "code": "KG20",
+          "name": "Tun Razak Exchange",
+          "sort": 20,
+          "coordinates": {
+            "lat": 3.142403,
+            "lng": 101.720156
+          }
+        },
+        {
+          "code": "KG21",
+          "name": "Cochrane",
+          "sort": 21,
+          "coordinates": {
+            "lat": 3.132829,
+            "lng": 101.722962
+          }
+        },
+        {
+          "code": "KG22",
+          "name": "Maluri",
+          "sort": 22,
+          "coordinates": {
+            "lat": 3.123623,
+            "lng": 101.727809
+          }
+        },
+        {
+          "code": "KG23",
+          "name": "Taman Pertama",
+          "sort": 23,
+          "coordinates": {
+            "lat": 3.112547,
+            "lng": 101.729371
+          }
+        },
+        {
+          "code": "KG24",
+          "name": "Taman Midah",
+          "sort": 24,
+          "coordinates": {
+            "lat": 3.104505,
+            "lng": 101.732186
+          }
+        },
+        {
+          "code": "KG25",
+          "name": "Taman Mutiara",
+          "sort": 25,
+          "coordinates": {
+            "lat": 3.090989,
+            "lng": 101.740453
+          }
+        },
+        {
+          "code": "KG26",
+          "name": "Taman Connaught",
+          "sort": 26,
+          "coordinates": {
+            "lat": 3.079172,
+            "lng": 101.74522
+          }
+        },
+        {
+          "code": "KG27",
+          "name": "Taman Suntex",
+          "sort": 27,
+          "coordinates": {
+            "lat": 3.071578,
+            "lng": 101.763552
+          }
+        },
+        {
+          "code": "KG28",
+          "name": "Sri Raya",
+          "sort": 28,
+          "coordinates": {
+            "lat": 3.062273,
+            "lng": 101.772899
+          }
+        },
+        {
+          "code": "KG29",
+          "name": "Bandar Tun Hussien Onn",
+          "sort": 29,
+          "coordinates": {
+            "lat": 3.048223,
+            "lng": 101.775109
+          }
+        },
+        {
+          "code": "KG30",
+          "name": "Batu 11 Cheras",
+          "sort": 30,
+          "coordinates": {
+            "lat": 3.041339,
+            "lng": 101.773383
+          }
+        },
+        {
+          "code": "KG31",
+          "name": "Bukit Dukung",
+          "sort": 31,
+          "coordinates": {
+            "lat": 3.026413,
+            "lng": 101.771072
+          }
+        },
+        {
+          "code": "KG33",
+          "name": "Sungai Jernih",
+          "sort": 33,
+          "coordinates": {
+            "lat": 3.000948,
+            "lng": 101.783857
+          }
+        },
+        {
+          "code": "KG34",
+          "name": "Stadium Kajang",
+          "sort": 34,
+          "coordinates": {
+            "lat": 2.994514,
+            "lng": 101.786338
+          }
+        },
+        {
+          "code": "KG35",
+          "name": "Kajang",
+          "sort": 35,
+          "coordinates": {
+            "lat": 2.982778,
+            "lng": 101.790278
+          }
+        }
+      ]
+    },
+    {
+      "slug": "putrajaya",
+      "code": "PY",
+      "name": "Putrajaya",
+      "color": "#fbcd20",
+      "stations": [
+        {
+          "code": "PY1",
+          "name": "Kwasa Damansara",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.1763324,
+            "lng": 101.5721456
+          }
+        },
+        {
+          "code": "PY3",
+          "name": "Kampung Selamat",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.197266,
+            "lng": 101.578499
+          }
+        },
+        {
+          "code": "PY4",
+          "name": "Sungai Buloh",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.206429,
+            "lng": 101.581779
+          }
+        },
+        {
+          "code": "PY5",
+          "name": "Damansara Damai",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.199892,
+            "lng": 101.592623
+          }
+        },
+        {
+          "code": "PY6",
+          "name": "Sri Damansara Barat",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.198197,
+            "lng": 101.608302
+          }
+        },
+        {
+          "code": "PY7",
+          "name": "Sri Damansara Sentral",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.198815,
+            "lng": 101.621396
+          }
+        },
+        {
+          "code": "PY8",
+          "name": "Sri Damansara Timur",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.207832,
+            "lng": 101.628716
+          }
+        },
+        {
+          "code": "PY9",
+          "name": "Metro Prima",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.214438,
+            "lng": 101.639402
+          }
+        },
+        {
+          "code": "PY10",
+          "name": "Kepong Baru",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.211663,
+            "lng": 101.648193
+          }
+        },
+        {
+          "code": "PY11",
+          "name": "Jinjang",
+          "sort": 11,
+          "coordinates": {
+            "lat": 3.209544,
+            "lng": 101.655829
+          }
+        },
+        {
+          "code": "PY12",
+          "name": "Sri Delima",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.207108,
+            "lng": 101.665749
+          }
+        },
+        {
+          "code": "PY13",
+          "name": "Kampung Batu",
+          "sort": 13,
+          "coordinates": {
+            "lat": 3.205521,
+            "lng": 101.675473
+          }
+        },
+        {
+          "code": "PY14",
+          "name": "Kentomen",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.19563,
+            "lng": 101.6797
+          }
+        },
+        {
+          "code": "PY15",
+          "name": "Jalan Ipoh",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.189319,
+            "lng": 101.681145
+          }
+        },
+        {
+          "code": "PY16",
+          "name": "Sentul Barat",
+          "sort": 16,
+          "coordinates": {
+            "lat": 3.179369,
+            "lng": 101.684742
+          }
+        },
+        {
+          "code": "PY17",
+          "name": "Titiwangsa",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.17408,
+            "lng": 101.69581
+          }
+        },
+        {
+          "code": "PY18",
+          "name": "Hospital Kuala Lumpur",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.17405,
+            "lng": 101.70239
+          }
+        },
+        {
+          "code": "PY19",
+          "name": "Raja Uda",
+          "sort": 19,
+          "coordinates": {
+            "lat": 3.16794,
+            "lng": 101.71017
+          }
+        },
+        {
+          "code": "PY20",
+          "name": "Ampang Park",
+          "sort": 20,
+          "coordinates": {
+            "lat": 3.16225,
+            "lng": 101.71781
+          }
+        },
+        {
+          "code": "PY21",
+          "name": "Persiaran KLCC",
+          "sort": 21,
+          "coordinates": {
+            "lat": 3.15712,
+            "lng": 101.71834
+          }
+        },
+        {
+          "code": "PY22",
+          "name": "Conlay",
+          "sort": 22,
+          "coordinates": {
+            "lat": 3.15145,
+            "lng": 101.71801
+          }
+        },
+        {
+          "code": "PY23",
+          "name": "Tun Razak Exchange",
+          "sort": 23,
+          "coordinates": {
+            "lat": 3.14289,
+            "lng": 101.72034
+          }
+        },
+        {
+          "code": "PY24",
+          "name": "Chan Sow Lin",
+          "sort": 24,
+          "coordinates": {
+            "lat": 3.12839,
+            "lng": 101.71663
+          }
+        },
+        {
+          "code": "PY27",
+          "name": "Kuchai",
+          "sort": 27,
+          "coordinates": {
+            "lat": 3.089546,
+            "lng": 101.694124
+          }
+        },
+        {
+          "code": "PY28",
+          "name": "Taman Naga Emas",
+          "sort": 28,
+          "coordinates": {
+            "lat": 3.077688,
+            "lng": 101.699867
+          }
+        },
+        {
+          "code": "PY29",
+          "name": "Sungai Besi",
+          "sort": 29,
+          "coordinates": {
+            "lat": 3.063737,
+            "lng": 101.7084
+          }
+        },
+        {
+          "code": "PY31",
+          "name": "Serdang Raya Utara",
+          "sort": 31,
+          "coordinates": {
+            "lat": 3.041674,
+            "lng": 101.704928
+          }
+        },
+        {
+          "code": "PY32",
+          "name": "Serdang Raya Selatan",
+          "sort": 32,
+          "coordinates": {
+            "lat": 3.028463,
+            "lng": 101.707514
+          }
+        },
+        {
+          "code": "PY33",
+          "name": "Serdang Jaya",
+          "sort": 33,
+          "coordinates": {
+            "lat": 3.0216,
+            "lng": 101.709
+          }
+        },
+        {
+          "code": "PY34",
+          "name": "UPM",
+          "sort": 34,
+          "coordinates": {
+            "lat": 3.008489,
+            "lng": 101.705396
+          }
+        },
+        {
+          "code": "PY36",
+          "name": "Taman Equine",
+          "sort": 36,
+          "coordinates": {
+            "lat": 2.98942,
+            "lng": 101.67244
+          }
+        },
+        {
+          "code": "PY37",
+          "name": "Putra Permai",
+          "sort": 37,
+          "coordinates": {
+            "lat": 2.98339,
+            "lng": 101.66099
+          }
+        },
+        {
+          "code": "PY38",
+          "name": "16 Sierra",
+          "sort": 38,
+          "coordinates": {
+            "lat": 2.964974,
+            "lng": 101.654812
+          }
+        },
+        {
+          "code": "PY39",
+          "name": "Cyberjaya Utara",
+          "sort": 39,
+          "coordinates": {
+            "lat": 2.95,
+            "lng": 101.6573
+          }
+        },
+        {
+          "code": "PY40",
+          "name": "Cyberjaya City Centre",
+          "sort": 40,
+          "coordinates": {
+            "lat": 2.9384,
+            "lng": 101.6659
+          }
+        },
+        {
+          "code": "PY41",
+          "name": "Putrajaya Sentral",
+          "sort": 41,
+          "coordinates": {
+            "lat": 2.9313,
+            "lng": 101.6715
+          }
+        }
+      ]
+    },
+    {
+      "slug": "kl-monorail",
+      "code": "MR",
+      "name": "KL Monorail",
+      "color": "#81bc00",
+      "stations": [
+        {
+          "code": "MR1",
+          "name": "KL Sentral",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.132852,
+            "lng": 101.687817
+          }
+        },
+        {
+          "code": "MR2",
+          "name": "Tun Sambanthan",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.13132,
+            "lng": 101.69085
+          }
+        },
+        {
+          "code": "MR3",
+          "name": "Maharajalela",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.138743,
+            "lng": 101.699268
+          }
+        },
+        {
+          "code": "MR4",
+          "name": "Hang Tuah",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.140511,
+            "lng": 101.706029
+          }
+        },
+        {
+          "code": "MR5",
+          "name": "Imbi",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.14283,
+            "lng": 101.70945
+          }
+        },
+        {
+          "code": "MR6",
+          "name": "Bukit Bintang",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.146022,
+            "lng": 101.7115
+          }
+        },
+        {
+          "code": "MR7",
+          "name": "Raja Chulan",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.150878,
+            "lng": 101.710432
+          }
+        },
+        {
+          "code": "MR8",
+          "name": "Bukit Nanas",
+          "sort": 8,
+          "coordinates": {
+            "lat": 3.156214,
+            "lng": 101.704809
+          }
+        },
+        {
+          "code": "MR9",
+          "name": "Medan Tuanku",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.15935,
+            "lng": 101.69888
+          }
+        },
+        {
+          "code": "MR10",
+          "name": "Chow Kit",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.167358,
+            "lng": 101.698379
+          }
+        },
+        {
+          "code": "MR11",
+          "name": "Titiwangsa",
+          "sort": 11,
+          "coordinates": {
+            "lat": 3.173192,
+            "lng": 101.696022
+          }
+        }
+      ]
+    },
+    {
+      "slug": "sunway",
+      "code": "BRT",
+      "name": "Sunway",
+      "color": "#1E4D2B",
+      "stations": [
+        {
+          "code": "BRT1",
+          "name": "Sunway-Setia Jaya",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.0828,
+            "lng": 101.6123
+          }
+        },
+        {
+          "code": "BRT2",
+          "name": "Mentari",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.0761,
+            "lng": 101.6101
+          }
+        },
+        {
+          "code": "BRT3",
+          "name": "Sunway Lagoon",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.0706,
+            "lng": 101.6107
+          }
+        },
+        {
+          "code": "BRT4",
+          "name": "SunMed",
+          "sort": 4,
+          "coordinates": {
+            "lat": 3.0656,
+            "lng": 101.6087
+          }
+        },
+        {
+          "code": "BRT5",
+          "name": "SunU-Monash",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.0654,
+            "lng": 101.6016
+          }
+        },
+        {
+          "code": "BRT6",
+          "name": "South Quay-USJ 1",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.0617,
+            "lng": 101.5969
+          }
+        },
+        {
+          "code": "BRT7",
+          "name": "USJ 7",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.0553,
+            "lng": 101.5919
+          }
+        }
+      ]
+    },
+    {
+      "slug": "shah-alam",
+      "code": "SA",
+      "name": "Shah Alam",
+      "color": "#59B8E6",
+      "stations": [
+        {
+          "code": "SA1",
+          "name": "Bandar Utama",
+          "sort": 1,
+          "coordinates": {
+            "lat": 3.144722,
+            "lng": 101.618611
+          }
+        },
+        {
+          "code": "SA2",
+          "name": "Kayu Ara",
+          "sort": 2,
+          "coordinates": {
+            "lat": 3.134722,
+            "lng": 101.616667
+          }
+        },
+        {
+          "code": "SA3",
+          "name": "Bandar Utama 11",
+          "sort": 3,
+          "coordinates": {
+            "lat": 3.133333,
+            "lng": 101.604444
+          }
+        },
+        {
+          "code": "SA5",
+          "name": "Damansara Idaman",
+          "sort": 5,
+          "coordinates": {
+            "lat": 3.122778,
+            "lng": 101.594167
+          }
+        },
+        {
+          "code": "SA6",
+          "name": "Subang",
+          "sort": 6,
+          "coordinates": {
+            "lat": 3.106111,
+            "lng": 101.591111
+          }
+        },
+        {
+          "code": "SA7",
+          "name": "Glenmarie 2",
+          "sort": 7,
+          "coordinates": {
+            "lat": 3.095278,
+            "lng": 101.588611
+          }
+        },
+        {
+          "code": "SA9",
+          "name": "Kerjaya",
+          "sort": 9,
+          "coordinates": {
+            "lat": 3.082222,
+            "lng": 101.561944
+          }
+        },
+        {
+          "code": "SA10",
+          "name": "Stadium Shah Alam",
+          "sort": 10,
+          "coordinates": {
+            "lat": 3.079722,
+            "lng": 101.548889
+          }
+        },
+        {
+          "code": "SA12",
+          "name": "Dato' Menteri",
+          "sort": 12,
+          "coordinates": {
+            "lat": 3.069722,
+            "lng": 101.521111
+          }
+        },
+        {
+          "code": "SA14",
+          "name": "UiTM Shah Alam",
+          "sort": 14,
+          "coordinates": {
+            "lat": 3.0625,
+            "lng": 101.501111
+          }
+        },
+        {
+          "code": "SA15",
+          "name": "Seksyen 7 Shah Alam",
+          "sort": 15,
+          "coordinates": {
+            "lat": 3.067222,
+            "lng": 101.486667
+          }
+        },
+        {
+          "code": "SA17",
+          "name": "Bandar Baru Klang",
+          "sort": 17,
+          "coordinates": {
+            "lat": 3.0625,
+            "lng": 101.465556
+          }
+        },
+        {
+          "code": "SA18",
+          "name": "Pasar Klang",
+          "sort": 18,
+          "coordinates": {
+            "lat": 3.067778,
+            "lng": 101.450833
+          }
+        },
+        {
+          "code": "SA19",
+          "name": "Jalan Meru",
+          "sort": 19,
+          "coordinates": {
+            "lat": 3.058889,
+            "lng": 101.451944
+          }
+        },
+        {
+          "code": "SA20",
+          "name": "Jambatan Kota",
+          "sort": 20,
+          "coordinates": {
+            "lat": 3.047222,
+            "lng": 101.4475
+          }
+        },
+        {
+          "code": "SA21",
+          "name": "Taman Selatan",
+          "sort": 21,
+          "coordinates": {
+            "lat": 3.026667,
+            "lng": 101.442222
+          }
+        },
+        {
+          "code": "SA22",
+          "name": "Seri Andalas",
+          "sort": 22,
+          "coordinates": {
+            "lat": 3.015833,
+            "lng": 101.440556
+          }
+        },
+        {
+          "code": "SA23",
+          "name": "Klang Jaya",
+          "sort": 23,
+          "coordinates": {
+            "lat": 3.005278,
+            "lng": 101.441667
+          }
+        },
+        {
+          "code": "SA24",
+          "name": "Bandar Bukit Tinggi",
+          "sort": 24,
+          "coordinates": {
+            "lat": 2.993056,
+            "lng": 101.445833
+          }
+        },
+        {
+          "code": "SA26",
+          "name": "Johan Setia",
+          "sort": 26,
+          "coordinates": {
+            "lat": 2.976111,
+            "lng": 101.459167
+          }
+        }
+      ]
+    }
+  ]
+}
