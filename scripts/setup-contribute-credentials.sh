@@ -186,7 +186,7 @@ finish() {
 
 # Cloudflare's CLI edits wrangler.jsonc; the Contribute Functions read these.
 CONFIG="wrangler.jsonc"
-PROJECT="naiktrainjer"
+PROJECT="${PAGES_PROJECT:-naiktrainjer}"
 
 wrangler() { npx --yes wrangler "$@"; }
 
@@ -200,9 +200,9 @@ TOTAL_STAGES=6
 banner "Contribute credentials setup"
 
 # ── 1. Cloudflare sign-in and the Pages project ───────────────────────────
-stage "Cloudflare: sign in and confirm the Pages project"
+stage "Cloudflare: sign in and choose the Pages project"
 say "The Contribute form is a set of Cloudflare Pages Functions, so it needs a"
-say "Pages project called '$PROJECT' with KV and Turnstile behind it."
+say "Pages project with KV and Turnstile behind it."
 step "Sign in to wrangler. A browser will open:"
 note "npx wrangler login"
 open_url "https://dash.cloudflare.com/login"
@@ -211,14 +211,26 @@ if ! wrangler whoami >/dev/null 2>&1; then
   warn "wrangler isn't signed in. Run 'npx wrangler login', then re-run this wizard."
   exit 1
 fi
-say "Signed in."
-if wrangler pages project list 2>/dev/null | grep -q "$PROJECT"; then
-  say "Pages project '$PROJECT' exists."
-elif confirm "Create the Cloudflare Pages project '$PROJECT' now?"; then
+say "Signed in. Your Pages projects (empty means none yet):"
+wrangler pages project list 2>/dev/null || warn "Couldn't list projects."
+printf '  %sPages project to use%s [%s]: ' "$BOLD" "$RESET" "$PROJECT"
+read -r _project_reply || true
+_typed=false
+if [[ -n "${_project_reply:-}" ]]; then
+  PROJECT="$_project_reply"
+  _typed=true
+fi
+if wrangler pages project list 2>/dev/null | grep -qE "(^|[[:space:]])${PROJECT}([[:space:]]|$)"; then
+  say "Using the existing project '$PROJECT'."
+elif [[ "$_typed" == "true" ]]; then
+  warn "'$PROJECT' is not one of your projects. Re-run and pick a name from the list."
+  exit 1
+elif confirm "No project named '$PROJECT'. Create it now?"; then
   wrangler pages project create "$PROJECT" --production-branch main \
-    || warn "Could not create it here; create '$PROJECT' in the dashboard, then re-run."
+    || { warn "Could not create '$PROJECT'."; exit 1; }
 else
-  warn "Skipping. Create '$PROJECT' before the secrets stage."
+  warn "Stopping. Re-run and type the name of an existing project."
+  exit 1
 fi
 
 # ── 2. KV namespace for the rate limiter ──────────────────────────────────
