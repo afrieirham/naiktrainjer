@@ -26,6 +26,13 @@ export function AppBar({ subtitle, counts, action }: AppBarProps) {
         NaikTrainJer
       </a>
 
+      <a
+        href="/contributors/"
+        className="text-[12.5px] font-semibold text-ink-soft transition-colors hover:text-ink"
+      >
+        Contributors
+      </a>
+
       {subtitle ? (
         <span className="hidden text-[12.5px] font-medium text-ink-soft sm:inline">
           {subtitle}
