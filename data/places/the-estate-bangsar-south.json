@@ -1,0 +1,14 @@
+{
+  "slug": "the-estate-bangsar-south",
+  "name": "The Estate Bangsar South",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/kxxLvUNZNnRZMZUr9",
+  "coordinates": {
+    "lat": 3.1110534,
+    "lng": 101.6582869
+  },
+  "source": "owner"
+}

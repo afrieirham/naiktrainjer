@@ -1,0 +1,14 @@
+{
+  "slug": "subang-ss-14",
+  "name": "Subang SS 14",
+  "kind": "area",
+  "type": "area",
+  "station": "KJ30",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/pSwhinGPRLsCTB7X8",
+  "coordinates": {
+    "lat": 3.0679308,
+    "lng": 101.5822878
+  },
+  "source": "owner"
+}

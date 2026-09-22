@@ -1,0 +1,16 @@
+{
+  "slug": "petaling-jaya-ss-4",
+  "name": "Petaling Jaya SS 4",
+  "kind": "area",
+  "type": "area",
+  "station": "KJ24",
+  "alsoNear": [
+    "KJ23"
+  ],
+  "map": "https://maps.app.goo.gl/BC5c4SzD6cE3fpzJ6",
+  "coordinates": {
+    "lat": 3.1138812,
+    "lng": 101.5943596
+  },
+  "source": "owner"
+}

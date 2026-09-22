@@ -1,0 +1,14 @@
+{
+  "slug": "ara-sentral",
+  "name": "Ara Sentral",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ26",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/SkCWFxL79SHQuwbH7",
+  "coordinates": {
+    "lat": 3.1093928,
+    "lng": 101.5852373
+  },
+  "source": "owner"
+}

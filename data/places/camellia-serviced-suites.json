@@ -1,0 +1,11 @@
+{
+  "slug": "camellia-serviced-suites",
+  "name": "Camellia Serviced Suites",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ19",
+  "alsoNear": [
+    "KJ18"
+  ],
+  "source": "owner"
+}

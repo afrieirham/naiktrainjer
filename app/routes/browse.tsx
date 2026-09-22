@@ -124,7 +124,7 @@ export default function Browse() {
   const cov = useMemo(() => coverage(line, stations), [line, stations]);
 
   const stationNameMap = useMemo(
-    () => new Map(stations.map((s) => [s.slug, s.name])),
+    () => new Map(stations.map((s) => [s.code, s.name])),
     [stations],
   );
 
@@ -149,7 +149,7 @@ export default function Browse() {
 
   const selectedAlsoNear = useMemo(() => {
     if (!selectedPlace?.alsoNear?.length) return [];
-    return selectedPlace.alsoNear.map((slug) => stationNameMap.get(slug) ?? slug);
+    return selectedPlace.alsoNear.map((code) => stationNameMap.get(code) ?? code);
   }, [selectedPlace, stationNameMap]);
 
   const routeFrameUrl = useMemo(() => {

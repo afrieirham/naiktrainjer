@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
-import { stations, places } from "../app/data/directory.ts";
+import { stations, places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const SITE_URL = "https://naiktrainjer.com";

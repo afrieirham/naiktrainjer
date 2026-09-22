@@ -1,0 +1,14 @@
+{
+  "slug": "casa-tiara",
+  "name": "Casa Tiara",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ28",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/gyZbjvPLooFYmkUC9",
+  "coordinates": {
+    "lat": 3.0828501,
+    "lng": 101.5880997
+  },
+  "source": "owner"
+}

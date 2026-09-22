@@ -1,0 +1,14 @@
+{
+  "slug": "isola-service-residence",
+  "name": "Isola Service Residence",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ28",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/BPhzrNU2TGMRbHn9A",
+  "coordinates": {
+    "lat": 3.0828033,
+    "lng": 101.5891589
+  },
+  "source": "owner"
+}

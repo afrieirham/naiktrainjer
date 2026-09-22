@@ -1,0 +1,9 @@
+{
+  "slug": "novum-bangsar-south",
+  "name": "Novum @ Bangsar South",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ18",
+  "alsoNear": [],
+  "source": "owner"
+}

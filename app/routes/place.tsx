@@ -27,9 +27,9 @@ export function loader({ params }: Route.LoaderArgs) {
   if (!place) {
     throw new Response("Not Found", { status: 404 });
   }
-  const station = stations.find((s) => s.slug === place.station);
+  const station = stations.find((s) => s.code === place.station);
   const alsoNearStations = (place.alsoNear ?? [])
-    .map((slug) => stations.find((s) => s.slug === slug))
+    .map((code) => stations.find((s) => s.code === code))
     .filter(Boolean);
   return {
     place: place as Place,

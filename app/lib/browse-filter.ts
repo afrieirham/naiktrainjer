@@ -59,16 +59,16 @@ export function buildStationRows(
 ): StationRow[] {
   const byCode = new Map(checkedStations.map((station) => [station.code, station]));
 
-  const totalBySlug = new Map<string, number>();
+  const totalByCode = new Map<string, number>();
   for (const place of allPlaces) {
-    totalBySlug.set(place.station, (totalBySlug.get(place.station) ?? 0) + 1);
+    totalByCode.set(place.station, (totalByCode.get(place.station) ?? 0) + 1);
   }
 
-  const matchedBySlug = new Map<string, Place[]>();
+  const matchedByCode = new Map<string, Place[]>();
   for (const place of matchedPlaces) {
-    const list = matchedBySlug.get(place.station);
+    const list = matchedByCode.get(place.station);
     if (list) list.push(place);
-    else matchedBySlug.set(place.station, [place]);
+    else matchedByCode.set(place.station, [place]);
   }
 
   const rows: StationRow[] = [];
@@ -87,10 +87,10 @@ export function buildStationRows(
       continue;
     }
 
-    const places = [...(matchedBySlug.get(checked.slug) ?? [])].sort((a, b) =>
+    const places = [...(matchedByCode.get(checked.code) ?? [])].sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-    const checkedAndEmpty = (totalBySlug.get(checked.slug) ?? 0) === 0;
+    const checkedAndEmpty = (totalByCode.get(checked.code) ?? 0) === 0;
     if (places.length === 0 && !checkedAndEmpty) continue;
 
     rows.push({

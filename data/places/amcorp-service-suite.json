@@ -1,0 +1,14 @@
+{
+  "slug": "amcorp-service-suite",
+  "name": "Amcorp Service Suite",
+  "kind": "building",
+  "type": "service-apartment",
+  "station": "KJ20",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/6cEiCj1QMthRE9fp6",
+  "coordinates": {
+    "lat": 3.1117289,
+    "lng": 101.6366555
+  },
+  "source": "owner"
+}

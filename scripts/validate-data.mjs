@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,20 +19,28 @@ const errors = [];
 function err(msg) { errors.push(msg); }
 
 try {
-  const raw = readFileSync(resolve(root, 'data/properties.json'), 'utf-8');
-  const data = JSON.parse(raw);
+  const network = JSON.parse(readFileSync(resolve(root, 'data/network.json'), 'utf-8'));
+  const stations = JSON.parse(readFileSync(resolve(root, 'data/stations.json'), 'utf-8'));
+
+  const placesDir = resolve(root, 'data/places');
+  const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
+  const places = placeFiles.map((name) => {
+    try {
+      return { ...JSON.parse(readFileSync(resolve(placesDir, name), 'utf-8')), __file: name };
+    } catch (e) {
+      err(`data/places/${name}: invalid JSON — ${e.message}`);
+      return null;
+    }
+  }).filter(Boolean);
 
   // Top-level shape
-  if (!Array.isArray(data.lines)) err('Missing or non-array "lines"');
-  if (!Array.isArray(data.stations)) err('Missing or non-array "stations"');
-  if (!Array.isArray(data.places)) err('Missing or non-array "places"');
+  if (!Array.isArray(network.lines)) err('data/network.json: missing or non-array "lines"');
+  if (!Array.isArray(stations)) err('data/stations.json: missing or non-array Stations');
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 
-  const lines = data.lines;
-  const stations = data.stations;
-  const places = data.places;
+  const lines = network.lines;
 
-  // Line shape: every Line the directory covers, with all of its Stations.
+  // Line shape: every Line the network holds, with all of its Stations.
   const lineSlugs = new Set();
   const lineCodes = new Set();
   const corridor = new Map(); // station code → line slug
@@ -91,7 +99,7 @@ try {
     if (s.slug && stationSlugs.has(s.slug)) err(`Duplicate station slug: ${s.slug}`);
     if (s.slug) stationSlugs.add(s.slug);
 
-    // A checked Station sits on a Line the data actually holds, at a position
+    // A checked Station sits on a Line the network actually holds, at a position
     // that Line actually has.
     if (s.line && !lineSlugs.has(s.line)) {
       err(`Station "${s.name}": line "${s.line}" is not in the lines list`);
@@ -111,10 +119,10 @@ try {
     }
   }
 
-  // Place validation
+  // Place validation — one file per Place, each keyed by network code.
   const placeSlugs = new Set();
   for (const p of places) {
-    const label = p.name || p.slug || '(unknown place)';
+    const label = p.name || p.slug || p.__file;
 
     // slug
     if (!p.slug) err(`${label}: missing slug`);
@@ -125,6 +133,8 @@ try {
         err(`${label}: slug "${p.slug}" is not url-safe`);
       if (p.slug.length === 1 && !/^[a-z0-9]$/.test(p.slug))
         err(`${label}: slug "${p.slug}" is not url-safe`);
+      if (p.__file !== `${p.slug}.json`)
+        err(`${label}: file "${p.__file}" does not match slug "${p.slug}"`);
     }
 
     // name
@@ -136,16 +146,16 @@ try {
     // type
     if (!VALID_TYPES.includes(p.type)) err(`${label}: invalid type "${p.type}"`);
 
-    // station
+    // station — a network station code
     if (!p.station) err(`${label}: missing station`);
     else if (p.station.includes(',')) err(`${label}: station contains comma (glued field): "${p.station}"`);
-    else if (!stationSlugs.has(p.station)) err(`${label}: station "${p.station}" not in stations list`);
+    else if (!corridor.has(p.station)) err(`${label}: station "${p.station}" does not resolve to a network station code`);
 
-    // alsoNear
+    // alsoNear — network station codes
     if (Array.isArray(p.alsoNear)) {
       for (const an of p.alsoNear) {
         if (an.includes(',')) err(`${label}: alsoNear contains comma: "${an}"`);
-        else if (!stationSlugs.has(an)) err(`${label}: alsoNear station "${an}" not in stations list`);
+        else if (!corridor.has(an)) err(`${label}: alsoNear station "${an}" does not resolve to a network station code`);
       }
     }
 
@@ -161,7 +171,7 @@ try {
     }
 
     // source
-    if (p.source && !['owner', 'submitted'].includes(p.source))
+    if (p.source && !['owner', 'contributed'].includes(p.source))
       err(`${label}: invalid source "${p.source}"`);
 
     // walkMinutes / walkMeters / driveMinutes must NOT be present
@@ -178,7 +188,7 @@ try {
 
   const lineStationCount = lines.reduce((n, line) => n + (line.stations?.length ?? 0), 0);
   console.log(
-    `✓ Valid: ${places.length} Places, ${stations.length} of ${lineStationCount} Stations checked` +
+    `✓ Valid: ${places.length} Places across ${placeFiles.length} files, ${stations.length} of ${lineStationCount} Stations checked` +
       ` on ${lines.length} Line${lines.length === 1 ? '' : 's'}.`,
   );
 } catch (e) {

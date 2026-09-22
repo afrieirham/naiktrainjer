@@ -1,0 +1,14 @@
+{
+  "slug": "apartment-vista-subang",
+  "name": "Apartment Vista Subang",
+  "kind": "building",
+  "type": "apartment",
+  "station": "KJ25",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/wHryfhtVCkW4LXkJ9",
+  "coordinates": {
+    "lat": 3.1178479,
+    "lng": 101.5902048
+  },
+  "source": "owner"
+}

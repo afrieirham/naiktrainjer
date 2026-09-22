@@ -1,0 +1,14 @@
+{
+  "slug": "panorama-residence",
+  "name": "Panorama Residence",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ27",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/H4vnNfzSayPjRSAg6",
+  "coordinates": {
+    "lat": 3.0953536,
+    "lng": 101.5899401
+  },
+  "source": "owner"
+}

@@ -1,0 +1,14 @@
+{
+  "slug": "shah-alam-seksyen-27",
+  "name": "Shah Alam Seksyen 27",
+  "kind": "area",
+  "type": "area",
+  "station": "KJ35",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
+  "coordinates": {
+    "lat": 3.0110891,
+    "lng": 101.5572156
+  },
+  "source": "owner"
+}

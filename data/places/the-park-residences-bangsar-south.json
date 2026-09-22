@@ -1,0 +1,14 @@
+{
+  "slug": "the-park-residences-bangsar-south",
+  "name": "The Park Residences Bangsar South",
+  "kind": "building",
+  "type": "condominium",
+  "station": "KJ19",
+  "alsoNear": [],
+  "map": "https://maps.app.goo.gl/uQrd4AcJCtz3xwtJ6",
+  "coordinates": {
+    "lat": 3.1102546,
+    "lng": 101.6601379
+  },
+  "source": "owner"
+}

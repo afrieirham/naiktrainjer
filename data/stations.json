@@ -1,0 +1,222 @@
+[
+  {
+    "slug": "lrt-putra-heights",
+    "name": "LRT Putra Heights",
+    "line": "kelana-jaya",
+    "code": "KJ37",
+    "coordinates": {
+      "lat": 2.9952035,
+      "lng": 101.5757525
+    }
+  },
+  {
+    "slug": "lrt-subang-alam",
+    "name": "LRT Subang Alam",
+    "line": "kelana-jaya",
+    "code": "KJ36",
+    "coordinates": {
+      "lat": 3.0095885,
+      "lng": 101.5723204
+    }
+  },
+  {
+    "slug": "lrt-alam-megah",
+    "name": "LRT Alam Megah",
+    "line": "kelana-jaya",
+    "code": "KJ35",
+    "coordinates": {
+      "lat": 3.0231811,
+      "lng": 101.5723723
+    }
+  },
+  {
+    "slug": "lrt-usj-21",
+    "name": "LRT USJ 21",
+    "line": "kelana-jaya",
+    "code": "KJ34",
+    "coordinates": {
+      "lat": 3.0297334,
+      "lng": 101.5818089
+    }
+  },
+  {
+    "slug": "lrt-wawasan",
+    "name": "LRT Wawasan",
+    "line": "kelana-jaya",
+    "code": "KJ33",
+    "coordinates": {
+      "lat": 3.0350524,
+      "lng": 101.5881042
+    }
+  },
+  {
+    "slug": "lrt-taipan",
+    "name": "LRT Taipan",
+    "line": "kelana-jaya",
+    "code": "KJ32",
+    "coordinates": {
+      "lat": 3.0482031,
+      "lng": 101.5907267
+    }
+  },
+  {
+    "slug": "lrt-usj-7",
+    "name": "LRT USJ 7",
+    "line": "kelana-jaya",
+    "code": "KJ31",
+    "coordinates": {
+      "lat": 3.0549042,
+      "lng": 101.5921587
+    }
+  },
+  {
+    "slug": "lrt-ss-18",
+    "name": "LRT SS 18",
+    "line": "kelana-jaya",
+    "code": "KJ30",
+    "coordinates": {
+      "lat": 3.0673603,
+      "lng": 101.585954
+    }
+  },
+  {
+    "slug": "lrt-ss-15",
+    "name": "LRT SS 15",
+    "line": "kelana-jaya",
+    "code": "KJ29",
+    "coordinates": {
+      "lat": 3.0769101,
+      "lng": 101.5862967
+    }
+  },
+  {
+    "slug": "lrt-subang-jaya",
+    "name": "LRT Subang Jaya",
+    "line": "kelana-jaya",
+    "code": "KJ28",
+    "coordinates": {
+      "lat": 3.084835,
+      "lng": 101.5872819
+    }
+  },
+  {
+    "slug": "lrt-cgc-glenmarie",
+    "name": "LRT CGC-Glenmarie",
+    "line": "kelana-jaya",
+    "code": "KJ27",
+    "coordinates": {
+      "lat": 3.0959075,
+      "lng": 101.5903895
+    }
+  },
+  {
+    "slug": "lrt-ara-damansara",
+    "name": "LRT Ara Damansara",
+    "line": "kelana-jaya",
+    "code": "KJ26",
+    "coordinates": {
+      "lat": 3.1084172,
+      "lng": 101.5866485
+    }
+  },
+  {
+    "slug": "lrt-lembah-subang",
+    "name": "LRT Lembah Subang",
+    "line": "kelana-jaya",
+    "code": "KJ25",
+    "coordinates": {
+      "lat": 3.1120749,
+      "lng": 101.5912052
+    }
+  },
+  {
+    "slug": "lrt-kelana-jaya",
+    "name": "LRT Kelana Jaya",
+    "line": "kelana-jaya",
+    "code": "KJ24",
+    "coordinates": {
+      "lat": 3.1124539,
+      "lng": 101.604498
+    }
+  },
+  {
+    "slug": "lrt-taman-bahagia",
+    "name": "LRT Taman Bahagia",
+    "line": "kelana-jaya",
+    "code": "KJ23",
+    "coordinates": {
+      "lat": 3.1106931,
+      "lng": 101.612716
+    }
+  },
+  {
+    "slug": "lrt-taman-paramount",
+    "name": "LRT Taman Paramount",
+    "line": "kelana-jaya",
+    "code": "KJ22",
+    "coordinates": {
+      "lat": 3.1049398,
+      "lng": 101.6230438
+    }
+  },
+  {
+    "slug": "lrt-asia-jaya",
+    "name": "LRT Asia Jaya",
+    "line": "kelana-jaya",
+    "code": "KJ21",
+    "coordinates": {
+      "lat": 3.1039698,
+      "lng": 101.6392313
+    }
+  },
+  {
+    "slug": "lrt-taman-jaya",
+    "name": "LRT Taman Jaya",
+    "line": "kelana-jaya",
+    "code": "KJ20",
+    "coordinates": {
+      "lat": 3.104047,
+      "lng": 101.6453136
+    }
+  },
+  {
+    "slug": "lrt-kl-gateway-universiti",
+    "name": "LRT KL Gateway - Universiti",
+    "line": "kelana-jaya",
+    "code": "KJ19",
+    "coordinates": {
+      "lat": 3.1142744,
+      "lng": 101.6623101
+    }
+  },
+  {
+    "slug": "lrt-kerinchi",
+    "name": "LRT Kerinchi",
+    "line": "kelana-jaya",
+    "code": "KJ18",
+    "coordinates": {
+      "lat": 3.1154918,
+      "lng": 101.6684949
+    }
+  },
+  {
+    "slug": "lrt-abdullah-hukum",
+    "name": "LRT Abdullah Hukum",
+    "line": "kelana-jaya",
+    "code": "KJ17",
+    "coordinates": {
+      "lat": 3.1186543,
+      "lng": 101.6729027
+    }
+  },
+  {
+    "slug": "lrt-bangsar",
+    "name": "LRT Bangsar",
+    "line": "kelana-jaya",
+    "code": "KJ16",
+    "coordinates": {
+      "lat": 3.1276122,
+      "lng": 101.6790987
+    }
+  }
+]
