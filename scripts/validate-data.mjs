@@ -20,7 +20,6 @@ function err(msg) { errors.push(msg); }
 
 try {
   const network = JSON.parse(readFileSync(resolve(root, 'data/network.json'), 'utf-8'));
-  const stations = JSON.parse(readFileSync(resolve(root, 'data/stations.json'), 'utf-8'));
 
   const placesDir = resolve(root, 'data/places');
   const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
@@ -35,7 +34,6 @@ try {
 
   // Top-level shape
   if (!Array.isArray(network.lines)) err('data/network.json: missing or non-array "lines"');
-  if (!Array.isArray(stations)) err('data/stations.json: missing or non-array Stations');
   if (errors.length) { console.error(errors.join('\n')); process.exit(1); }
 
   const lines = network.lines;
@@ -87,35 +85,6 @@ try {
         if (typeof c.lng !== 'number') err(`Station "${stationLabel}": coordinates.lng is not a number`);
         else if (c.lng < LNG_MIN || c.lng > LNG_MAX) err(`Station "${stationLabel}": coordinates.lng ${c.lng} outside Klang Valley range [${LNG_MIN}, ${LNG_MAX}]`);
       }
-    }
-  }
-
-  // Station index — the Stations that have been checked, each on its Line.
-  const stationSlugs = new Set();
-  for (const s of stations) {
-    if (!s.slug) err(`Station missing slug: ${JSON.stringify(s)}`);
-    if (!s.name) err(`Station missing name: ${JSON.stringify(s)}`);
-    if (!s.line) err(`Station missing line: ${JSON.stringify(s)}`);
-    if (s.slug && stationSlugs.has(s.slug)) err(`Duplicate station slug: ${s.slug}`);
-    if (s.slug) stationSlugs.add(s.slug);
-
-    // A checked Station sits on a Line the network actually holds, at a position
-    // that Line actually has.
-    if (s.line && !lineSlugs.has(s.line)) {
-      err(`Station "${s.name}": line "${s.line}" is not in the lines list`);
-    }
-    if (!s.code) err(`Station "${s.name}": missing code`);
-    else if (!corridor.has(s.code))
-      err(`Station "${s.name}": code "${s.code}" does not resolve to a Station on any Line`);
-    else if (s.line && corridor.get(s.code) !== s.line)
-      err(`Station "${s.name}": code "${s.code}" belongs to Line "${corridor.get(s.code)}", not "${s.line}"`);
-
-    if (s.coordinates) {
-      const c = s.coordinates;
-      if (typeof c.lat !== 'number') err(`Station "${s.name}": coordinates.lat is not a number`);
-      else if (c.lat < LAT_MIN || c.lat > LAT_MAX) err(`Station "${s.name}": coordinates.lat ${c.lat} outside Klang Valley range [${LAT_MIN}, ${LAT_MAX}]`);
-      if (typeof c.lng !== 'number') err(`Station "${s.name}": coordinates.lng is not a number`);
-      else if (c.lng < LNG_MIN || c.lng > LNG_MAX) err(`Station "${s.name}": coordinates.lng ${c.lng} outside Klang Valley range [${LNG_MIN}, ${LNG_MAX}]`);
     }
   }
 
@@ -187,8 +156,9 @@ try {
   }
 
   const lineStationCount = lines.reduce((n, line) => n + (line.stations?.length ?? 0), 0);
+  const coveredCodes = new Set(places.map((p) => p.station).filter((code) => corridor.has(code)));
   console.log(
-    `✓ Valid: ${places.length} Places across ${placeFiles.length} files, ${stations.length} of ${lineStationCount} Stations checked` +
+    `✓ Valid: ${places.length} Places across ${placeFiles.length} files, ${coveredCodes.size} of ${lineStationCount} Stations hold Places` +
       ` on ${lines.length} Line${lines.length === 1 ? '' : 's'}.`,
   );
 } catch (e) {

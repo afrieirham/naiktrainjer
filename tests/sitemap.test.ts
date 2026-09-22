@@ -7,8 +7,8 @@ import {
   statSync,
 } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../app/lib/browse-filter.ts";
-import { stations, places } from "../app/data/directory.node.ts";
+import type { Place } from "../app/lib/browse-filter.ts";
+import { places } from "../app/data/directory.node.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const SITE_URL = "https://naiktrainjer.com";
@@ -49,12 +49,12 @@ function collectHtmlFiles(dir: string): string[] {
   return results;
 }
 
-let data: { stations: Station[]; places: Place[] };
+let data: { places: Place[] };
 let sitemapXml: string;
 let robotsTxt: string;
 
 before(() => {
-  data = { stations, places };
+  data = { places };
   sitemapXml = readFileSync(resolve(BUILD_DIR, "sitemap.xml"), "utf-8");
   robotsTxt = readFileSync(resolve(BUILD_DIR, "robots.txt"), "utf-8");
 });

@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Place, Station } from "../lib/browse-filter";
+import type { Place } from "../lib/browse-filter";
 import type { Line } from "../lib/lines";
 
 /**
@@ -13,10 +13,8 @@ const dataDir = resolve(import.meta.dirname, "../../data");
 const placesDir = resolve(dataDir, "places");
 
 const networkData = JSON.parse(readFileSync(resolve(dataDir, "network.json"), "utf-8"));
-const stationsData = JSON.parse(readFileSync(resolve(dataDir, "stations.json"), "utf-8"));
 
 export const lines = networkData.lines as Line[];
-export const stations = stationsData as Station[];
 export const places = readdirSync(placesDir)
   .filter((name) => name.endsWith(".json"))
   .sort()

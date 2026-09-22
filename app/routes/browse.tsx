@@ -5,12 +5,16 @@ import {
   filterPlaces,
   getUniqueTypes,
 } from "../lib/browse-filter";
-import { coveredLine, corridorOrder, coverage, coverageCopy, type Coverage, type Line } from "../lib/lines";
 import {
-  lines as LINES,
-  stations as CHECKED_STATIONS,
-  places as PLACES,
-} from "../data/directory";
+  coveredLine,
+  corridorOrder,
+  coverage,
+  coverageCopy,
+  stationNamesByCode,
+  type Coverage,
+  type Line,
+} from "../lib/lines";
+import { lines as LINES, places as PLACES } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -26,8 +30,7 @@ import type { Route } from "./+types/browse";
 
 export function loader() {
   return {
-    line: coveredLine(LINES, CHECKED_STATIONS),
-    stations: CHECKED_STATIONS,
+    line: coveredLine(LINES, PLACES),
     places: PLACES,
   };
 }
@@ -38,12 +41,12 @@ export function loader() {
  * The Line's name comes from the data, so a second Line is a data change, not a copy change.
  */
 export const meta: Route.MetaFunction = () => {
-  const line = coveredLine(LINES, CHECKED_STATIONS);
+  const line = coveredLine(LINES, PLACES);
   return [
     { title: `NaikTrainJer — places near stations on the ${line.name} line` },
     {
       name: "description",
-      content: `Browse ${PLACES.length} places I checked near stations on the ${line.name} line, in the line's own order. Walk or drive directions to the station.`,
+      content: `Browse ${PLACES.length} places near stations on the ${line.name} line, in the line's own order. Walk or drive directions to the station.`,
     },
     { tagName: "link", rel: "canonical", href: publicUrl("/") },
   ];
@@ -51,15 +54,15 @@ export const meta: Route.MetaFunction = () => {
 
 /**
  * What the map column holds before a Place is picked: the corridor itself, at
- * scale. Every stop, name and count comes from the data, so the stretch still to
- * do is as legible as the stretch that is done — the page proves its coverage
- * instead of claiming it.
+ * scale. Every stop, name and count comes from the data, so the Stations that
+ * hold Places are as legible as the ones that do not — the page proves its
+ * coverage instead of claiming it.
  */
 function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
   const stops = corridorOrder(line);
-  const checkedCodes = new Set(cov.checked.map((station) => station.code));
+  const coveredCodes = new Set(cov.covered.map((station) => station.code));
   const span = stops.length - 1;
-  const boundary = span > 0 ? ((cov.checkedCount - 1) / span) * 100 : 0;
+  const boundary = span > 0 ? ((cov.coveredCount - 1) / span) * 100 : 0;
   const south = stops[0];
   const north = stops[stops.length - 1];
 
@@ -69,7 +72,8 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
         How far I&rsquo;ve got
       </h2>
       <p className="mt-4 text-[13.5px] font-medium tabular-nums text-ink-soft">
-        {cov.checkedCount} of {cov.total} stops checked · {cov.unchecked.length} still to do
+        {cov.coveredCount} of {cov.total} stops have places · {cov.empty.length} with no
+        places yet
       </p>
 
       <div className="relative mt-12 h-[14px] min-[1400px]:h-[18px]">
@@ -84,7 +88,7 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
           style={{ width: `${boundary}%`, backgroundColor: "var(--line-accent)" }}
         />
         {stops.map((stop, index) => {
-          const isChecked = checkedCodes.has(stop.code);
+          const isCovered = coveredCodes.has(stop.code);
           const position = span > 0 ? (index / span) * 100 : 0;
           return (
             <span
@@ -93,8 +97,8 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
               className="absolute top-0 h-[14px] w-[14px] -translate-x-1/2 rounded-full border-[3px] min-[1400px]:h-[18px] min-[1400px]:w-[18px] min-[1400px]:border-[4px]"
               style={{
                 left: `${position}%`,
-                borderColor: isChecked ? "var(--line-accent)" : "var(--color-rule-strong)",
-                backgroundColor: isChecked ? "var(--line-accent)" : "var(--color-paper)",
+                borderColor: isCovered ? "var(--line-accent)" : "var(--color-rule-strong)",
+                backgroundColor: isCovered ? "var(--line-accent)" : "var(--color-paper)",
               }}
             />
           );
@@ -114,19 +118,16 @@ function EmptyCorridor({ line, cov }: { line: Line; cov: Coverage }) {
 }
 
 export default function Browse() {
-  const { line, stations, places } = useLoaderData<typeof loader>();
+  const { line, places } = useLoaderData<typeof loader>();
 
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("");
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const uniqueTypes = useMemo(() => getUniqueTypes(places), [places]);
-  const cov = useMemo(() => coverage(line, stations), [line, stations]);
+  const cov = useMemo(() => coverage(line, places), [line, places]);
 
-  const stationNameMap = useMemo(
-    () => new Map(stations.map((s) => [s.code, s.name])),
-    [stations],
-  );
+  const stationNameMap = useMemo(() => stationNamesByCode(LINES), []);
 
   const filteredPlaces = useMemo(
     () => filterPlaces(places, typeFilter),
@@ -134,8 +135,8 @@ export default function Browse() {
   );
 
   const stationRows = useMemo(
-    () => buildStationRows(line, stations, places, filteredPlaces),
-    [line, stations, places, filteredPlaces],
+    () => buildStationRows(line, places, filteredPlaces),
+    [line, places, filteredPlaces],
   );
 
   const selectedPlace = useMemo(
@@ -207,7 +208,7 @@ export default function Browse() {
       style={{ "--line-accent": line.color } as React.CSSProperties}
     >
       <AppBar
-        counts={`${cov.checkedCount} of ${cov.total} stations · ${places.length} places`}
+        counts={`${cov.coveredCount} of ${cov.total} stations · ${places.length} places`}
         action={<AppBarAction href="/submit/">Suggest a place</AppBarAction>}
       />
 
@@ -263,16 +264,15 @@ export default function Browse() {
           ) : (
             <ol className="app-scroll min-h-0 flex-1 overflow-y-auto">
               {stationRows.map((row, index) => {
-                const checked = row.check === "checked";
+                const covered = row.count > 0;
                 const isLast = index === lastIndex;
-                const active = checked && row.stationSlug === selectedSlug;
 
                 return (
                   <li
                     key={row.code}
-                    role={checked ? "group" : undefined}
-                    aria-label={checked ? row.name : undefined}
-                    data-station-count={checked ? row.count : undefined}
+                    role={covered ? "group" : undefined}
+                    aria-label={covered ? row.name : undefined}
+                    data-station-count={covered ? row.count : undefined}
                     className="relative"
                   >
                     <span
@@ -281,7 +281,7 @@ export default function Browse() {
                       style={{
                         bottom: isLast ? "auto" : 0,
                         height: isLast ? "30px" : undefined,
-                        backgroundColor: checked
+                        backgroundColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
                       }}
@@ -290,16 +290,16 @@ export default function Browse() {
                       aria-hidden="true"
                       className="absolute left-[16px] top-[14px] z-20 h-[14px] w-[14px] rounded-full border-2"
                       style={{
-                        borderColor: checked
+                        borderColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-rule-strong)",
-                        backgroundColor: checked
+                        backgroundColor: covered
                           ? "var(--line-accent)"
                           : "var(--color-paper)",
                       }}
                     />
 
-                    {checked ? (
+                    {covered ? (
                       <>
                         <div className="bg-band py-2.5 pl-[52px] pr-4">
                           <div className="flex items-baseline justify-between gap-3">
@@ -345,14 +345,14 @@ export default function Browse() {
                     ) : (
                       <div
                         data-station-code={row.code}
-                        data-station-unchecked="true"
+                        data-station-empty="true"
                         className="flex items-baseline justify-between gap-3 py-2 pl-[52px] pr-4"
                       >
                         <span className="truncate text-[13.5px] font-medium text-ink-soft">
                           {row.name}
                         </span>
                         <span className="shrink-0 text-[12px] text-ink-soft">
-                          Not checked yet
+                          No places yet
                         </span>
                       </div>
                     )}

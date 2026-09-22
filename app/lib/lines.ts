@@ -1,8 +1,8 @@
-import type { Station } from "./browse-filter";
+import type { Place } from "./browse-filter";
 
 /**
- * The Line a Station belongs to, as the network reference describes it: every
- * Station on the corridor, not only the ones this directory has checked.
+ * A Station as the network reference describes it: every Station on the
+ * corridor, not only the ones that hold a Place.
  */
 export type LineStation = {
   code: string;
@@ -19,108 +19,86 @@ export type Line = {
   stations: LineStation[];
 };
 
+/** Every Station on every Line, by network code, so a code always resolves to a name. */
+export function stationNamesByCode(lines: Line[]): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const line of lines) {
+    for (const station of line.stations) names.set(station.code, station.name);
+  }
+  return names;
+}
+
 /**
- * The Line the directory covers: the Line you have checked Stations on.
+ * The Line the directory covers: the one holding the most Places.
  *
  * Deliberately not "the Line with the lowest source position" — the network
- * reference carries Lines nobody has walked, and that rule would pick one of
- * them and show an empty corridor.
+ * reference carries Lines nobody has a Place on, and that rule would pick one of
+ * them and show an empty corridor. Ties break by network order, so the choice is
+ * deterministic.
  */
-export function coveredLine(lines: Line[], checkedStations: Station[]): Line {
-  const checkedCodes = new Set(checkedStations.map((station) => station.code));
-  const covered = lines.find((line) =>
-    line.stations.some((station) => checkedCodes.has(station.code)),
-  );
+export function coveredLine(lines: Line[], places: Place[]): Line {
+  let covered: Line | undefined;
+  let most = 0;
+  for (const line of lines) {
+    const codes = new Set(line.stations.map((station) => station.code));
+    const count = places.filter((place) => codes.has(place.station)).length;
+    if (count > most) {
+      most = count;
+      covered = line;
+    }
+  }
+
   if (!covered) {
-    throw new Error("No Line has a checked Station — the data file holds no coverage");
+    throw new Error("No Line holds a Place — the directory has no coverage");
   }
   return covered;
 }
 
 /**
  * The corridor south → north, which is *reverse* the source's own `sort` order
- * (KJ1 is Gombak, at the northern end). Taken deliberately: it puts the checked
- * stretch first and the uncovered tail at the end of the list, and it is the
- * order the page has always shown.
+ * (KJ1 is Gombak, at the northern end). Taken deliberately: it puts the content
+ * first and the empty tail at the end of the list, and it is the order the page
+ * has always shown.
  */
 export function corridorOrder(line: Line): LineStation[] {
   return [...line.stations].sort((a, b) => b.sort - a.sort);
 }
 
-/** Checked Stations by the network code that places them on the corridor. */
-export function checkedByCode(checkedStations: Station[]): Map<string, Station> {
-  return new Map(checkedStations.map((station) => [station.code, station]));
-}
-
 export type Coverage = {
-  checkedCount: number;
+  coveredCount: number;
   total: number;
-  /** The checked Stations, in the Line's own order (oldest `sort` first). */
-  checked: Station[];
-  /** The Stations still to do, in the same order. */
-  unchecked: LineStation[];
-  /** Whether each set is one unbroken run of the corridor. */
-  checkedContiguous: boolean;
-  uncheckedContiguous: boolean;
+  /** The Stations holding at least one Place, in the Line's own order. */
+  covered: LineStation[];
+  /** The Stations holding none, in the same order. */
+  empty: LineStation[];
 };
 
-function isContiguous(ordered: LineStation[], members: LineStation[]): boolean {
-  if (members.length === 0) return true;
-  const first = ordered.findIndex((station) => station === members[0]);
-  const last = ordered.findIndex((station) => station === members[members.length - 1]);
-  return last - first === members.length - 1;
-}
-
 /**
- * How much of the Line has been checked, and which stretch has not. Counts come
- * from the data: a Station is checked when it is in the directory's Station
- * list, never when it merely has Places — a checked Station where nothing was
- * found is still checked.
+ * How much of the Line holds Places. Counts come from the data: a Station is
+ * covered when it holds at least one Place, never from a record of a walk.
  */
-export function coverage(line: Line, checkedStations: Station[]): Coverage {
+export function coverage(line: Line, places: Place[]): Coverage {
   const ordered = [...line.stations].sort((a, b) => a.sort - b.sort);
-  const byCode = new Map(checkedStations.map((station) => [station.code, station]));
-  const members = new Set(ordered.filter((station) => byCode.has(station.code)));
-
-  const checked = ordered
-    .filter((station) => members.has(station))
-    .map((station) => byCode.get(station.code)!);
-  const unchecked = ordered.filter((station) => !members.has(station));
+  const withPlaces = new Set(places.map((place) => place.station));
+  const covered = ordered.filter((station) => withPlaces.has(station.code));
+  const empty = ordered.filter((station) => !withPlaces.has(station.code));
 
   return {
-    checkedCount: checked.length,
+    coveredCount: covered.length,
     total: ordered.length,
-    checked,
-    unchecked,
-    checkedContiguous: isContiguous(ordered, ordered.filter((s) => members.has(s))),
-    uncheckedContiguous: isContiguous(ordered, unchecked),
+    covered,
+    empty,
   };
 }
 
 /**
  * The work log, in the directory's own voice, for the page to print.
  *
- * Every count and name comes out of the data, and a stretch is only named by its
- * endpoints when it really is one unbroken run of the corridor: the page cannot
- * claim a span it has not walked, which is the defect this replaces — copy that
- * named a northern end three checked Stations short of the truth.
+ * A plain ratio: every count comes out of the data, and the copy names no span
+ * and no walk the data does not hold.
  */
 export function coverageCopy(cov: Coverage): string {
-  const head = `I've checked ${cov.checkedCount} of the ${cov.total} stations so far`;
-
-  // South → north, the way the page lists them.
-  const south = cov.checked[cov.checked.length - 1];
-  const north = cov.checked[0];
-  const done =
-    cov.checkedContiguous && cov.checked.length > 1
-      ? `${head} — ${south.name} up to ${north.name}.`
-      : `${head}.`;
-  if (cov.unchecked.length === 0) return `${done} The whole line is done.`;
-
-  const remaining = cov.unchecked.length;
-  const last = cov.unchecked[remaining - 1];
-  const todo = cov.uncheckedContiguous
-    ? `The ${remaining} stations from ${cov.unchecked[0].name} to ${last.name} are still to do.`
-    : `The ${remaining} stations not named above are still to do.`;
-  return `${done} ${todo}`;
+  const head = `${cov.coveredCount} of the ${cov.total} stations have places so far.`;
+  if (cov.empty.length === 0) return `${head} The whole line is covered.`;
+  return `${head} ${cov.empty.length} stations have no places yet.`;
 }
