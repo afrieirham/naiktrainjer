@@ -30,7 +30,7 @@ an entity (ADR-0002, as amended).
 ## Consequences
 
 - ADR-0001 decision 1 is amended: the source of truth is the set of record files, not one file.
-  The rest of ADR-0001 — prerender everything, measure offline — is unchanged.
+  The rest of ADR-0001 — prerender everything — is unchanged.
 - `data/properties.json` is retired. The existing records are split by a one-off migration, kept
   for provenance like `convert-data.mjs`.
 - Anything a PR can add is its own file, and the one machine-written artifact (`network.json`) is

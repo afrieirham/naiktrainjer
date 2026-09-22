@@ -47,10 +47,11 @@ Optional. Shown as context; never used as a route destination.
 **Map link** — the Google Maps short link for a Place, as researched by hand. Optional: a
 Place without one stays in the directory.
 
-**Measurement** — the walk and drive figures from a Place to its Nearest station. Computed
-once, offline, by the Measure script, which is **deferred** and never part of the build or the
-request path. **Not surfaced in the interface**: the Route frame is the answer to the walk
-question, and the data validator forbids the fields, so no figure can reach a page.
+**Measurement** — the walk and drive figures from a Place to its Nearest station. **Retired**:
+the Measure script and its providers are gone from the repo, and nothing computes the figures.
+Measurement was never part of the build or the request path. **Not surfaced in the interface**:
+the Route frame is the answer to the walk question, and the data validator forbids the fields, so
+no figure can reach a page.
 
 **Route frame** — the Google Maps iframe whose URL the app builds at click time from the
 Place's coordinates and the Nearest station, in walk or drive mode.

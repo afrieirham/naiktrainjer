@@ -4,9 +4,9 @@
  *
  * PocketBase (`POCKETBASE_URL`, default `http://pocketbase.pi`) describes the rail
  * network as it exists; `data/network.json` is the committed snapshot the app
- * reads. This script copies the first into the second, whole. It is run by hand,
- * exactly like the Measure script, and is never part of `npm run build`, so a
- * deploy cannot depend on PocketBase being reachable.
+ * reads. This script copies the first into the second, whole. It is run by hand and
+ * is never part of `npm run build`, so a deploy cannot depend on PocketBase being
+ * reachable.
  *
  * The export is a plain snapshot: every Line and every Station, each Station on
  * its own `sort`, with no filtering. A Station the directory has never used still

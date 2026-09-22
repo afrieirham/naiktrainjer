@@ -43,9 +43,8 @@ was approved by hand."
   read, or clicked into.
 - Place contributions arrive through a native form on the site (the Contribute page), reviewed
   and approved by the maintainer before they publish.
-- The maintainer runs one-off offline scripts — the network reference export, and a Measure
-  script held back as a future enhancement — and commits their results; both write into the data
-  file and neither is part of the build or the request path.
+- The maintainer runs one-off offline scripts — the network reference export — and commits the
+  result; it is never part of the build or the request path.
 
 ## Capabilities and Constraints
 
@@ -59,9 +58,10 @@ was approved by hand."
 - A Place without a map link stays in the directory.
 - Measurement fields (`walkMinutes`, `walkMeters`, `driveMinutes`) are **not in the schema at
   all**, and **no page shows a walk or drive figure**: the current redesign deliberately does
-  **not** build a walk-time number into the interface; the map route is the answer. The Measure
-  script stays in the repo, deferred, and the data validator forbids the fields, so a figure
-  cannot reach a page. A genuinely unmeasured future state is hidden, never guessed.
+  **not** build a walk-time number into the interface; the map route is the answer. Measurement
+  is retired — the Measure script is gone from the repo — and the data validator forbids the
+  fields, so a figure cannot reach a page. A genuinely unmeasured future state is hidden, never
+  guessed.
 - The network reference holds every Line, so a Contribution on any Line is a first-class case;
   Browse renders only the Lines that hold Places, chosen by a Line selector.
 - View state (filters, selection, route mode) should be encoded in the URL so Back, refresh, and
