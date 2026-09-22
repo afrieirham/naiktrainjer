@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData } from "react-router";
-import propertiesData from "../../data/properties.json";
 import {
   buildStationRows,
   filterPlaces,
   getUniqueTypes,
-  type Place,
-  type Station,
 } from "../lib/browse-filter";
 import { coveredLine, corridorOrder, coverage, coverageCopy, type Coverage, type Line } from "../lib/lines";
+import {
+  lines as LINES,
+  stations as CHECKED_STATIONS,
+  places as PLACES,
+} from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -21,10 +23,6 @@ import { OpenIcon, BackIcon } from "../components/icons";
 import { TYPE_LABELS, metaLabel } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
 import type { Route } from "./+types/browse";
-
-const LINES = propertiesData.lines as Line[];
-const CHECKED_STATIONS = propertiesData.stations as Station[];
-const PLACES = propertiesData.places as Place[];
 
 export function loader() {
   return {

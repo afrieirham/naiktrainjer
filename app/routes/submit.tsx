@@ -1,15 +1,13 @@
 import { publicUrl } from "../lib/routes";
-import { coveredLine, coverage, type Line } from "../lib/lines";
-import propertiesData from "../../data/properties.json";
-import type { Station } from "../lib/browse-filter";
+import { coveredLine, coverage } from "../lib/lines";
+import { lines, stations, places } from "../data/directory";
 import { AppBar, AppBarAction } from "../components/AppBar";
 import type { Route } from "./+types/submit";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const CHECKED_STATIONS = propertiesData.stations as Station[];
-const COVERED_LINE = coveredLine(propertiesData.lines as Line[], CHECKED_STATIONS);
-const COVERAGE = coverage(COVERED_LINE, CHECKED_STATIONS);
-const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${propertiesData.places.length} places`;
+const COVERED_LINE = coveredLine(lines, stations);
+const COVERAGE = coverage(COVERED_LINE, stations);
+const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${places.length} places`;
 
 export const meta: Route.MetaFunction = () => [
   { title: "Suggest a place — NaikTrainJer" },

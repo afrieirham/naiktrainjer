@@ -4,10 +4,10 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
 import { TYPE_LABELS, KIND_LABELS } from "../app/lib/labels.ts";
+import { stations, places } from "../app/data/directory.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const OG_DIR = resolve(BUILD_DIR, "og");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -44,7 +44,7 @@ function extractCanonical(html: string): string | null {
 let data: { stations: Station[]; places: Place[] };
 
 before(() => {
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { stations, places };
 });
 
 describe("place page slugs", () => {

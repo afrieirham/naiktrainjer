@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLoaderData } from "react-router";
-import propertiesData from "../../data/properties.json";
-import type { Place, Station } from "../lib/browse-filter";
+import type { Place } from "../lib/browse-filter";
+import { lines, stations, places } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
@@ -12,25 +12,24 @@ import { AppBar, AppBarAction } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
-import { coveredLine, coverage, type Line } from "../lib/lines";
+import { coveredLine, coverage } from "../lib/lines";
 import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
 import type { Route } from "./+types/place";
 
 /** The Line the directory covers, so no page names a Line by hand. */
-const CHECKED_STATIONS = propertiesData.stations as Station[];
-const COVERED_LINE = coveredLine(propertiesData.lines as Line[], CHECKED_STATIONS);
-const COVERAGE = coverage(COVERED_LINE, CHECKED_STATIONS);
-const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${propertiesData.places.length} places`;
+const COVERED_LINE = coveredLine(lines, stations);
+const COVERAGE = coverage(COVERED_LINE, stations);
+const COUNTS = `${COVERAGE.checkedCount} of ${COVERAGE.total} stations · ${places.length} places`;
 
 export function loader({ params }: Route.LoaderArgs) {
   const slug = params.placeSlug as string;
-  const place = propertiesData.places.find((p) => p.slug === slug);
+  const place = places.find((p) => p.slug === slug);
   if (!place) {
     throw new Response("Not Found", { status: 404 });
   }
-  const station = propertiesData.stations.find((s) => s.slug === place.station);
+  const station = stations.find((s) => s.slug === place.station);
   const alsoNearStations = (place.alsoNear ?? [])
-    .map((slug) => propertiesData.stations.find((s) => s.slug === slug))
+    .map((slug) => stations.find((s) => s.slug === slug))
     .filter(Boolean);
   return {
     place: place as Place,

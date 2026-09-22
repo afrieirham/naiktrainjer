@@ -8,9 +8,9 @@ import {
 } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
+import { stations, places } from "../app/data/directory.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 const SITE_URL = "https://naiktrainjer.com";
 
 function stripComments(html: string): string {
@@ -54,7 +54,7 @@ let sitemapXml: string;
 let robotsTxt: string;
 
 before(() => {
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { stations, places };
   sitemapXml = readFileSync(resolve(BUILD_DIR, "sitemap.xml"), "utf-8");
   robotsTxt = readFileSync(resolve(BUILD_DIR, "robots.txt"), "utf-8");
 });

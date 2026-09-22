@@ -4,9 +4,9 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Place, Station } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
+import { lines, stations, places } from "../app/data/directory.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -31,7 +31,7 @@ before(() => {
   submitHtml = stripComments(
     readFileSync(resolve(BUILD_DIR, "submit", "index.html"), "utf-8"),
   );
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { lines, stations, places };
 });
 
 // ---------------------------------------------------------------------------

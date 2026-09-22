@@ -1,19 +1,10 @@
-import { readFileSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import sharp from "sharp";
 import { TYPE_LABELS } from "../app/lib/labels.ts";
+import { stations, places } from "../app/data/directory.ts";
 
-const dataPath = resolve(import.meta.dirname, "../data/properties.json");
 const outDir = resolve(import.meta.dirname, "../build/client/og");
-const data = JSON.parse(readFileSync(dataPath, "utf-8"));
-const stations: { slug: string; name: string }[] = data.stations;
-const places: {
-  slug: string;
-  name: string;
-  kind: string;
-  type: string;
-  station: string;
-}[] = data.places;
 
 const stationMap = new Map(stations.map((s) => [s.slug, s.name]));
 

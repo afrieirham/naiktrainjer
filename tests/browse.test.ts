@@ -15,10 +15,10 @@ import {
   buildOpenRouteUrl,
   buildPlacePinUrl,
 } from "../app/lib/route-url.ts";
+import { lines, stations, places } from "../app/data/directory.ts";
 
 const BUILD_DIR = resolve(import.meta.dirname, "../build/client");
 const HTML_PATH = resolve(BUILD_DIR, "index.html");
-const DATA_PATH = resolve(import.meta.dirname, "../data/properties.json");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
@@ -45,7 +45,7 @@ let data: { lines: Line[]; stations: Station[]; places: Place[] };
 before(() => {
   html = readFileSync(HTML_PATH, "utf-8");
   cleanHtml = stripComments(html);
-  data = JSON.parse(readFileSync(DATA_PATH, "utf-8"));
+  data = { lines, stations, places };
 });
 
 describe("prerendered HTML", () => {
