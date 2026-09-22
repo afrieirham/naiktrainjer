@@ -25,6 +25,21 @@ export const MAX_NAME = 120;
 export const MAX_NOTE = 280;
 export const MAX_CONTRIBUTOR_NAME = 60;
 
+/** A Contribution's id as the write path mints it: safe to use in a ref and a path. */
+export function isContributionId(value: string): boolean {
+  return /^[a-z0-9][a-z0-9-]{0,63}$/.test(value);
+}
+
+/** The file a Contribution lives in, on its pull-request branch. */
+export function contributionPath(id: string): string {
+  return `${CONTRIBUTIONS_DIR}/${id}.json`;
+}
+
+/** The one branch a Contribution owns, from filing through approval. */
+export function contributionBranch(id: string): string {
+  return `contribution/${id}`;
+}
+
 /** What the visitor typed, before any of it is trusted. */
 export interface ContributionDraft {
   name: string;
@@ -56,7 +71,7 @@ function optional(value: string): string | null {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-function isWebAddress(value: string): boolean {
+export function isWebAddress(value: string): boolean {
   let parsed: URL | null;
   try {
     parsed = new URL(value);
@@ -165,7 +180,7 @@ export function buildContributionFile(
   id: string,
 ): ContributionFile {
   return {
-    path: `${CONTRIBUTIONS_DIR}/${id}.json`,
+    path: contributionPath(id),
     contents: `${JSON.stringify({ id, ...contribution }, null, 2)}\n`,
   };
 }

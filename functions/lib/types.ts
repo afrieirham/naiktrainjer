@@ -29,6 +29,8 @@ export interface Env {
 export interface PagesContext {
   request: Request;
   env: Env;
+  /** Dynamic route segments, e.g. `id` for `/api/admin/contribution/:id`. */
+  params?: Record<string, string>;
 }
 
 export function json(body: unknown, status = 200): Response {
