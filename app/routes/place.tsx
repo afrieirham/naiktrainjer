@@ -14,6 +14,7 @@ import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
 import { coveredLine, coverage, stationNamesByCode } from "../lib/lines";
 import { TYPE_LABELS, KIND_LABELS, metaLabel } from "../lib/labels";
+import { placeContributor } from "../lib/contributors";
 import type { Route } from "./+types/place";
 
 /** The Line the directory covers, so no page names a Line by hand. */
@@ -89,6 +90,7 @@ export default function PlacePage() {
 
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const isBuilding = place.kind === "building";
+  const contributor = placeContributor(place);
   const sentence = isBuilding
     ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName}, on the ${lineName} line.`
     : `${place.name} is a neighbourhood near ${stationName}, on the ${lineName} line.`;
@@ -138,6 +140,28 @@ export default function PlacePage() {
                 </dt>
                 <dd className="mt-1 text-[13.5px] font-semibold text-ink">
                   {alsoNearNames.join(", ")}
+                </dd>
+              </>
+            )}
+
+            {contributor && (
+              <>
+                <dt className="mt-4 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
+                  Contributed by
+                </dt>
+                <dd className="mt-1 text-[13.5px] font-semibold text-ink">
+                  {contributor.href ? (
+                    <a
+                      href={contributor.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-rule-strong underline-offset-4 transition-opacity hover:opacity-70"
+                    >
+                      {contributor.name}
+                    </a>
+                  ) : (
+                    contributor.name
+                  )}
                 </dd>
               </>
             )}
