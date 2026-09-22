@@ -1,5 +1,0 @@
-# The admin area is one prerendered shell at /admin that reads its own path on
-# the client, so deep links such as /admin/contribute/<id> and /admin/place/<slug>
-# can be served without the build knowing the id. Cloudflare Access protects
-# /admin* before this rewrite runs.
-/admin/* /admin/index.html 200

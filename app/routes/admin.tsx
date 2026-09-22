@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { lines, places } from "../data/directory";
 import { AppBar, AppBarAction } from "../components/AppBar";
 import { Field, FIELD_CLASS } from "../components/Field";
@@ -17,10 +17,11 @@ import {
 import type { Route } from "./+types/admin";
 
 /**
- * The admin area is served as one prerendered shell and protected by Cloudflare
- * Access in front of `/admin*` and `/api/admin/*`. It reads its own path on the
- * client, so a deep link such as `/admin/contribute/<id>` works without the
- * build knowing the id. Everything the page commits goes through `/api/admin/*`.
+ * The admin area is one prerendered shell at `/admin`, protected by Cloudflare
+ * Access in front of `/admin*` and `/api/admin/*`. It reads its mode from the
+ * query string — `?contribute=<id>`, `?place=<slug>`, `?place=new` — so the
+ * build never needs to know an id, and no deep path or serving rewrite is
+ * required. Everything it commits goes through `/api/admin/*`.
  */
 export const meta: Route.MetaFunction = () => [
   { title: "Admin — NaikTrainJer" },
@@ -36,28 +37,21 @@ const STATION_CODES = lines.flatMap((line) =>
 const PLACE_SLUGS = new Set(places.map((place) => place.slug));
 
 export default function AdminPage() {
-  const location = useLocation();
+  const [params] = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
-  // The prerendered shell has no path to read, and a deep link must not render a
+  // The prerendered shell has no query to read, and a deep link must not render a
   // different tree than the shell did, so the first paint is the same on both.
   if (!mounted) return <Shell><p className="text-[13.5px] text-ink-soft">Loading…</p></Shell>;
 
-  const path = location.pathname.replace(/\/+$/, "");
+  const contributionId = params.get("contribute");
+  if (contributionId) return <ApprovePage id={contributionId} />;
 
-  if (path.startsWith("/admin/contribute/")) {
-    const id = decodeURIComponent(path.slice("/admin/contribute/".length));
-    return <ApprovePage id={id} />;
-  }
-
-  if (path === "/admin/place/new") return <PlacePage slug={null} />;
-
-  if (path.startsWith("/admin/place/")) {
-    const slug = decodeURIComponent(path.slice("/admin/place/".length));
-    return <PlacePage slug={slug} />;
-  }
+  const place = params.get("place");
+  if (place === "new") return <PlacePage slug={null} />;
+  if (place) return <PlacePage slug={place} />;
 
   return <AdminIndex />;
 }
@@ -72,6 +66,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function AdminIndex() {
+  const navigate = useNavigate();
   const [id, setId] = useState("");
 
   return (
@@ -91,7 +86,7 @@ function AdminIndex() {
         className="mt-2 flex flex-wrap items-end gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          if (id.trim()) window.location.assign(`/admin/contribute/${encodeURIComponent(id.trim())}`);
+          if (id.trim()) navigate(`/admin?contribute=${encodeURIComponent(id.trim())}`);
         }}
       >
         <label className="flex flex-col gap-1.5">
@@ -115,20 +110,20 @@ function AdminIndex() {
         Places
       </h2>
       <p className="mt-2">
-        <a href="/admin/place/new" className="text-[13.5px] font-semibold text-ink underline decoration-rule-strong underline-offset-4">
+        <Link to="/admin?place=new" className="text-[13.5px] font-semibold text-ink underline decoration-rule-strong underline-offset-4">
           Add a Place
-        </a>
+        </Link>
       </p>
 
       <ul className="mt-3 flex flex-col gap-1.5">
         {places.map((place) => (
           <li key={place.slug}>
-            <a
-              href={`/admin/place/${place.slug}`}
+            <Link
+              to={`/admin?place=${encodeURIComponent(place.slug)}`}
               className="text-[12.5px] text-ink-soft hover:text-ink"
             >
               {place.name}
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
