@@ -3,7 +3,11 @@
   "name": "Mutiara Residency",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Mutiara%20Residency",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

@@ -4,6 +4,7 @@ import {
   buildStationRows,
   filterPlaces,
   getUniqueTypes,
+  placeStations,
 } from "../lib/browse-filter";
 import {
   coveredLine,
@@ -22,6 +23,7 @@ import {
   buildOpenRouteUrl,
   type RouteMode,
 } from "../lib/route-url";
+import { firstStation } from "../lib/contribution";
 import { RouteFrame } from "../components/RouteFrame";
 import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
@@ -155,7 +157,9 @@ export default function Browse() {
   /** Only the selected Line's Places sit on the corridor. */
   const linePlaces = useMemo(() => {
     const codes = new Set(line.stations.map((station) => station.code));
-    return places.filter((place) => codes.has(place.station));
+    return places.filter((place) =>
+      placeStations(place).some((code) => codes.has(code)),
+    );
   }, [line, places]);
 
   const uniqueTypes = useMemo(() => getUniqueTypes(linePlaces), [linePlaces]);
@@ -191,19 +195,29 @@ export default function Browse() {
     setSelectedSlug(null);
   };
 
-  const selectedStationName = selectedPlace
-    ? stationNameMap.get(selectedPlace.station) ?? selectedPlace.station
+  /**
+   * The viewed Station: the Connection the Place was selected under. Every Place
+   * here has at least one Connection, so the first is the one its row sat under.
+   */
+  const selectedStation = selectedPlace
+    ? firstStation(selectedPlace.connections)
+    : "";
+
+  const selectedStationName = selectedStation
+    ? stationNameMap.get(selectedStation) ?? selectedStation
     : null;
 
   const selectedAlsoNear = useMemo(() => {
-    if (!selectedPlace?.alsoNear?.length) return [];
-    return selectedPlace.alsoNear.map((code) => stationNameMap.get(code) ?? code);
+    if (!selectedPlace) return [];
+    return selectedPlace.connections
+      .slice(1)
+      .map((connection) => stationNameMap.get(connection.station) ?? connection.station);
   }, [selectedPlace, stationNameMap]);
 
   const routeFrameUrl = useMemo(() => {
-    if (!selectedPlace || !selectedStationName) return "";
-    return buildRouteFrameUrl(selectedPlace, selectedStationName, routeMode);
-  }, [selectedPlace, selectedStationName, routeMode]);
+    if (!selectedPlace || !selectedStation) return "";
+    return buildRouteFrameUrl(selectedPlace, selectedStation, routeMode);
+  }, [selectedPlace, selectedStation, routeMode]);
 
   const openRouteUrl = useMemo(() => {
     if (!selectedPlace || !selectedStationName) return "";

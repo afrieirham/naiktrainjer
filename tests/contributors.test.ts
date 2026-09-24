@@ -22,7 +22,8 @@ function place(overrides: Partial<Place> = {}): Place {
     name: "Amcorp Service Suite",
     kind: "building",
     type: "service-apartment",
-    station: "KJ20",
+    map: "https://maps.app.goo.gl/x",
+    connections: [{ station: "KJ20", embed: null }],
     source: "contributed",
     ...overrides,
   };

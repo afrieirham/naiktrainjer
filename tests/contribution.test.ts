@@ -16,7 +16,7 @@ const TYPES = [...CONTRIBUTION_TYPES];
 function draft(overrides: Partial<ContributionDraft> = {}): ContributionDraft {
   return {
     name: "Amcorp Service Suite",
-    station: "KJ20",
+    connections: [{ station: "KJ20", embed: "" }],
     type: "",
     map: "",
     note: "",
@@ -24,6 +24,10 @@ function draft(overrides: Partial<ContributionDraft> = {}): ContributionDraft {
     contributorHref: "",
     ...overrides,
   };
+}
+
+function connections(station: string): ContributionDraft["connections"] {
+  return [{ station, embed: "" }];
 }
 
 function errorsFor(overrides: Partial<ContributionDraft>): Record<string, string> {
@@ -41,7 +45,7 @@ describe("validateContribution", () => {
     assert.deepEqual(errors, {});
     assert.deepEqual(contribution, {
       name: "Amcorp Service Suite",
-      station: "KJ20",
+      connections: [{ station: "KJ20", embed: null }],
       type: null,
       map: null,
       note: null,
@@ -58,9 +62,15 @@ describe("validateContribution", () => {
     assert.match(errorsFor({ name: "a".repeat(121) }).name, /under 120/);
   });
 
-  it("requires a Station that exists on the network", () => {
-    assert.match(errorsFor({ station: "" }).station, /Choose the station/);
-    assert.match(errorsFor({ station: "XX9" }).station, /not a station/);
+  it("requires a Connection whose Station exists on the network", () => {
+    assert.match(
+      errorsFor({ connections: connections("") }).connections,
+      /at least one station/,
+    );
+    assert.match(
+      errorsFor({ connections: connections("XX9") }).connections,
+      /not a station/,
+    );
   });
 
   it("rejects a Type that is not in the controlled list", () => {
@@ -110,7 +120,7 @@ describe("validateContribution", () => {
 
     assert.deepEqual(contribution, {
       name: "Amcorp Service Suite",
-      station: "KJ20",
+      connections: [{ station: "KJ20", embed: null }],
       type: "service-apartment",
       map: "https://maps.app.goo.gl/x",
       note: "Ten minutes from the station.",
@@ -129,9 +139,13 @@ describe("validateContribution", () => {
   });
 
   it("reports every problem at once", () => {
-    const errors = errorsFor({ name: "", station: "XX9", type: "castle" });
+    const errors = errorsFor({
+      name: "",
+      connections: connections("XX9"),
+      type: "castle",
+    });
 
-    assert.deepEqual(Object.keys(errors).sort(), ["name", "station", "type"]);
+    assert.deepEqual(Object.keys(errors).sort(), ["connections", "name", "type"]);
   });
 
   it("validateFields is the same rules without building a record", () => {
@@ -149,7 +163,7 @@ describe("buildContributionFile", () => {
     assert.deepEqual(JSON.parse(file.contents), {
       id: "c-abc12345",
       name: "Amcorp Service Suite",
-      station: "KJ20",
+      connections: [{ station: "KJ20" }],
       type: null,
       map: null,
       note: null,

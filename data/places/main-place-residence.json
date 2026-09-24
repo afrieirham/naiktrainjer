@@ -3,12 +3,11 @@
   "name": "Main Place Residence",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ34",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/UDqE9H9m1wTXSJnD9",
-  "coordinates": {
-    "lat": 3.0266473,
-    "lng": 101.5810336
-  },
+  "connections": [
+    {
+      "station": "KJ34"
+    }
+  ],
   "source": "owner"
 }

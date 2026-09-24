@@ -3,7 +3,11 @@
   "name": "Bangsar Permai",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Bangsar%20Permai",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

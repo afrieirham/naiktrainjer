@@ -2,7 +2,9 @@ import { lines } from "../../data/network.ts";
 import {
   CONTRIBUTION_TYPES,
   buildContributionFile,
+  connectionDraftsFromPayload,
   contributionPullRequestBody,
+  firstStation,
   validateContribution,
   type ContributionDraft,
 } from "../../app/lib/contribution.ts";
@@ -89,7 +91,7 @@ export async function onRequestPost(
 
   const draft: ContributionDraft = {
     name: string(payload.name),
-    station: string(payload.station),
+    connections: connectionDraftsFromPayload(payload.connections),
     type: string(payload.type),
     map: string(payload.map),
     note: string(payload.note),
@@ -105,7 +107,8 @@ export async function onRequestPost(
   if (!contribution) return json({ errors }, 422);
 
   const id = `c-${crypto.randomUUID().slice(0, 8)}`;
-  const stationName = STATION_NAMES.get(contribution.station) ?? contribution.station;
+  const stationCode = firstStation(contribution.connections);
+  const stationName = STATION_NAMES.get(stationCode) ?? stationCode;
 
   try {
     const prUrl = await deps.openPullRequest({

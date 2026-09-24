@@ -15,7 +15,7 @@ const PR_URL = "https://github.com/afrieirham/naiktrainjer/pull/7";
 
 const CONTRIBUTION = {
   name: "Amcorp Service Suite",
-  station: "KJ20",
+  connections: [{ station: "KJ20", embed: null }],
   type: "service-apartment",
   map: "https://maps.app.goo.gl/x",
   note: "Ten minutes from the station.",
@@ -26,11 +26,8 @@ const PLACE = {
   name: "Amcorp Service Suite",
   kind: "building",
   type: "service-apartment",
-  station: "KJ20",
-  alsoNear: "",
   map: "https://maps.app.goo.gl/x",
-  lat: "3.1117289",
-  lng: "101.6366555",
+  connections: [{ station: "KJ20", embed: "" }],
   source: "contributed",
   contributorName: "Emily Yeo",
   contributorHref: "https://example.com/me",
@@ -98,12 +95,13 @@ describe("GET /api/admin/contribution/:id", () => {
     assert.equal(response.status, 200);
     const body = (await response.json()) as {
       branch: string;
-      draft: Record<string, string>;
+      draft: Record<string, unknown>;
     };
     assert.equal(body.branch, `contribution/${ID}`);
     assert.equal(body.draft.name, "Amcorp Service Suite");
     assert.equal(body.draft.source, "contributed");
     assert.equal(body.draft.contributorName, "Emily Yeo");
+    assert.deepEqual(body.draft.connections, [{ station: "KJ20", embed: "" }]);
 
     assert.equal(calls[0].op, "read");
     assert.equal(calls[0].path, `data/contributions/${ID}.json`);
@@ -188,7 +186,11 @@ describe("POST /api/admin/contribution/:id (approve)", () => {
 
     const response = await approveContribution(
       {
-        request: request({ ...PLACE, kind: "castle", station: "XX9" }),
+        request: request({
+          ...PLACE,
+          kind: "castle",
+          connections: [{ station: "XX9", embed: "" }],
+        }),
         env: env(),
         params: { id: ID },
       },
@@ -198,7 +200,7 @@ describe("POST /api/admin/contribution/:id (approve)", () => {
     assert.equal(response.status, 422);
     const body = (await response.json()) as { errors?: Record<string, string> };
     assert.match(body.errors?.kind ?? "", /kind/);
-    assert.match(body.errors?.station ?? "", /station/);
+    assert.match(body.errors?.connections ?? "", /not a station/);
     assert.equal(calls.some((call) => call.op === "put"), false);
   });
 

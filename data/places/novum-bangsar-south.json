@@ -3,7 +3,11 @@
   "name": "Novum @ Bangsar South",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ18",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Novum%20%40%20Bangsar%20South",
+  "connections": [
+    {
+      "station": "KJ18"
+    }
+  ],
   "source": "owner"
 }

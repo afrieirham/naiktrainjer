@@ -3,12 +3,11 @@
   "name": "E-Tiara Service Apartment",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ28",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/hrTuqvZe9NJ8DNLS9",
-  "coordinates": {
-    "lat": 3.0828501,
-    "lng": 101.5880997
-  },
+  "connections": [
+    {
+      "station": "KJ28"
+    }
+  ],
   "source": "owner"
 }

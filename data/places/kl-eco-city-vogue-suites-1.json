@@ -3,7 +3,11 @@
   "name": "KL Eco City Vogue Suites 1",
   "kind": "building",
   "type": "apartment",
-  "station": "KJ17",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=KL%20Eco%20City%20Vogue%20Suites%201",
+  "connections": [
+    {
+      "station": "KJ17"
+    }
+  ],
   "source": "owner"
 }

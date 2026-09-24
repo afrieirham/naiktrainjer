@@ -3,14 +3,14 @@
   "name": "Subang USJ 2",
   "kind": "area",
   "type": "area",
-  "station": "KJ30",
-  "alsoNear": [
-    "KJ31"
-  ],
   "map": "https://maps.app.goo.gl/ierw1P898sAXPXpaA",
-  "coordinates": {
-    "lat": 3.0541018,
-    "lng": 101.5910139
-  },
+  "connections": [
+    {
+      "station": "KJ30"
+    },
+    {
+      "station": "KJ31"
+    }
+  ],
   "source": "owner"
 }

@@ -3,12 +3,11 @@
   "name": "Shang Villa",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ27",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9",
-  "coordinates": {
-    "lat": 3.096588,
-    "lng": 101.590365
-  },
+  "connections": [
+    {
+      "station": "KJ27"
+    }
+  ],
   "source": "owner"
 }

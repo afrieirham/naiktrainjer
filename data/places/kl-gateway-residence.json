@@ -3,12 +3,11 @@
   "name": "KL Gateway Residence",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ19",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/AWsK9ZkEVBkEJ3X39",
-  "coordinates": {
-    "lat": 3.1137539,
-    "lng": 101.6601379
-  },
+  "connections": [
+    {
+      "station": "KJ19"
+    }
+  ],
   "source": "owner"
 }

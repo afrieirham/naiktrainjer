@@ -1,4 +1,4 @@
-import type { Place } from "./browse-filter";
+import { placeStations, type Place } from "./browse-filter.ts";
 
 /**
  * A Station as the network reference describes it: every Station on the
@@ -37,15 +37,24 @@ export function stationNamesByCode(lines: Line[]): Map<string, string> {
  * Line; this is only the subset worth browsing.
  */
 export function coveredLines(lines: Line[], places: Place[]): Line[] {
-  const withPlaces = new Set(places.map((place) => place.station));
+  const withPlaces = coveredCodes(places);
   return lines.filter((line) =>
     line.stations.some((station) => withPlaces.has(station.code)),
   );
 }
 
+/** Every Station code any Place Connects to. */
+function coveredCodes(places: Place[]): Set<string> {
+  const codes = new Set<string>();
+  for (const place of places) {
+    for (const code of placeStations(place)) codes.add(code);
+  }
+  return codes;
+}
+
 /** How many of a Line's Stations hold a Place. */
 function coveredStationCount(line: Line, places: Place[]): number {
-  const withPlaces = new Set(places.map((place) => place.station));
+  const withPlaces = coveredCodes(places);
   return line.stations.filter((station) => withPlaces.has(station.code)).length;
 }
 
@@ -118,7 +127,7 @@ export type Coverage = {
  */
 export function coverage(line: Line, places: Place[]): Coverage {
   const ordered = [...line.stations].sort((a, b) => a.sort - b.sort);
-  const withPlaces = new Set(places.map((place) => place.station));
+  const withPlaces = coveredCodes(places);
   const covered = ordered.filter((station) => withPlaces.has(station.code));
   const empty = ordered.filter((station) => !withPlaces.has(station.code));
 

@@ -3,12 +3,11 @@
   "name": "Flat Taman Putra Damai",
   "kind": "building",
   "type": "flat",
-  "station": "KJ25",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/U9wa67JMxghLzPYS7",
-  "coordinates": {
-    "lat": 3.1148126,
-    "lng": 101.5830268
-  },
+  "connections": [
+    {
+      "station": "KJ25"
+    }
+  ],
   "source": "owner"
 }

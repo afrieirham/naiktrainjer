@@ -1,20 +1,27 @@
 /**
  * The rules of a Place, kept apart from the Function that commits one.
  *
- * A Place is a finished directory record: it has a Station and a slug of its
- * own, and it is what a Contribution becomes when the maintainer approves it.
- * Nothing here touches a runtime, so the browser, the Pages Function, the
- * scripts and the tests all read the same rules.
+ * A Place is a finished directory record: it has a Map link, one or more
+ * Connections, and a slug of its own, and it is what a Contribution becomes when
+ * the maintainer approves it. Nothing here touches a runtime, so the browser,
+ * the Pages Function, the scripts and the tests all read the same rules.
  *
- * The coordinate bounds and the controlled lists mirror `scripts/validate-data.mjs`:
- * a Place this module accepts must be one the data validator accepts, or a bad
- * Place could reach `main`.
+ * The controlled lists and the Connection rules mirror `scripts/validate-data.mjs`
+ * and `app/lib/contribution.ts`: a Place this module accepts must be one the data
+ * validator accepts, or a bad Place could reach `main`.
  */
 import {
   CONTRIBUTION_TYPES,
+  EMPTY_CONNECTION_DRAFT,
   MAX_CONTRIBUTOR_NAME,
   MAX_NAME,
+  connectionDraftsFromConnections,
+  connectionRecord,
   isWebAddress,
+  toConnections,
+  validateConnections,
+  type Connection,
+  type ConnectionDraft,
   type ValidatedContribution,
 } from "./contribution.ts";
 
@@ -29,12 +36,6 @@ export const PLACE_TYPES = CONTRIBUTION_TYPES;
 export const PLACE_SOURCES = ["owner", "contributed"] as const;
 export type PlaceSource = (typeof PLACE_SOURCES)[number];
 
-/** Klang Valley plausible bounds, matching the data validator. */
-export const LAT_MIN = 2.9;
-export const LAT_MAX = 3.3;
-export const LNG_MIN = 101.4;
-export const LNG_MAX = 101.8;
-
 export const PLACES_DIR = "data/places";
 
 /** What the maintainer typed into the Place form, before any of it is trusted. */
@@ -42,13 +43,8 @@ export interface PlaceDraft {
   name: string;
   kind: string;
   type: string;
-  station: string;
-  /** Station codes, separated by commas or whitespace. */
-  alsoNear: string;
   map: string;
-  /** Coordinates as the form's text inputs carry them. */
-  lat: string;
-  lng: string;
+  connections: ConnectionDraft[];
   source: string;
   contributorName: string;
   contributorHref: string;
@@ -59,10 +55,8 @@ export interface ValidatedPlace {
   name: string;
   kind: PlaceKind;
   type: string;
-  station: string;
-  alsoNear: string[];
-  map: string | null;
-  coordinates: { lat: number; lng: number } | null;
+  map: string;
+  connections: Connection[];
   source: PlaceSource;
   contributor: { name: string; href: string | null } | null;
 }
@@ -79,15 +73,14 @@ export interface PlaceBuild {
   file: PlaceFile | null;
 }
 
+export { type Connection, type ConnectionDraft };
+
 export const EMPTY_PLACE_DRAFT: PlaceDraft = {
   name: "",
   kind: "",
   type: "",
-  station: "",
-  alsoNear: "",
   map: "",
-  lat: "",
-  lng: "",
+  connections: [{ ...EMPTY_CONNECTION_DRAFT }],
   source: "owner",
   contributorName: "",
   contributorHref: "",
@@ -96,18 +89,6 @@ export const EMPTY_PLACE_DRAFT: PlaceDraft = {
 function optional(value: string): string | null {
   const trimmed = value.trim();
   return trimmed.length === 0 ? null : trimmed;
-}
-
-/** Split an "Also near" field into network codes, dropping the empty pieces. */
-export function parseStationCodes(value: string): string[] {
-  return value
-    .split(/[\s,]+/)
-    .map((code) => code.trim())
-    .filter((code) => code.length > 0);
-}
-
-function inBounds(value: number, min: number, max: number): boolean {
-  return value >= min && value <= max;
 }
 
 /**
@@ -162,43 +143,17 @@ export function validatePlaceFields(
     errors.type = "That is not a type in the directory.";
   }
 
-  const station = draft.station.trim();
-  if (station.length === 0) {
-    errors.station = "Choose the station this place is near.";
-  } else if (!knownStations.includes(station)) {
-    errors.station = "That is not a station on the network.";
-  }
-
-  const alsoNear = parseStationCodes(draft.alsoNear);
-  for (const code of alsoNear) {
-    if (!knownStations.includes(code)) {
-      errors.alsoNear = `"${code}" is not a station on the network.`;
-      break;
-    }
-  }
-
   const map = draft.map.trim();
-  if (map.length > 0 && !isWebAddress(map)) {
+  if (map.length === 0) {
+    errors.map = "Give the place a Map link.";
+  } else if (!isWebAddress(map)) {
     errors.map = "That link does not look like a web address.";
   }
 
-  const latRaw = draft.lat.trim();
-  const lngRaw = draft.lng.trim();
-  if (latRaw.length > 0 || lngRaw.length > 0) {
-    const lat = Number(latRaw);
-    if (latRaw.length === 0 || !Number.isFinite(lat)) {
-      errors.lat = "Give the latitude as a number.";
-    } else if (!inBounds(lat, LAT_MIN, LAT_MAX)) {
-      errors.lat = `Latitude must be inside the Klang Valley (${LAT_MIN}–${LAT_MAX}).`;
-    }
-
-    const lng = Number(lngRaw);
-    if (lngRaw.length === 0 || !Number.isFinite(lng)) {
-      errors.lng = "Give the longitude as a number.";
-    } else if (!inBounds(lng, LNG_MIN, LNG_MAX)) {
-      errors.lng = `Longitude must be inside the Klang Valley (${LNG_MIN}–${LNG_MAX}).`;
-    }
-  }
+  Object.assign(
+    errors,
+    validateConnections(draft.connections, knownStations),
+  );
 
   const source = draft.source.trim();
   if (!(PLACE_SOURCES as readonly string[]).includes(source)) {
@@ -220,8 +175,6 @@ export function validatePlaceFields(
 
 /** Build the Place record from a draft that has already passed the rules. */
 export function placeFromDraft(draft: PlaceDraft): ValidatedPlace {
-  const latRaw = draft.lat.trim();
-  const lngRaw = draft.lng.trim();
   const contributorName = optional(draft.contributorName);
   const contributorHref = optional(draft.contributorHref);
 
@@ -229,13 +182,8 @@ export function placeFromDraft(draft: PlaceDraft): ValidatedPlace {
     name: draft.name.trim(),
     kind: draft.kind.trim() as PlaceKind,
     type: draft.type.trim(),
-    station: draft.station.trim(),
-    alsoNear: parseStationCodes(draft.alsoNear),
-    map: optional(draft.map),
-    coordinates:
-      latRaw.length === 0 || lngRaw.length === 0
-        ? null
-        : { lat: Number(latRaw), lng: Number(lngRaw) },
+    map: draft.map.trim(),
+    connections: toConnections(draft.connections),
     source: draft.source.trim() as PlaceSource,
     contributor:
       contributorName === null
@@ -270,12 +218,10 @@ export function placeRecord(
     name: place.name,
     kind: place.kind,
     type: place.type,
-    station: place.station,
-    alsoNear: place.alsoNear,
+    map: place.map,
+    connections: place.connections.map(connectionRecord),
+    source: place.source,
   };
-  if (place.map) record.map = place.map;
-  if (place.coordinates) record.coordinates = place.coordinates;
-  record.source = place.source;
   if (place.contributor) record.contributor = place.contributor;
   return record;
 }
@@ -322,8 +268,8 @@ export function contributionToDraft(
     ...EMPTY_PLACE_DRAFT,
     name: contribution.name,
     type: contribution.type ?? "",
-    station: contribution.station,
     map: contribution.map ?? "",
+    connections: connectionDraftsFromConnections(contribution.connections),
     source: "contributed",
     contributorName: contribution.contributor?.name ?? "",
     contributorHref: contribution.contributor?.href ?? "",
@@ -344,10 +290,14 @@ export function contributionToPlace(
   const formName = fields.contributorName.trim();
   const formHref = fields.contributorHref.trim();
   const carryContributor = formName.length === 0 && formHref.length === 0;
+  const carryConnections = toConnections(fields.connections).length === 0;
 
   const merged: PlaceDraft = {
     ...fields,
     source: "contributed",
+    connections: carryConnections
+      ? connectionDraftsFromConnections(contribution.connections)
+      : fields.connections,
     contributorName: carryContributor
       ? (contribution.contributor?.name ?? "")
       : fields.contributorName,

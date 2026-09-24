@@ -29,12 +29,17 @@ export function loader({ params }: Route.LoaderArgs) {
   if (!place) {
     throw new Response("Not Found", { status: 404 });
   }
-  const alsoNearNames = (place.alsoNear ?? [])
-    .map((code) => STATION_NAMES.get(code))
-    .filter((name): name is string => Boolean(name));
+  const stations = place.connections.map((connection) => ({
+    code: connection.station,
+    name: STATION_NAMES.get(connection.station) ?? connection.station,
+  }));
+  const stationCode = stations[0]?.code ?? "";
+  const stationName = stations[0]?.name ?? "";
+  const alsoNearNames = stations.slice(1).map((station) => station.name);
   return {
     place: place as Place,
-    stationName: STATION_NAMES.get(place.station) ?? place.station,
+    stationCode,
+    stationName,
     alsoNearNames,
     lineName: COVERED_LINE.name,
   };
@@ -75,12 +80,13 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function PlacePage() {
-  const { place, stationName, alsoNearNames, lineName } = useLoaderData<typeof loader>();
+  const { place, stationCode, stationName, alsoNearNames, lineName } =
+    useLoaderData<typeof loader>();
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
 
   const routeFrameUrl = useMemo(
-    () => buildRouteFrameUrl(place, stationName, routeMode),
-    [place, stationName, routeMode],
+    () => buildRouteFrameUrl(place, stationCode, routeMode),
+    [place, stationCode, routeMode],
   );
 
   const openRouteUrl = useMemo(

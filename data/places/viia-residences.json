@@ -3,7 +3,11 @@
   "name": "ViiA Residences",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ17",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=ViiA%20Residences",
+  "connections": [
+    {
+      "station": "KJ17"
+    }
+  ],
   "source": "owner"
 }

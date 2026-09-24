@@ -7,7 +7,6 @@ import {
   contributionToDraft,
   contributionToPlace,
   deriveSlug,
-  parseStationCodes,
   placeRecord,
   validatePlace,
   type PlaceDraft,
@@ -20,11 +19,8 @@ function draft(overrides: Partial<PlaceDraft> = {}): PlaceDraft {
     name: "Amcorp Service Suite",
     kind: "building",
     type: "service-apartment",
-    station: "KJ20",
-    alsoNear: "",
-    map: "",
-    lat: "",
-    lng: "",
+    map: "https://maps.app.goo.gl/x",
+    connections: [{ station: "KJ20", embed: "" }],
     source: "owner",
     contributorName: "",
     contributorHref: "",
@@ -34,7 +30,7 @@ function draft(overrides: Partial<PlaceDraft> = {}): PlaceDraft {
 
 const CONTRIBUTION: ValidatedContribution = {
   name: "Amcorp Service Suite",
-  station: "KJ20",
+  connections: [{ station: "KJ20", embed: null }],
   type: "service-apartment",
   map: "https://maps.app.goo.gl/x",
   note: "Ten minutes from the station.",
@@ -61,21 +57,12 @@ describe("deriveSlug", () => {
   });
 });
 
-describe("parseStationCodes", () => {
-  it("reads a comma- or whitespace-separated list", () => {
-    assert.deepEqual(parseStationCodes("KJ1, KJ2  AG3"), ["KJ1", "KJ2", "AG3"]);
-    assert.deepEqual(parseStationCodes("  "), []);
-  });
-});
-
 describe("validatePlace", () => {
-  it("accepts a complete Place", () => {
+  it("accepts a complete Place with a Map link and a Connection", () => {
     const { errors, place } = validatePlace(
       draft({
-        alsoNear: "KJ1",
+        connections: [{ station: "KJ20", embed: "" }],
         map: "https://maps.app.goo.gl/x",
-        lat: "3.1117289",
-        lng: "101.6366555",
       }),
       STATIONS,
     );
@@ -85,58 +72,68 @@ describe("validatePlace", () => {
       name: "Amcorp Service Suite",
       kind: "building",
       type: "service-apartment",
-      station: "KJ20",
-      alsoNear: ["KJ1"],
       map: "https://maps.app.goo.gl/x",
-      coordinates: { lat: 3.1117289, lng: 101.6366555 },
+      connections: [{ station: "KJ20", embed: null }],
       source: "owner",
       contributor: null,
     });
   });
 
-  it("requires a name, kind, type and Station", () => {
+  it("accepts a Connection without a Route frame", () => {
+    const { errors, place } = validatePlace(
+      draft({ connections: [{ station: "KJ20", embed: "" }] }),
+      STATIONS,
+    );
+
+    assert.deepEqual(errors, {});
+    assert.deepEqual(place?.connections, [{ station: "KJ20", embed: null }]);
+  });
+
+  it("requires a name, kind, type and a Map link", () => {
     const { errors } = validatePlace(
-      draft({ name: "", kind: "", type: "", station: "" }),
+      draft({ name: "", kind: "", type: "", map: "" }),
       STATIONS,
     );
     assert.match(errors.name, /name/);
     assert.match(errors.kind, /kind/);
     assert.match(errors.type, /type/);
-    assert.match(errors.station, /station/);
+    assert.match(errors.map, /Map link/);
   });
 
   it("rejects a Kind, Type or Station outside the controlled lists", () => {
     const { errors } = validatePlace(
-      draft({ kind: "castle", type: "castle", station: "XX9" }),
+      draft({
+        kind: "castle",
+        type: "castle",
+        connections: [{ station: "XX9", embed: "" }],
+      }),
       STATIONS,
     );
     assert.match(errors.kind, /not a kind/);
     assert.match(errors.type, /not a type/);
-    assert.match(errors.station, /not a station/);
+    assert.match(errors.connections, /not a station/);
   });
 
-  it("rejects an Also near code that is not on the network", () => {
-    const { errors } = validatePlace(draft({ alsoNear: "KJ1, XX9" }), STATIONS);
-    assert.match(errors.alsoNear, /XX9/);
+  it("requires at least one Connection", () => {
+    const { errors } = validatePlace(
+      draft({ connections: [{ station: "", embed: "" }] }),
+      STATIONS,
+    );
+    assert.match(errors.connections, /at least one station/);
   });
 
-  it("rejects a map link that is not a web address", () => {
+  it("rejects a map link or Route frame that is not a web address", () => {
     assert.match(
       validatePlace(draft({ map: "javascript:alert(1)" }), STATIONS).errors.map,
       /web address/,
     );
-  });
-
-  it("requires both coordinates when either is given, and bounds them", () => {
-    const missing = validatePlace(draft({ lat: "3.1" }), STATIONS).errors;
-    assert.match(missing.lng, /longitude/);
-
-    const outside = validatePlace(
-      draft({ lat: "1.0", lng: "200" }),
-      STATIONS,
-    ).errors;
-    assert.match(outside.lat, /Klang Valley/);
-    assert.match(outside.lng, /Klang Valley/);
+    assert.match(
+      validatePlace(
+        draft({ connections: [{ station: "KJ20", embed: "not a url" }] }),
+        STATIONS,
+      ).errors.connections,
+      /web address/,
+    );
   });
 
   it("rejects a bad contributor link but allows a blank one", () => {
@@ -166,6 +163,7 @@ describe("buildPlace", () => {
     assert.equal(record.slug, "amcorp-service-suite");
     assert.equal(record.name, "Amcorp Service Suite");
     assert.equal(record.source, "owner");
+    assert.deepEqual(record.connections, [{ station: "KJ20" }]);
     assert.equal("contributor" in record, false, "an owner Place credits nobody");
   });
 
@@ -185,13 +183,35 @@ describe("buildPlace", () => {
 });
 
 describe("placeRecord", () => {
-  it("omits an absent map and coordinates rather than writing null", () => {
+  it("writes the required Map link and the Connections", () => {
     const built = buildPlace(draft(), STATIONS, []);
     const record = placeRecord(built.place!, built.slug!);
 
-    assert.deepEqual(record.alsoNear, []);
-    assert.equal("map" in record, false);
-    assert.equal("coordinates" in record, false);
+    assert.equal(record.map, "https://maps.app.goo.gl/x");
+    assert.deepEqual(record.connections, [{ station: "KJ20" }]);
+    assert.equal("station" in record, false, "the old single Station is gone");
+    assert.equal("alsoNear" in record, false, "the Also near list is gone");
+    assert.equal("coordinates" in record, false, "coordinates are retired");
+  });
+
+  it("keeps a Connection's Route frame when there is one", () => {
+    const built = buildPlace(
+      draft({
+        connections: [
+          { station: "KJ20", embed: "https://www.google.com/maps/embed?pb=walk" },
+        ],
+      }),
+      STATIONS,
+      [],
+    );
+    const record = placeRecord(built.place!, built.slug!);
+
+    assert.deepEqual(record.connections, [
+      {
+        station: "KJ20",
+        embed: "https://www.google.com/maps/embed?pb=walk",
+      },
+    ]);
   });
 
   it("persists a Contributor when there is one", () => {
@@ -217,11 +237,11 @@ describe("placeRecord", () => {
 });
 
 describe("contributionToDraft", () => {
-  it("prefills every field a Contribution can supply", () => {
+  it("prefills every field a Contribution can supply, Connections included", () => {
     const prefilled = contributionToDraft(CONTRIBUTION);
 
     assert.equal(prefilled.name, "Amcorp Service Suite");
-    assert.equal(prefilled.station, "KJ20");
+    assert.deepEqual(prefilled.connections, [{ station: "KJ20", embed: "" }]);
     assert.equal(prefilled.type, "service-apartment");
     assert.equal(prefilled.map, "https://maps.app.goo.gl/x");
     assert.equal(prefilled.source, "contributed");
@@ -237,11 +257,8 @@ describe("contributionToPlace (the approval transform)", () => {
       name: "Amcorp Service Suite",
       kind: "building",
       type: "service-apartment",
-      station: "KJ20",
-      alsoNear: "KJ1",
       map: "https://maps.app.goo.gl/x",
-      lat: "3.1117289",
-      lng: "101.6366555",
+      connections: [{ station: "KJ20", embed: "" }],
       source: "owner",
       contributorName: "Emily Yeo",
       contributorHref: "https://example.com/me",
@@ -252,11 +269,7 @@ describe("contributionToPlace (the approval transform)", () => {
     assert.deepEqual(built.errors, {});
     assert.equal(built.slug, "amcorp-service-suite");
     assert.equal(built.place?.source, "contributed", "an approved Contribution is contributed");
-    assert.equal(built.place?.station, "KJ20");
-    assert.deepEqual(built.place?.coordinates, {
-      lat: 3.1117289,
-      lng: 101.6366555,
-    });
+    assert.deepEqual(built.place?.connections, [{ station: "KJ20", embed: null }]);
     assert.deepEqual(built.place?.contributor, {
       name: "Emily Yeo",
       href: "https://example.com/me",
@@ -264,14 +277,20 @@ describe("contributionToPlace (the approval transform)", () => {
     assert.equal(built.file?.path, "data/places/amcorp-service-suite.json");
   });
 
-  it("carries the Contributor over when the form left them blank", () => {
+  it("carries the Contributor and the Connections over when the form left them blank", () => {
     const built = contributionToPlace(
       CONTRIBUTION,
-      draft({ source: "owner", contributorName: "", contributorHref: "" }),
+      draft({
+        source: "owner",
+        connections: [{ station: "", embed: "" }],
+        contributorName: "",
+        contributorHref: "",
+      }),
       STATIONS,
       [],
     );
 
+    assert.deepEqual(built.place?.connections, [{ station: "KJ20", embed: null }]);
     assert.deepEqual(built.place?.contributor, CONTRIBUTION.contributor);
     assert.equal(built.place?.source, "contributed");
   });

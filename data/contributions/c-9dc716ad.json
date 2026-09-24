@@ -1,7 +1,11 @@
 {
   "id": "c-9dc716ad",
   "name": "Shang Villa",
-  "station": "SA7",
+  "connections": [
+    {
+      "station": "SA7"
+    }
+  ],
   "type": "condominium",
   "map": "https://maps.app.goo.gl/FBp4YYcKskJWWwVw6",
   "note": null,

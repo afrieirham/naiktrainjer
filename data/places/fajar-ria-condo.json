@@ -3,7 +3,11 @@
   "name": "Fajar Ria Condo",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ18",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Fajar%20Ria%20Condo",
+  "connections": [
+    {
+      "station": "KJ18"
+    }
+  ],
   "source": "owner"
 }

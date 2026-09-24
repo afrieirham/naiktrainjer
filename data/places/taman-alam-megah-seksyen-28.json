@@ -3,12 +3,11 @@
   "name": "Taman Alam Megah Seksyen 28",
   "kind": "area",
   "type": "area",
-  "station": "KJ36",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/JXB9GK9Nm5Qdhbhb8",
-  "coordinates": {
-    "lat": 3.0110891,
-    "lng": 101.5572156
-  },
+  "connections": [
+    {
+      "station": "KJ36"
+    }
+  ],
   "source": "owner"
 }

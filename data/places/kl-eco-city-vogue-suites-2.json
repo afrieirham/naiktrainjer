@@ -3,7 +3,11 @@
   "name": "KL Eco City Vogue Suites 2",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ17",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=KL%20Eco%20City%20Vogue%20Suites%202",
+  "connections": [
+    {
+      "station": "KJ17"
+    }
+  ],
   "source": "owner"
 }

@@ -3,12 +3,11 @@
   "name": "Petaling Jaya Seksyen 22",
   "kind": "area",
   "type": "area",
-  "station": "KJ22",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/DDrSqAz3ZDPg3s4v9",
-  "coordinates": {
-    "lat": 3.1081439,
-    "lng": 101.6154553
-  },
+  "connections": [
+    {
+      "station": "KJ22"
+    }
+  ],
   "source": "owner"
 }
