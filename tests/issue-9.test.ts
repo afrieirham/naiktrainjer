@@ -2,7 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Place } from "../app/lib/browse-filter.ts";
+import { placeStations, type Place } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
 import { coveredLine, coverage } from "../app/lib/lines.ts";
 import { CONTRIBUTION_TYPES } from "../app/lib/contribution.ts";
@@ -79,7 +79,7 @@ describe("browse page intro copy", () => {
   });
 
   it("counts the Stations holding Places, derived from the data", () => {
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const expected = ordered.filter((station) => withPlaces.has(station.code)).length;
     assert.equal(
       cov.coveredCount,
@@ -108,12 +108,12 @@ describe("browse page intro copy", () => {
     );
   });
 
-  it("every Place belongs to a Station on the Line the page covers", () => {
+  it("every Place connects to a Station on the Line the page covers", () => {
     const codes = new Set(line.stations.map((station) => station.code));
     for (const place of data.places) {
       assert.ok(
-        codes.has(place.station),
-        `Place "${place.name}" has station "${place.station}", expected one on the ${line.slug} line`,
+        placeStations(place).some((code) => codes.has(code)),
+        `Place "${place.name}" connects to no station on the ${line.slug} line`,
       );
     }
   });

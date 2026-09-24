@@ -1,9 +1,10 @@
 /**
  * The rules of a Contribution, kept apart from the Function that files it.
  *
- * A Contribution is a visitor's proposed Place: a name and a Station are the
- * only facts required, and everything else is optional detail. It is never a
- * Place and is never rendered — approving it is what turns it into one.
+ * A Contribution is a visitor's proposed Place: a name and one or more
+ * Connections are the only facts required, and everything else is optional
+ * detail. It is never a Place and is never rendered — approving it is what turns
+ * it into one.
  *
  * This module has no imports and touches no runtime, so the browser, the
  * Pages Function and the tests all read the same rules.
@@ -25,6 +26,25 @@ export const MAX_NAME = 120;
 export const MAX_NOTE = 280;
 export const MAX_CONTRIBUTOR_NAME = 60;
 
+/**
+ * A Station a Place is near, with the optional hand-pasted Route frame for that
+ * Place→Station pair. The frame is stored whole, never calculated; a Connection
+ * without one is still a valid Connection.
+ */
+export interface Connection {
+  station: string;
+  embed: string | null;
+}
+
+/** A Connection as a form or a payload carries it, before any of it is trusted. */
+export interface ConnectionDraft {
+  station: string;
+  embed: string;
+}
+
+/** The blank Connection a form starts its editor from. */
+export const EMPTY_CONNECTION_DRAFT: ConnectionDraft = { station: "", embed: "" };
+
 /** A Contribution's id as the write path mints it: safe to use in a ref and a path. */
 export function isContributionId(value: string): boolean {
   return /^[a-z0-9][a-z0-9-]{0,63}$/.test(value);
@@ -43,7 +63,7 @@ export function contributionBranch(id: string): string {
 /** What the visitor typed, before any of it is trusted. */
 export interface ContributionDraft {
   name: string;
-  station: string;
+  connections: ConnectionDraft[];
   type: string;
   map: string;
   note: string;
@@ -54,7 +74,7 @@ export interface ContributionDraft {
 /** The Contribution once every rule has passed: the shape of the record. */
 export interface ValidatedContribution {
   name: string;
-  station: string;
+  connections: Connection[];
   type: string | null;
   map: string | null;
   note: string | null;
@@ -85,6 +105,97 @@ export function isWebAddress(value: string): boolean {
 }
 
 /**
+ * The Connections a set of drafts carries, with the blanks dropped. A row whose
+ * Station and Route frame are both blank is an editor's spare line, not a
+ * Connection.
+ */
+export function toConnections(connections: ConnectionDraft[]): Connection[] {
+  return (connections ?? [])
+    .filter(
+      (connection) =>
+        (connection.station ?? "").trim().length > 0 ||
+        (connection.embed ?? "").trim().length > 0,
+    )
+    .map((connection) => ({
+      station: (connection.station ?? "").trim(),
+      embed: optional(connection.embed ?? ""),
+    }));
+}
+
+/**
+ * One Connection as it is written to a record: a null Route frame is left off,
+ * so the stored shape is the same before and after approval.
+ */
+export function connectionRecord(connection: Connection): Record<string, string> {
+  const record: Record<string, string> = { station: connection.station };
+  if (connection.embed) record.embed = connection.embed;
+  return record;
+}
+
+/** The Station a Place is nearest: the first of its Connections. */
+export function firstStation(connections: { station: string }[]): string {
+  return connections[0]?.station ?? "";
+}
+
+/** The Connection drafts a stored Connection list becomes on a form. */
+export function connectionDraftsFromConnections(
+  connections: Connection[],
+): ConnectionDraft[] {
+  const drafts = connections.map((connection) => ({
+    station: connection.station,
+    embed: connection.embed ?? "",
+  }));
+  return drafts.length > 0 ? drafts : [{ ...EMPTY_CONNECTION_DRAFT }];
+}
+
+/** The Connection drafts an untrusted payload carries. */
+export function connectionDraftsFromPayload(value: unknown): ConnectionDraft[] {
+  if (!Array.isArray(value)) return [{ ...EMPTY_CONNECTION_DRAFT }];
+  const drafts = value.map((entry) => {
+    const connection = (entry ?? {}) as Record<string, unknown>;
+    return {
+      station: typeof connection.station === "string" ? connection.station : "",
+      embed: typeof connection.embed === "string" ? connection.embed : "",
+    };
+  });
+  return drafts.length > 0 ? drafts : [{ ...EMPTY_CONNECTION_DRAFT }];
+}
+
+/**
+ * The rules that apply to a Connection list. Exported so the Place rules and
+ * the Contribution rules agree: a draft both accept is a record both accept.
+ */
+export function validateConnections(
+  connections: ConnectionDraft[],
+  knownStations: string[],
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const rows = toConnections(connections ?? []);
+
+  if (rows.length === 0) {
+    errors.connections = "Choose at least one station this place is near.";
+    return errors;
+  }
+
+  for (const connection of rows) {
+    if (connection.station.length === 0) {
+      errors.connections = "Every connection needs a station.";
+      break;
+    }
+    if (!knownStations.includes(connection.station)) {
+      errors.connections = `"${connection.station}" is not a station on the network.`;
+      break;
+    }
+    if (connection.embed !== null && !isWebAddress(connection.embed)) {
+      errors.connections = "That Route frame is not a web address.";
+      break;
+    }
+  }
+
+  return errors;
+}
+
+/**
  * The rules that apply to what the visitor typed. Exported on its own so the
  * browser can check the form before it spends a bot-challenge token, while the
  * endpoint checks the same rules again.
@@ -102,12 +213,10 @@ export function validateFields(
     errors.name = `Keep the name under ${MAX_NAME} characters.`;
   }
 
-  const station = draft.station.trim();
-  if (station.length === 0) {
-    errors.station = "Choose the station this place is near.";
-  } else if (!knownStations.includes(station)) {
-    errors.station = "That is not a station on the network.";
-  }
+  Object.assign(
+    errors,
+    validateConnections(draft.connections, knownStations),
+  );
 
   const type = draft.type.trim();
   if (type.length > 0 && !knownTypes.includes(type)) {
@@ -159,7 +268,7 @@ export function validateContribution(
     errors,
     contribution: {
       name: draft.name.trim(),
-      station: draft.station.trim(),
+      connections: toConnections(draft.connections),
       type: optional(draft.type),
       map: optional(draft.map),
       note: optional(draft.note),
@@ -181,7 +290,15 @@ export function buildContributionFile(
 ): ContributionFile {
   return {
     path: contributionPath(id),
-    contents: `${JSON.stringify({ id, ...contribution }, null, 2)}\n`,
+    contents: `${JSON.stringify(
+      {
+        id,
+        ...contribution,
+        connections: contribution.connections.map(connectionRecord),
+      },
+      null,
+      2,
+    )}\n`,
   };
 }
 
@@ -200,8 +317,12 @@ export function contributionPullRequestBody(
       }`
     : "anonymous";
 
+  const stationCodes = contribution.connections
+    .map((connection) => connection.station)
+    .join(", ");
+
   const lines = [
-    `Contribution \`${id}\`: **${contribution.name}** near **${stationName}** (${contribution.station}).`,
+    `Contribution \`${id}\`: **${contribution.name}** near **${stationName}** (${stationCodes}).`,
     "",
     "A Contribution is a proposal, not a Place. It is never rendered until it is approved.",
     "",

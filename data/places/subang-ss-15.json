@@ -3,12 +3,11 @@
   "name": "Subang SS 15",
   "kind": "area",
   "type": "area",
-  "station": "KJ29",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/LhgJ1RjcbQVAnRJg9",
-  "coordinates": {
-    "lat": 3.077656,
-    "lng": 101.5836696
-  },
+  "connections": [
+    {
+      "station": "KJ29"
+    }
+  ],
   "source": "owner"
 }

@@ -1,3 +1,4 @@
+import type { Connection } from "./contribution";
 import type { Line, LineStation } from "./lines";
 
 export type Place = {
@@ -5,14 +6,23 @@ export type Place = {
   name: string;
   kind: "building" | "area";
   type: string;
-  station: string;
-  alsoNear?: string[];
-  map?: string;
-  coordinates?: { lat: number; lng: number };
+  /** The Google Maps link every Place opens in; required on the record. */
+  map: string;
+  /** One or more Stations this Place is near, each with an optional Route frame. */
+  connections: Connection[];
   source?: string;
   /** Present when the Place came from a Contribution; #40 renders the credit. */
   contributor?: { name: string; href: string | null };
 };
+
+/** The Station codes a Place is near, one per Connection, in record order. */
+export function placeStations(place: Place): string[] {
+  const codes: string[] = [];
+  for (const connection of place.connections ?? []) {
+    if (!codes.includes(connection.station)) codes.push(connection.station);
+  }
+  return codes;
+}
 
 /**
  * One row of the corridor: a Station on the Line, with the Places it holds.
@@ -33,6 +43,9 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
  * Build the corridor: every Station on the Line, in the Line's own order, with
  * the Places that match the current filter under the Stations that hold any.
  *
+ * A Place sits under every Station it Connects to, so a Place near two Stations
+ * on one Line appears twice, once per Connection.
+ *
  * A Station the filter empties is dropped, so a type filter never looks like the
  * directory has no Places there. A Station the data holds nothing for stays on
  * the page as an empty row: the page states what it does not have.
@@ -47,14 +60,18 @@ export function buildStationRows(
 ): StationRow[] {
   const totalByCode = new Map<string, number>();
   for (const place of allPlaces) {
-    totalByCode.set(place.station, (totalByCode.get(place.station) ?? 0) + 1);
+    for (const code of placeStations(place)) {
+      totalByCode.set(code, (totalByCode.get(code) ?? 0) + 1);
+    }
   }
 
   const matchedByCode = new Map<string, Place[]>();
   for (const place of matchedPlaces) {
-    const list = matchedByCode.get(place.station);
-    if (list) list.push(place);
-    else matchedByCode.set(place.station, [place]);
+    for (const code of placeStations(place)) {
+      const list = matchedByCode.get(code);
+      if (list) list.push(place);
+      else matchedByCode.set(code, [place]);
+    }
   }
 
   const rows: StationRow[] = [];

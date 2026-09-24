@@ -38,9 +38,9 @@ was approved by hand."
   or runtime API call.
 - The visitor often arrives deep-linked to a single Place page from search, chat, or social, and
   the Place page must stay shareable and indexable with a real URL and a preview card.
-- The core answer is delivered by an embedded Google Maps route frame, built client-side from a
-  Place's coordinates and its nearest station, in walk or drive mode. The frame cannot be styled,
-  read, or clicked into.
+- The core answer is delivered by an embedded Google Maps route frame, stored by hand per
+  Place→Station Connection, with the drive view derived from the stored walking link. The frame
+  cannot be styled, read, or clicked into.
 - Place contributions arrive through a native form on the site (the Contribute page), reviewed
   and approved by the maintainer before they publish.
 - The maintainer runs one-off offline scripts — the network reference export — and commits the
@@ -49,13 +49,15 @@ was approved by hand."
 ## Capabilities and Constraints
 
 - The data has three levels: the **network** (every Line and Station the Klang Valley has, each
-  Station with a corridor position), the **Place** (name, kind, type, station, alsoNear, map
-  link, coordinates, source), and the **Contribution** (a visitor's proposed Place, private until
-  approved). Coverage is derived from Places; there is no checked flag. The Kelana Jaya line is
-  covered today — 84 places.
-- Place is either a **Building** or an **Area**; **Type** is a controlled list. **Also near** is
-  context only, never a route destination.
-- A Place without a map link stays in the directory.
+  Station with a corridor position), the **Place** (name, kind, type, map link, connections,
+  source), and the **Contribution** (a visitor's proposed Place, private until approved). Coverage
+  is derived from Places; there is no checked flag. The Kelana Jaya line is covered today —
+  84 places.
+- Place is either a **Building** or an **Area**; **Type** is a controlled list. A Place carries
+  one or more **Connections**, each a Station plus an optional stored **Route frame**; all
+  Connections are equal, and a Place near a Station appears under it.
+- Every Place carries a required map link; a Connection without a stored Route frame falls back
+  to it.
 - Measurement fields (`walkMinutes`, `walkMeters`, `driveMinutes`) are **not in the schema at
   all**, and **no page shows a walk or drive figure**: the current redesign deliberately does
   **not** build a walk-time number into the interface; the map route is the answer. Measurement
@@ -78,14 +80,16 @@ was approved by hand."
 
 - `data/network.ts` and `data/places/<slug>.json` — the source of truth: the whole network, and
   one file per Place (84 today).
-- `CONTEXT.md` — the domain glossary (Place, Kind, Type, Station, Line, Corridor position, Nearest
-  station, Also near, Measurement, Route frame, Browse page, Place page, Preview card, Contribute
-  page, Contribution, Contributor, Approve, Source, Coverage).
+- `CONTEXT.md` — the domain glossary (Place, Kind, Type, Station, Line, Corridor position,
+  Connection, Also near, Map link, Measurement, Route frame, Browse page, Place page, Preview
+  card, Contribute page, Contribution, Contributor, Approve, Source, Coverage).
 - `docs/adr/0001-prerender-from-one-data-file.md` — the prerendering decision.
 - `docs/adr/0002-browse-is-line-scoped.md` — line-scoped browsing, display order and Coverage.
 - `docs/adr/0003-pocketbase-is-a-network-reference.md` — the network reference, exported by hand.
 - `docs/adr/0004-one-file-per-record.md` — the per-record data layout.
 - `docs/adr/0005-contributions-through-one-write-path.md` — the Contribution form and review.
+- `docs/adr/0006-routes-are-hardcoded-not-calculated.md` — Connections and stored Route frames.
+- `docs/adr/0007-coordinates-and-measurement-retired.md` — no coordinates, no Measurement.
 - Per-place Open Graph preview cards already generate for sharing.
 - No place carries a Measurement, and no page may show one. Future work must not fabricate walk
   or drive numbers.

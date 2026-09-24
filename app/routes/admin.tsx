@@ -5,6 +5,7 @@ import { AppBar, AppBarAction } from "../components/AppBar";
 import { Field, FIELD_CLASS } from "../components/Field";
 import { TYPE_LABELS, KIND_LABELS } from "../lib/labels";
 import { publicUrl } from "../lib/routes";
+import { connectionDraftsFromConnections } from "../lib/contribution";
 import {
   EMPTY_PLACE_DRAFT,
   PLACE_KINDS,
@@ -260,11 +261,8 @@ function PlacePage({ slug }: { slug: string | null }) {
         name: existing.name,
         kind: existing.kind,
         type: existing.type,
-        station: existing.station,
-        alsoNear: (existing.alsoNear ?? []).join(", "),
-        map: existing.map ?? "",
-        lat: existing.coordinates ? String(existing.coordinates.lat) : "",
-        lng: existing.coordinates ? String(existing.coordinates.lng) : "",
+        map: existing.map,
+        connections: connectionDraftsFromConnections(existing.connections),
         source: existing.source ?? "owner",
         contributorName: existing.contributor?.name ?? "",
         contributorHref: existing.contributor?.href ?? "",
@@ -360,6 +358,32 @@ function PlaceForm({
     setFields((current) => ({ ...current, [field]: value }));
   }
 
+  function setConnection(index: number, patch: Partial<PlaceDraft["connections"][number]>) {
+    setFields((current) => ({
+      ...current,
+      connections: current.connections.map((connection, i) =>
+        i === index ? { ...connection, ...patch } : connection,
+      ),
+    }));
+  }
+
+  function addConnection() {
+    setFields((current) => ({
+      ...current,
+      connections: [...current.connections, { station: "", embed: "" }],
+    }));
+  }
+
+  function removeConnection(index: number) {
+    setFields((current) => ({
+      ...current,
+      connections:
+        current.connections.length === 1
+          ? current.connections
+          : current.connections.filter((_, i) => i !== index),
+    }));
+  }
+
   return (
     <form
       className="mt-6 flex flex-col gap-5"
@@ -397,35 +421,59 @@ function PlaceForm({
         </Field>
       </div>
 
-      <Field label="Station" error={errors.station} htmlFor="station">
-        <select id="station" value={fields.station} onChange={(e) => set("station", e.target.value)} className={FIELD_CLASS}>
-          <option value="">Choose a station</option>
-          {lines.map((line) => (
-            <optgroup key={line.slug} label={line.name}>
-              {line.stations.map((station) => (
-                <option key={station.code} value={station.code}>{station.name}</option>
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-[12px] font-medium text-ink-soft">
+          Connections — the stations this place is near
+        </legend>
+        {fields.connections.map((connection, index) => (
+          <div key={index} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+            <select
+              aria-label={`Station ${index + 1}`}
+              value={connection.station}
+              onChange={(e) => setConnection(index, { station: e.target.value })}
+              className={FIELD_CLASS}
+            >
+              <option value="">Choose a station</option>
+              {lines.map((line) => (
+                <optgroup key={line.slug} label={line.name}>
+                  {line.stations.map((station) => (
+                    <option key={station.code} value={station.code}>{station.name}</option>
+                  ))}
+                </optgroup>
               ))}
-            </optgroup>
-          ))}
-        </select>
-      </Field>
+            </select>
+            <input
+              aria-label={`Route frame ${index + 1} (optional)`}
+              value={connection.embed}
+              onChange={(e) => setConnection(index, { embed: e.target.value })}
+              placeholder="Route frame (optional)"
+              className={FIELD_CLASS}
+            />
+            <button
+              type="button"
+              onClick={() => removeConnection(index)}
+              disabled={fields.connections.length === 1}
+              className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band disabled:opacity-50"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        {errors.connections && (
+          <p className="text-[12px] font-medium text-ink">{errors.connections}</p>
+        )}
+        <button
+          type="button"
+          onClick={addConnection}
+          className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band"
+        >
+          Add another station
+        </button>
+      </fieldset>
 
-      <Field label="Also near (optional, station codes)" error={errors.alsoNear} htmlFor="alsoNear">
-        <input id="alsoNear" value={fields.alsoNear} onChange={(e) => set("alsoNear", e.target.value)} placeholder="KJ1, KJ2" className={FIELD_CLASS} />
-      </Field>
-
-      <Field label="Map link (optional)" error={errors.map} htmlFor="map">
+      <Field label="Map link" error={errors.map} htmlFor="map">
         <input id="map" type="url" value={fields.map} onChange={(e) => set("map", e.target.value)} placeholder="https://" className={FIELD_CLASS} />
       </Field>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Latitude" error={errors.lat} htmlFor="lat">
-          <input id="lat" value={fields.lat} onChange={(e) => set("lat", e.target.value)} placeholder="3.1117" className={FIELD_CLASS} />
-        </Field>
-        <Field label="Longitude" error={errors.lng} htmlFor="lng">
-          <input id="lng" value={fields.lng} onChange={(e) => set("lng", e.target.value)} placeholder="101.6366" className={FIELD_CLASS} />
-        </Field>
-      </div>
 
       <Field label="Source" error={errors.source} htmlFor="source">
         <select id="source" value={fields.source} onChange={(e) => set("source", e.target.value)} className={FIELD_CLASS}>

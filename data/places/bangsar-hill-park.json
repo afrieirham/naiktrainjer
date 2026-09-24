@@ -3,7 +3,11 @@
   "name": "Bangsar Hill Park",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Bangsar%20Hill%20Park",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

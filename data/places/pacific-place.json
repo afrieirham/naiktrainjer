@@ -3,12 +3,11 @@
   "name": "Pacific Place",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ26",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/aCUwQgxhPixuovpq5",
-  "coordinates": {
-    "lat": 3.1117284,
-    "lng": 101.5833682
-  },
+  "connections": [
+    {
+      "station": "KJ26"
+    }
+  ],
   "source": "owner"
 }

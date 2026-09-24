@@ -195,7 +195,8 @@ describe("place page metadata", () => {
     const stationNameMap = STATION_NAMES;
     for (const place of data.places) {
       const page = pages.find((p) => p.slug === place.slug)!;
-      const stationName = stationNameMap.get(place.station)!;
+      const stationCode = place.connections[0]?.station ?? "";
+      const stationName = stationNameMap.get(stationCode)!;
       assert.ok(
         page.description.includes(stationName),
         `Description for "${place.slug}" does not mention station "${stationName}": ${page.description}`,
@@ -272,7 +273,8 @@ describe("place page content", () => {
         "index.html",
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
-      const stationName = stationNameMap.get(place.station)!;
+      const stationCode = place.connections[0]?.station ?? "";
+      const stationName = stationNameMap.get(stationCode)!;
       assert.ok(
         html.includes(stationName),
         `Page "${place.slug}" does not show station "${stationName}"`,
@@ -280,12 +282,12 @@ describe("place page content", () => {
     }
   });
 
-  it("every page with alsoNear shows the second station", () => {
+  it("every page shows every Station it connects to", () => {
     const stationNameMap = STATION_NAMES;
-    const placesWithAlsoNear = data.places.filter(
-      (p) => p.alsoNear && p.alsoNear.length > 0,
+    const placesWithSeveral = data.places.filter(
+      (p) => p.connections.length > 1,
     );
-    for (const place of placesWithAlsoNear) {
+    for (const place of placesWithSeveral) {
       const pagePath = resolve(
         BUILD_DIR,
         "places",
@@ -293,11 +295,11 @@ describe("place page content", () => {
         "index.html",
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
-      for (const alsoNearCode of place.alsoNear!) {
-        const stationName = stationNameMap.get(alsoNearCode)!;
+      for (const connection of place.connections.slice(1)) {
+        const stationName = stationNameMap.get(connection.station)!;
         assert.ok(
           html.includes(stationName),
-          `Page "${place.slug}" does not show alsoNear station "${stationName}"`,
+          `Page "${place.slug}" does not show its other station "${stationName}"`,
         );
       }
     }

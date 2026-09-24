@@ -15,7 +15,7 @@ const PR_URL = "https://github.com/afrieirham/naiktrainjer/pull/1";
 
 const VALID = {
   name: "Amcorp Service Suite",
-  station: "KJ20",
+  connections: [{ station: "KJ20", embed: "" }],
   type: "service-apartment",
   map: "https://maps.app.goo.gl/x",
   note: "Ten minutes from the station.",
@@ -99,7 +99,11 @@ describe("POST /api/contribute", () => {
     let wrote = false;
     const response = await onRequestPost(
       {
-        request: request({ name: "", station: "XX9", turnstileToken: "token" }),
+        request: request({
+          name: "",
+          connections: [{ station: "XX9" }],
+          turnstileToken: "token",
+        }),
         env: env(),
       },
       deps({
@@ -115,7 +119,7 @@ describe("POST /api/contribute", () => {
       errors?: Record<string, string>;
     };
     assert.match(body.errors?.name ?? "", /name/);
-    assert.match(body.errors?.station ?? "", /station/);
+    assert.match(body.errors?.connections ?? "", /not a station/);
     assert.equal(wrote, false);
   });
 
@@ -152,7 +156,7 @@ describe("POST /api/contribute", () => {
 
     const record = JSON.parse(input.files[0].contents) as Record<string, unknown>;
     assert.equal(record.name, "Amcorp Service Suite");
-    assert.equal(record.station, "KJ20");
+    assert.deepEqual(record.connections, [{ station: "KJ20" }]);
     assert.equal(record.id, id);
   });
 

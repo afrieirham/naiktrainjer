@@ -3,12 +3,11 @@
   "name": "Flat Sri Aman",
   "kind": "building",
   "type": "flat",
-  "station": "KJ22",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/54YzE8N7dAtceVQBA",
-  "coordinates": {
-    "lat": 3.1047869,
-    "lng": 101.619141
-  },
+  "connections": [
+    {
+      "station": "KJ22"
+    }
+  ],
   "source": "owner"
 }

@@ -3,12 +3,11 @@
   "name": "Subang Perdana Goodyear Court 2",
   "kind": "building",
   "type": "apartment",
-  "station": "KJ31",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/idR3yPKprCBZynda9",
-  "coordinates": {
-    "lat": 3.0541018,
-    "lng": 101.5910139
-  },
+  "connections": [
+    {
+      "station": "KJ31"
+    }
+  ],
   "source": "owner"
 }

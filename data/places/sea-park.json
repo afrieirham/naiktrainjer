@@ -3,12 +3,11 @@
   "name": "Sea Park",
   "kind": "area",
   "type": "area",
-  "station": "KJ22",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/mFaV39kcjQTo7gzA9",
-  "coordinates": {
-    "lat": 3.1092813,
-    "lng": 101.6168043
-  },
+  "connections": [
+    {
+      "station": "KJ22"
+    }
+  ],
   "source": "owner"
 }

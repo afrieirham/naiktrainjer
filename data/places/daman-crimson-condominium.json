@@ -3,12 +3,11 @@
   "name": "D’aman Crimson Condominium",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ25",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/oH1Wt9oLgYjWKxi86",
-  "coordinates": {
-    "lat": 3.115302,
-    "lng": 101.5901228
-  },
+  "connections": [
+    {
+      "station": "KJ25"
+    }
+  ],
   "source": "owner"
 }

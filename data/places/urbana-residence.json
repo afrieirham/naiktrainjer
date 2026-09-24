@@ -3,12 +3,11 @@
   "name": "Urbana Residence",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ26",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/PDECcaAYCWYfQv5g8",
-  "coordinates": {
-    "lat": 3.111733,
-    "lng": 101.5793213
-  },
+  "connections": [
+    {
+      "station": "KJ26"
+    }
+  ],
   "source": "owner"
 }

@@ -3,7 +3,11 @@
   "name": "Regency Suites",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ18",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Regency%20Suites",
+  "connections": [
+    {
+      "station": "KJ18"
+    }
+  ],
   "source": "owner"
 }

@@ -3,7 +3,11 @@
   "name": "Crescent Court Condo",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Crescent%20Court%20Condo",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

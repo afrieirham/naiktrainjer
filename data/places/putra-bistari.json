@@ -3,12 +3,11 @@
   "name": "Putra Bistari",
   "kind": "area",
   "type": "area",
-  "station": "KJ35",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/Z1xkor5Z4TEXanMh9",
-  "coordinates": {
-    "lat": 3.0190091,
-    "lng": 101.5706993
-  },
+  "connections": [
+    {
+      "station": "KJ35"
+    }
+  ],
   "source": "owner"
 }

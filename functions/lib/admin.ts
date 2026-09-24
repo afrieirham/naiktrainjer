@@ -1,4 +1,5 @@
 import { lines } from "../../data/network.ts";
+import { connectionDraftsFromPayload } from "../../app/lib/contribution.ts";
 import {
   EMPTY_PLACE_DRAFT,
   type PlaceBuild,
@@ -53,25 +54,17 @@ function string(value: unknown): string {
 }
 
 /**
- * Read the approve or place form's payload into a Place draft. The Also near
- * field arrives as a list of codes from the page; anything else is read as a
- * comma- or whitespace-separated string.
+ * Read the approve or place form's payload into a Place draft. Connections
+ * arrive as a list of `{ station, embed }` objects from the page.
  */
 export function draftFromPayload(payload: Record<string, unknown>): PlaceDraft {
-  const alsoNear = Array.isArray(payload.alsoNear)
-    ? payload.alsoNear.map((code) => string(code)).join(", ")
-    : string(payload.alsoNear);
-
   return {
     ...EMPTY_PLACE_DRAFT,
     name: string(payload.name),
     kind: string(payload.kind),
     type: string(payload.type),
-    station: string(payload.station),
-    alsoNear,
     map: string(payload.map),
-    lat: string(payload.lat),
-    lng: string(payload.lng),
+    connections: connectionDraftsFromPayload(payload.connections),
     source: string(payload.source) || EMPTY_PLACE_DRAFT.source,
     contributorName: string(payload.contributorName),
     contributorHref: string(payload.contributorHref),
@@ -81,6 +74,9 @@ export function draftFromPayload(payload: Record<string, unknown>): PlaceDraft {
 /** The body of a Place pull request, the maintainer's own review note. */
 export function placePullRequestBody(build: PlaceBuild, verb: string): string {
   const place = build.place;
+  const connections = place?.connections
+    .map((connection) => connection.station)
+    .join(", ");
   return [
     `${verb} \`${build.file?.path}\`.`,
     "",
@@ -89,7 +85,7 @@ export function placePullRequestBody(build: PlaceBuild, verb: string): string {
     `- Name: ${place?.name ?? "(unknown)"}`,
     `- Kind: ${place?.kind ?? "(unknown)"}`,
     `- Type: ${place?.type ?? "(unknown)"}`,
-    `- Station: ${place?.station ?? "(unknown)"}`,
+    `- Connections: ${connections || "(unknown)"}`,
     `- Source: ${place?.source ?? "(unknown)"}`,
     `- Contributor: ${place?.contributor?.name ?? "none"}`,
   ].join("\n");

@@ -36,7 +36,7 @@ export const meta: Route.MetaFunction = () => [
 
 const EMPTY_DRAFT: ContributionDraft = {
   name: "",
-  station: "",
+  connections: [{ station: "", embed: "" }],
   type: "",
   map: "",
   note: "",
@@ -57,6 +57,13 @@ export default function ContributePage() {
   function set(field: keyof ContributionDraft, value: string) {
     setFields((current) => ({ ...current, [field]: value }));
   }
+
+  /** The public form offers one Station; the record still carries a Connection list. */
+  function setStation(station: string) {
+    setFields((current) => ({ ...current, connections: [{ station, embed: "" }] }));
+  }
+
+  const station = fields.connections[0]?.station ?? "";
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -159,15 +166,15 @@ export default function ContributePage() {
 
               <Field
                 label="Station"
-                error={errors.station}
+                error={errors.connections}
                 htmlFor="station"
               >
                 <select
                   id="station"
                   name="station"
                   aria-required="true"
-                  value={fields.station}
-                  onChange={(event) => set("station", event.target.value)}
+                  value={station}
+                  onChange={(event) => setStation(event.target.value)}
                   className={FIELD_CLASS}
                 >
                   <option value="">Choose a station</option>

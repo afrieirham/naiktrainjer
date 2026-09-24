@@ -3,12 +3,11 @@
   "name": "Taman Paramount",
   "kind": "area",
   "type": "area",
-  "station": "KJ22",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/MaP5wAHmZukuVda89",
-  "coordinates": {
-    "lat": 3.1100319,
-    "lng": 101.6022015
-  },
+  "connections": [
+    {
+      "station": "KJ22"
+    }
+  ],
   "source": "owner"
 }

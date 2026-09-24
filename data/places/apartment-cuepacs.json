@@ -3,7 +3,11 @@
   "name": "Apartment Cuepacs",
   "kind": "building",
   "type": "apartment",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Apartment%20Cuepacs",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

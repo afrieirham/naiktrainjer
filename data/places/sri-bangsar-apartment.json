@@ -3,7 +3,11 @@
   "name": "Sri Bangsar Apartment",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ16",
-  "alsoNear": [],
+  "map": "https://www.google.com/maps/search/?api=1&query=Sri%20Bangsar%20Apartment",
+  "connections": [
+    {
+      "station": "KJ16"
+    }
+  ],
   "source": "owner"
 }

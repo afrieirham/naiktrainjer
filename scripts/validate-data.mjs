@@ -112,28 +112,34 @@ try {
     // type
     if (!VALID_TYPES.includes(p.type)) err(`${label}: invalid type "${p.type}"`);
 
-    // station — a network station code
-    if (!p.station) err(`${label}: missing station`);
-    else if (p.station.includes(',')) err(`${label}: station contains comma (glued field): "${p.station}"`);
-    else if (!corridor.has(p.station)) err(`${label}: station "${p.station}" does not resolve to a network station code`);
+    // map — required, and must open in Google Maps
+    if (!p.map) err(`${label}: missing map link`);
+    else if (typeof p.map !== 'string' || !/^https?:\/\//.test(p.map))
+      err(`${label}: map "${p.map}" is not a web address`);
 
-    // alsoNear — network station codes
-    if (Array.isArray(p.alsoNear)) {
-      for (const an of p.alsoNear) {
-        if (an.includes(',')) err(`${label}: alsoNear contains comma: "${an}"`);
-        else if (!corridor.has(an)) err(`${label}: alsoNear station "${an}" does not resolve to a network station code`);
+    // station, alsoNear and coordinates are retired in favour of connections
+    if ('station' in p) err(`${label}: "station" is retired — use "connections"`);
+    if ('alsoNear' in p) err(`${label}: "alsoNear" is retired — use "connections"`);
+    if ('coordinates' in p) err(`${label}: "coordinates" is retired`);
+
+    // connections — one or more { station, embed? }
+    if (!Array.isArray(p.connections) || p.connections.length === 0) {
+      err(`${label}: missing or empty "connections"`);
+    } else {
+      for (const connection of p.connections) {
+        if (!connection || typeof connection !== 'object') {
+          err(`${label}: a Connection is not an object`);
+          continue;
+        }
+        if (!connection.station) err(`${label}: a Connection is missing its station`);
+        else if (connection.station.includes(',')) err(`${label}: Connection station contains comma: "${connection.station}"`);
+        else if (!corridor.has(connection.station)) err(`${label}: Connection station "${connection.station}" does not resolve to a network station code`);
+
+        if (connection.embed !== undefined && connection.embed !== null) {
+          if (typeof connection.embed !== 'string' || !/^https?:\/\//.test(connection.embed))
+            err(`${label}: Connection embed "${connection.embed}" is not a web address`);
+        }
       }
-    }
-
-    // map (optional — no validation needed)
-
-    // coordinates (optional, but if present must be valid)
-    if (p.coordinates) {
-      const c = p.coordinates;
-      if (typeof c.lat !== 'number') err(`${label}: coordinates.lat is not a number`);
-      else if (c.lat < LAT_MIN || c.lat > LAT_MAX) err(`${label}: coordinates.lat ${c.lat} outside Klang Valley range [${LAT_MIN}, ${LAT_MAX}]`);
-      if (typeof c.lng !== 'number') err(`${label}: coordinates.lng is not a number`);
-      else if (c.lng < LNG_MIN || c.lng > LNG_MAX) err(`${label}: coordinates.lng ${c.lng} outside Klang Valley range [${LNG_MIN}, ${LNG_MAX}]`);
     }
 
     // source
@@ -153,7 +159,12 @@ try {
   }
 
   const lineStationCount = lines.reduce((n, line) => n + (line.stations?.length ?? 0), 0);
-  const coveredCodes = new Set(places.map((p) => p.station).filter((code) => corridor.has(code)));
+  const coveredCodes = new Set(
+    places
+      .flatMap((p) => (Array.isArray(p.connections) ? p.connections : []))
+      .map((connection) => connection.station)
+      .filter((code) => corridor.has(code)),
+  );
   console.log(
     `✓ Valid: ${places.length} Places across ${placeFiles.length} files, ${coveredCodes.size} of ${lineStationCount} Stations hold Places` +
       ` on ${lines.length} Line${lines.length === 1 ? '' : 's'}.`,

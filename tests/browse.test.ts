@@ -6,13 +6,13 @@ import {
   buildStationRows,
   filterPlaces,
   getUniqueTypes,
+  placeStations,
   type Place,
 } from "../app/lib/browse-filter.ts";
 import {
   coveredLine,
   coveredLines,
   selectedLine,
-  stationNamesByCode,
   type Line,
 } from "../app/lib/lines.ts";
 import {
@@ -43,6 +43,16 @@ function asHtmlText(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** The Place listings on a Line: a Place with two Connections on it counts twice. */
+function linePlaceRows(places: Place[], line: Line): number {
+  const codes = new Set(line.stations.map((station) => station.code));
+  return places.reduce(
+    (total, place) =>
+      total + placeStations(place).filter((code) => codes.has(code)).length,
+    0,
+  );
+}
+
 let html: string;
 let cleanHtml: string;
 let data: { lines: Line[]; places: Place[] };
@@ -68,7 +78,9 @@ describe("prerendered HTML", () => {
     const line = coveredLine(data.lines, data.places);
     const stationCounts = new Map<string, number>();
     for (const place of data.places) {
-      stationCounts.set(place.station, (stationCounts.get(place.station) ?? 0) + 1);
+      for (const code of placeStations(place)) {
+        stationCounts.set(code, (stationCounts.get(code) ?? 0) + 1);
+      }
     }
 
     for (const station of line.stations) {
@@ -109,7 +121,7 @@ describe("prerendered HTML", () => {
 
   it("sum of group counts equals number of Places", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const coveredStations = line.stations.filter((station) =>
       withPlaces.has(station.code),
     ).length;
@@ -122,16 +134,17 @@ describe("prerendered HTML", () => {
       "Every Station holding Places should carry its count",
     );
     const sum = counts.reduce((total, count) => total + count, 0);
+    const expected = linePlaceRows(data.places, line);
     assert.equal(
       sum,
-      data.places.length,
-      `Expected sum of group counts to equal ${data.places.length}, got ${sum}`,
+      expected,
+      `Expected sum of group counts to equal the Line's ${expected} listings, got ${sum}`,
     );
   });
 
   it("renders a group for every Station holding Places", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const covered = line.stations.filter((station) =>
       withPlaces.has(station.code),
     ).length;
@@ -145,14 +158,16 @@ describe("prerendered HTML", () => {
     );
   });
 
-  it("renders a row for every Place", () => {
+  it("renders a row for every Place on the Line", () => {
+    const line = coveredLine(data.lines, data.places);
     const rowPattern = /role="listitem"/g;
     let count = 0;
     while (rowPattern.exec(cleanHtml) !== null) count++;
+    const expected = linePlaceRows(data.places, line);
     assert.equal(
       count,
-      data.places.length,
-      `Expected ${data.places.length} Place rows, got ${count}`,
+      expected,
+      `Expected ${expected} Place rows, got ${count}`,
     );
   });
 
@@ -169,7 +184,7 @@ describe("prerendered HTML", () => {
 
   it("renders every Station on the Line, in corridor order", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const expected = [...line.stations]
       .sort((a, b) => b.sort - a.sort)
       .map((station) => (withPlaces.has(station.code) ? station.name : station.code));
@@ -191,7 +206,7 @@ describe("prerendered HTML", () => {
 
   it("marks every Station with no Places as 'No places yet'", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const empty = line.stations.filter((station) => !withPlaces.has(station.code));
     assert.ok(empty.length > 0, "This assertion is meaningless with no empty Station");
 
@@ -215,7 +230,7 @@ describe("prerendered HTML", () => {
 
   it("keeps a Station with no Places non-interactive", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const empty = line.stations.filter((station) => !withPlaces.has(station.code));
 
     const firstRow = cleanHtml.indexOf('data-station-empty="true"');
@@ -236,7 +251,7 @@ describe("prerendered HTML", () => {
 
   it("gives a Station with no Places no page of its own", () => {
     const line = coveredLine(data.lines, data.places);
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const empty = line.stations.filter((station) => !withPlaces.has(station.code));
 
     assert.ok(
@@ -316,7 +331,7 @@ describe("prerendered HTML", () => {
   });
 
   it("defaults to the covered Line holding the most Places", () => {
-    const withPlaces = new Set(data.places.map((place) => place.station));
+    const withPlaces = new Set(data.places.flatMap((place) => placeStations(place)));
     const counts = coveredLines(data.lines, data.places).map((line) => ({
       line,
       count: line.stations.filter((station) => withPlaces.has(station.code)).length,
@@ -385,10 +400,10 @@ describe("pure filter/corridor functions", () => {
       assert.deepEqual(rows.map((r) => r.code), corridor);
     });
 
-    it("carries every Place under its Station", () => {
+    it("carries every Place under each Station it Connects to", () => {
       const rows = buildStationRows(line, places, places);
       const sum = rows.reduce((total, row) => total + row.count, 0);
-      assert.equal(sum, places.length);
+      assert.equal(sum, linePlaceRows(places, line));
     });
 
     it("sorts places alphabetically within a Station", () => {
@@ -405,7 +420,7 @@ describe("pure filter/corridor functions", () => {
 
     it("marks every Station with no Places", () => {
       const rows = buildStationRows(line, places, places);
-      const withPlaces = new Set(places.map((p) => p.station));
+      const withPlaces = new Set(places.flatMap((p) => placeStations(p)));
       const empty = rows.filter((row) => row.count === 0);
       assert.deepEqual(
         empty.map((row) => row.code),
@@ -422,7 +437,7 @@ describe("pure filter/corridor functions", () => {
     it("drops a Station the filter emptied, but keeps one the data holds nothing for", () => {
       const empty = filterPlaces(places, "castle");
       const rows = buildStationRows(line, places, empty);
-      const withPlaces = new Set(places.map((p) => p.station));
+      const withPlaces = new Set(places.flatMap((p) => placeStations(p)));
       assert.equal(
         rows.filter((row) => withPlaces.has(row.code)).length,
         0,
@@ -458,7 +473,7 @@ describe("pure filter/corridor functions", () => {
 });
 
 describe("line selection", () => {
-  const withPlaces = new Set(places.map((place) => place.station));
+  const withPlaces = new Set(places.flatMap((place) => placeStations(place)));
 
   it("returns only the Lines that hold a Place, in network order", () => {
     const covered = coveredLines(lines, places);
@@ -509,10 +524,26 @@ describe("line selection", () => {
     stations: [{ code: "C1", name: "C One", sort: 1 }],
   };
   const network: Line[] = [lineA, lineB, lineC];
+  function fixture(
+    slug: string,
+    name: string,
+    type: string,
+    station: string,
+  ): Place {
+    return {
+      slug,
+      name,
+      kind: "building",
+      type,
+      map: "https://maps.app.goo.gl/x",
+      connections: [{ station, embed: null }],
+    };
+  }
+
   const fixturePlaces: Place[] = [
-    { slug: "a-one", name: "A One Place", kind: "building", type: "condominium", station: "A1" },
-    { slug: "a-two", name: "A Two Place", kind: "building", type: "apartment", station: "A2" },
-    { slug: "b-one", name: "B One Place", kind: "building", type: "flat", station: "B1" },
+    fixture("a-one", "A One Place", "condominium", "A1"),
+    fixture("a-two", "A Two Place", "apartment", "A2"),
+    fixture("b-one", "B One Place", "flat", "B1"),
   ];
 
   it("defaults to the covered Line with the most Places, on network-order tie-break", () => {
@@ -549,92 +580,51 @@ describe("line selection", () => {
 
 describe("route URL builders", () => {
   const { lines, places } = data;
-  const stationNameMap = stationNamesByCode(lines);
+
+  /** A Place whose one Connection carries the given stored Route frame. */
+  function placeWithEmbed(embed: string | null): Place {
+    return {
+      slug: "embedded",
+      name: "Embedded Place",
+      kind: "building",
+      type: "condominium",
+      map: "https://maps.app.goo.gl/place",
+      connections: [{ station: "KJ20", embed }],
+    };
+  }
 
   describe("buildRouteFrameUrl", () => {
-    it("uses coordinates as origin when present", () => {
-      const place = places.find((p) => p.coordinates)!;
-      const stationName = stationNameMap.get(place.station)!;
-      const url = buildRouteFrameUrl(place, stationName, "walk");
-      const encodedOrigin = encodeURIComponent(`${place.coordinates!.lat},${place.coordinates!.lng}`);
-      assert.ok(
-        url.includes(encodedOrigin),
-        `URL should contain coordinates as origin: ${url}`
-      );
-      assert.ok(
-        url.includes(encodeURIComponent(stationName)),
-        `URL should contain station name: ${url}`
-      );
-      assert.ok(
-        url.includes("dirflg=w"),
-        `URL should use walk mode: ${url}`
-      );
-      assert.ok(
-        url.includes("output=embed"),
-        `URL should use output=embed: ${url}`
-      );
-      assert.ok(
-        url.startsWith("https://maps.google.com/maps"),
-        `URL should start with maps.google.com/maps: ${url}`
-      );
+    it("returns the Connection's stored Route frame for the viewed Station", () => {
+      const embed = "https://www.google.com/maps/embed?pb=!3e2!walk";
+      const url = buildRouteFrameUrl(placeWithEmbed(embed), "KJ20", "walk");
+      assert.equal(url, embed);
     });
 
-    it("uses place name as origin when coordinates are absent", () => {
-      const place = places.find((p) => !p.coordinates)!;
-      const stationName = stationNameMap.get(place.station)!;
-      const url = buildRouteFrameUrl(place, stationName, "walk");
-      assert.ok(
-        url.includes(encodeURIComponent(place.name)),
-        `URL should contain place name as origin: ${url}`
-      );
-      assert.ok(
-        url.includes("dirflg=w"),
-        `URL should use walk mode: ${url}`
-      );
+    it("derives the driving view from the same stored link", () => {
+      const embed = "https://www.google.com/maps/embed?pb=!3e2!walk";
+      const url = buildRouteFrameUrl(placeWithEmbed(embed), "KJ20", "drive");
+      assert.equal(url, embed.replace("!3e2", "!3e0"));
     });
 
-    it("uses dirflg=d for drive mode", () => {
-      const place = places.find((p) => p.coordinates)!;
-      const stationName = stationNameMap.get(place.station)!;
-      const url = buildRouteFrameUrl(place, stationName, "drive");
-      assert.ok(
-        url.includes("dirflg=d"),
-        `URL should use drive mode: ${url}`
-      );
+    it("falls back to the Place's Map link when the Connection has no frame", () => {
+      const place = placeWithEmbed(null);
+      assert.equal(buildRouteFrameUrl(place, "KJ20", "walk"), place.map);
+      assert.equal(buildRouteFrameUrl(place, "KJ20", "drive"), place.map);
     });
 
-    it("produces a valid URL for every Place in the data file", () => {
+    it("falls back to the Map link for a Station the Place does not connect to", () => {
+      const place = placeWithEmbed(null);
+      assert.equal(buildRouteFrameUrl(place, "AG1", "walk"), place.map);
+    });
+
+    it("resolves a frame for every Station in the real data", () => {
       for (const place of places) {
-        const stationName = stationNameMap.get(place.station)!;
-        const walkUrl = buildRouteFrameUrl(place, stationName, "walk");
-        const driveUrl = buildRouteFrameUrl(place, stationName, "drive");
-
-        assert.ok(
-          walkUrl.startsWith("https://maps.google.com/maps"),
-          `Walk URL for "${place.name}" should start with maps.google.com/maps`
-        );
-        assert.ok(
-          walkUrl.includes("dirflg=w"),
-          `Walk URL for "${place.name}" should use dirflg=w`
-        );
-        assert.ok(
-          walkUrl.includes("output=embed"),
-          `Walk URL for "${place.name}" should include output=embed`
-        );
-        assert.ok(
-          driveUrl.includes("dirflg=d"),
-          `Drive URL for "${place.name}" should use dirflg=d`
-        );
-
-        if (place.coordinates) {
-          assert.ok(
-            walkUrl.includes(encodeURIComponent(`${place.coordinates.lat},${place.coordinates.lng}`)),
-            `Walk URL for "${place.name}" should contain coordinates`
-          );
-        } else {
-          assert.ok(
-            walkUrl.includes(encodeURIComponent(place.name)),
-            `Walk URL for "${place.name}" should contain encoded name`
+        for (const connection of place.connections) {
+          const url = buildRouteFrameUrl(place, connection.station, "walk");
+          assert.equal(
+            url,
+            connection.embed ?? place.map,
+            `Frame for "${place.name}" must be the stored link or the Map link`,
           );
         }
       }
@@ -642,68 +632,25 @@ describe("route URL builders", () => {
   });
 
   describe("buildOpenRouteUrl", () => {
-    it("uses travelmode=walking for walk mode", () => {
-      const place = places.find((p) => p.coordinates)!;
-      const stationName = stationNameMap.get(place.station)!;
-      const url = buildOpenRouteUrl(place, stationName, "walk");
-      assert.ok(
-        url.includes("travelmode=walking"),
-        `URL should use travelmode=walking: ${url}`
-      );
-      assert.ok(
-        url.startsWith("https://www.google.com/maps/dir/?api=1"),
-        `URL should start with google.com/maps/dir/?api=1: ${url}`
-      );
+    it("uses travelmode=walking for walk mode, from the Place's name", () => {
+      const place = places[0];
+      const url = buildOpenRouteUrl(place, "KLCC", "walk");
+      assert.ok(url.includes("travelmode=walking"), `walk mode: ${url}`);
+      assert.ok(url.startsWith("https://www.google.com/maps/dir/?api=1"));
+      assert.ok(url.includes(encodeURIComponent(place.name)));
     });
 
     it("uses travelmode=driving for drive mode", () => {
-      const place = places.find((p) => p.coordinates)!;
-      const stationName = stationNameMap.get(place.station)!;
-      const url = buildOpenRouteUrl(place, stationName, "drive");
-      assert.ok(
-        url.includes("travelmode=driving"),
-        `URL should use travelmode=driving: ${url}`
-      );
-    });
-
-    it("uses coordinates as origin when present, name otherwise", () => {
-      const withCoords = places.find((p) => p.coordinates)!;
-      const withoutCoords = places.find((p) => !p.coordinates)!;
-      const stationName1 = stationNameMap.get(withCoords.station)!;
-      const stationName2 = stationNameMap.get(withoutCoords.station)!;
-
-      const url1 = buildOpenRouteUrl(withCoords, stationName1, "walk");
-      assert.ok(
-        url1.includes(encodeURIComponent(`${withCoords.coordinates!.lat},${withCoords.coordinates!.lng}`)),
-        `URL for "${withCoords.name}" should contain coordinates`
-      );
-
-      const url2 = buildOpenRouteUrl(withoutCoords, stationName2, "walk");
-      assert.ok(
-        url2.includes(encodeURIComponent(withoutCoords.name)),
-        `URL for "${withoutCoords.name}" should contain name`
-      );
+      const url = buildOpenRouteUrl(places[0], "KLCC", "drive");
+      assert.ok(url.includes("travelmode=driving"), `drive mode: ${url}`);
     });
   });
 
   describe("buildPlacePinUrl", () => {
-    it("returns the place map link when present", () => {
-      const place = places.find((p) => p.map)!;
-      const url = buildPlacePinUrl(place);
-      assert.equal(url, place.map);
-    });
-
-    it("returns a Google Maps search URL when map is absent", () => {
-      const place = places.find((p) => !p.map)!;
-      const url = buildPlacePinUrl(place);
-      assert.ok(
-        url.startsWith("https://www.google.com/maps/search/"),
-        `URL should start with maps/search: ${url}`
-      );
-      assert.ok(
-        url.includes(encodeURIComponent(place.name)),
-        `URL should contain place name: ${url}`
-      );
+    it("returns the Place's required Map link", () => {
+      for (const place of places) {
+        assert.equal(buildPlacePinUrl(place), place.map);
+      }
     });
   });
 });

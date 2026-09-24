@@ -21,15 +21,15 @@ Place. Not to be confused with **Type**.
 apartment, flat, terrace, or shop/office.
 
 **Area** — a Place that is a named neighbourhood rather than a building, e.g. `Subang SS 14`.
-An Area has a station and a map link but no building of its own, so its page describes a
-neighbourhood, never a property.
+An Area has one or more Connections and a map link but no building of its own, so its page
+describes a neighbourhood, never a property.
 
 **Type** — the classification of a Building (`condominium`, `service apartment`, `apartment`,
 `flat`, `terrace`, `shop/office`) or of an Area (`area`). A controlled list, not free text.
 
-**Station** — a rail station a Place is measured against: a name, a network **code**, and a
-**Line**. The network reference holds every Station on every Line the network has, whether or
-not the directory holds a Place there.
+**Station** — a rail station a Place is near: a name, a network **code**, and a **Line**. The
+network reference holds every Station on every Line the network has, whether or not the
+directory holds a Place there.
 
 **Line** — the rail line a Station belongs to, with a name and a colour. Browsing is
 line-scoped: the Browse page shows one Line at a time, and a selector chooses which.
@@ -38,23 +38,26 @@ line-scoped: the Browse page shows one Line at a time, and a selector chooses wh
 ordered on the page: descending, i.e. south → north, so the content comes first and the tail
 sits last. It is the reverse of the network's own order, taken deliberately.
 
-**Nearest station** — the single Station a Place belongs to (`station`, by network code).
-Exactly one per Place, always. It is the destination of that Place's route.
+**Connection** — one Station a Place is near, with the optional hand-pasted **Route frame** for
+that Place→Station pair (`connections`, `{ station, embed }`). Every Place has one or more.
+All Connections are equal: there is no "nearest station", and a Place near two Stations answers
+the walk question for each.
 
-**Also near** — the additional Stations a Place sits between (`alsoNear`, by network code).
-Optional. Shown as context; never used as a route destination.
+**Also near** — the other Stations a Place Connects to, as Browse labels them beside the viewed
+Station. Derived from Connections; never stored.
 
-**Map link** — the Google Maps short link for a Place, as researched by hand. Optional: a
-Place without one stays in the directory.
+**Map link** — the Google Maps link for a Place, as researched by hand (`map`). Required on every
+Place: it is what the Place opens in when no Route frame is stored.
 
-**Measurement** — the walk and drive figures from a Place to its Nearest station. **Retired**:
-the Measure script and its providers are gone from the repo, and nothing computes the figures.
-Measurement was never part of the build or the request path. **Not surfaced in the interface**:
-the Route frame is the answer to the walk question, and the data validator forbids the fields, so
-no figure can reach a page.
+**Measurement** — the walk and drive figures from a Place to a Station. **Retired**: the Measure
+script and its providers are gone from the repo, and nothing computes the figures. Measurement was
+never part of the build or the request path. **Not surfaced in the interface**: the Route frame is
+the answer to the walk question, and the data validator forbids the fields, so no figure can reach
+a page.
 
-**Route frame** — the Google Maps iframe whose URL the app builds at click time from the
-Place's coordinates and the Nearest station, in walk or drive mode.
+**Route frame** — the Google Maps iframe for one Place→Station walk (`embed`), pasted by hand and
+stored whole, never calculated. Optional per Connection; the driving view is derived from the
+stored walking link, and a Connection without one falls back to the Place's Map link.
 
 **Browse page** — the directory itself: the Line selector, the type filter, the corridor list
 — every Station on the selected Line, those with Places grouped and those without marked — and

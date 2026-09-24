@@ -3,12 +3,11 @@
   "name": "D’aman Ria Condominium",
   "kind": "building",
   "type": "condominium",
-  "station": "KJ25",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/gBpZwn7rB548XwVW8",
-  "coordinates": {
-    "lat": 3.1146145,
-    "lng": 101.5893776
-  },
+  "connections": [
+    {
+      "station": "KJ25"
+    }
+  ],
   "source": "owner"
 }

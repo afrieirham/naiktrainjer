@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import sharp from "sharp";
 import { TYPE_LABELS } from "../app/lib/labels.ts";
 import { stationNamesByCode } from "../app/lib/lines.ts";
+import { firstStation } from "../app/lib/contribution.ts";
 import { lines, places } from "../app/data/directory.node.ts";
 
 const outDir = resolve(import.meta.dirname, "../build/client/og");
@@ -23,7 +24,8 @@ function badgeWidth(text: string): number {
 }
 
 function buildSvg(place: (typeof places)[number]): string {
-  const stationName = stationMap.get(place.station) ?? place.station;
+  const stationCode = firstStation(place.connections);
+  const stationName = stationMap.get(stationCode) ?? stationCode;
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const isArea = place.kind === "area";
   const badge = isArea ? "Area" : typeLabel;

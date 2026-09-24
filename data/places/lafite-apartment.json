@@ -3,12 +3,11 @@
   "name": "Lafite Apartment",
   "kind": "building",
   "type": "apartment",
-  "station": "KJ29",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/Vqjwqe4AkpL8eQX66",
-  "coordinates": {
-    "lat": 3.076945,
-    "lng": 101.5773312
-  },
+  "connections": [
+    {
+      "station": "KJ29"
+    }
+  ],
   "source": "owner"
 }

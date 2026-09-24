@@ -3,12 +3,11 @@
   "name": "Cantara Residence",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ25",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/zSTkLxiGzcZCeoig6",
-  "coordinates": {
-    "lat": 3.1170822,
-    "lng": 101.5869578
-  },
+  "connections": [
+    {
+      "station": "KJ25"
+    }
+  ],
   "source": "owner"
 }

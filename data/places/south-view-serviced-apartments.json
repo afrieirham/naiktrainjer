@@ -3,9 +3,14 @@
   "name": "South View Serviced Apartments",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ19",
-  "alsoNear": [
-    "KJ18"
+  "map": "https://www.google.com/maps/search/?api=1&query=South%20View%20Serviced%20Apartments",
+  "connections": [
+    {
+      "station": "KJ19"
+    },
+    {
+      "station": "KJ18"
+    }
   ],
   "source": "owner"
 }

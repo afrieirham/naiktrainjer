@@ -3,12 +3,11 @@
   "name": "Serasi Residences",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ37",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/u8U4rK9k3spDRbPE9",
-  "coordinates": {
-    "lat": 3.0001265,
-    "lng": 101.5739042
-  },
+  "connections": [
+    {
+      "station": "KJ37"
+    }
+  ],
   "source": "owner"
 }

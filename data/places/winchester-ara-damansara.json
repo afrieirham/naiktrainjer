@@ -3,12 +3,11 @@
   "name": "Winchester - Ara Damansara",
   "kind": "building",
   "type": "terrace",
-  "station": "KJ25",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/4Ejuy3va5huALeu7A",
-  "coordinates": {
-    "lat": 3.1169462,
-    "lng": 101.5893739
-  },
+  "connections": [
+    {
+      "station": "KJ25"
+    }
+  ],
   "source": "owner"
 }

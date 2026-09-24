@@ -3,12 +3,11 @@
   "name": "Subang USJ 19",
   "kind": "area",
   "type": "area",
-  "station": "KJ33",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/yaqhSwbWT5aL4oEz6",
-  "coordinates": {
-    "lat": 3.032633,
-    "lng": 101.5833348
-  },
+  "connections": [
+    {
+      "station": "KJ33"
+    }
+  ],
   "source": "owner"
 }

@@ -3,12 +3,11 @@
   "name": "Lot 15 Service Residence",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ28",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/FTqPvh7UWhpPN9wF9",
-  "coordinates": {
-    "lat": 3.0828033,
-    "lng": 101.5891589
-  },
+  "connections": [
+    {
+      "station": "KJ28"
+    }
+  ],
   "source": "owner"
 }
