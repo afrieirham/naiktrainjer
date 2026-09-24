@@ -9,6 +9,16 @@ export type LineStation = {
   name: string;
   sort: number;
   coordinates?: { lat: number; lng: number };
+  /**
+   * Stations that are one physical station on another Line. A Connection to one
+   * shows the Place on every twin Line with the same route.
+   */
+  interchange?: string[];
+  /**
+   * Stations joined to a different, walkable station. A Connection to one also
+   * lists the Place at the neighbour, as "Also near".
+   */
+  connecting?: string[];
 };
 
 export type Line = {

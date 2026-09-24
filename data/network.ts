@@ -6,6 +6,10 @@ export type NetworkStation = {
   name: string;
   sort: number;
   coordinates: { lat: number; lng: number };
+  /** Stations that are one physical station on another Line, by code. */
+  interchange: string[];
+  /** Stations joined to a different, walkable station, by code. */
+  connecting: string[];
 };
 
 export type NetworkLine = {
@@ -30,7 +34,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.185897,
           "lng": 101.695217
-        }
+        },
+        "interchange": [
+          "SP1"
+        ],
+        "connecting": []
       },
       {
         "code": "AG2",
@@ -39,7 +47,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.178484,
           "lng": 101.695542
-        }
+        },
+        "interchange": [
+          "SP2"
+        ],
+        "connecting": []
       },
       {
         "code": "AG3",
@@ -48,7 +60,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.173497,
           "lng": 101.695367
-        }
+        },
+        "interchange": [
+          "MR11",
+          "PY17",
+          "SP3"
+        ],
+        "connecting": []
       },
       {
         "code": "AG4",
@@ -57,7 +75,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.166333,
           "lng": 101.693586
-        }
+        },
+        "interchange": [
+          "SP4"
+        ],
+        "connecting": []
       },
       {
         "code": "AG5",
@@ -66,7 +88,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.161245,
           "lng": 101.694109
-        }
+        },
+        "interchange": [
+          "SP5"
+        ],
+        "connecting": [
+          "MR9"
+        ]
       },
       {
         "code": "AG6",
@@ -75,7 +103,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.155567,
           "lng": 101.694485
-        }
+        },
+        "interchange": [
+          "SP6"
+        ],
+        "connecting": []
       },
       {
         "code": "AG7",
@@ -84,7 +116,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14927,
           "lng": 101.696377
-        }
+        },
+        "interchange": [
+          "KJ13",
+          "SP7"
+        ],
+        "connecting": []
       },
       {
         "code": "AG8",
@@ -93,7 +130,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.144049,
           "lng": 101.702105
-        }
+        },
+        "interchange": [
+          "KG17",
+          "SP8"
+        ],
+        "connecting": []
       },
       {
         "code": "AG9",
@@ -102,7 +144,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.140012,
           "lng": 101.705984
-        }
+        },
+        "interchange": [
+          "MR4",
+          "SP9"
+        ],
+        "connecting": []
       },
       {
         "code": "AG10",
@@ -111,7 +158,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.134879,
           "lng": 101.711957
-        }
+        },
+        "interchange": [
+          "SP10"
+        ],
+        "connecting": []
       },
       {
         "code": "AG11",
@@ -120,7 +171,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.128105,
           "lng": 101.715637
-        }
+        },
+        "interchange": [
+          "PY24",
+          "SP11"
+        ],
+        "connecting": []
       },
       {
         "code": "AG12",
@@ -129,7 +185,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.120973,
           "lng": 101.717922
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "AG13",
@@ -138,7 +196,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.12329,
           "lng": 101.727283
-        }
+        },
+        "interchange": [
+          "KG22"
+        ],
+        "connecting": []
       },
       {
         "code": "AG14",
@@ -147,7 +209,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.130141,
           "lng": 101.739122
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "AG15",
@@ -156,7 +220,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.134581,
           "lng": 101.746509
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "AG16",
@@ -165,7 +231,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.138324,
           "lng": 101.752979
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "AG17",
@@ -174,7 +242,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.140575,
           "lng": 101.756677
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "AG18",
@@ -183,7 +253,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.150318,
           "lng": 101.760049
-        }
+        },
+        "interchange": [],
+        "connecting": []
       }
     ]
   },
@@ -200,7 +272,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.185897,
           "lng": 101.695217
-        }
+        },
+        "interchange": [
+          "AG1"
+        ],
+        "connecting": []
       },
       {
         "code": "SP2",
@@ -209,7 +285,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.178484,
           "lng": 101.695542
-        }
+        },
+        "interchange": [
+          "AG2"
+        ],
+        "connecting": []
       },
       {
         "code": "SP3",
@@ -218,7 +298,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.173497,
           "lng": 101.695367
-        }
+        },
+        "interchange": [
+          "AG3",
+          "MR11",
+          "PY17"
+        ],
+        "connecting": []
       },
       {
         "code": "SP4",
@@ -227,7 +313,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.166333,
           "lng": 101.693586
-        }
+        },
+        "interchange": [
+          "AG4"
+        ],
+        "connecting": []
       },
       {
         "code": "SP5",
@@ -236,7 +326,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.161245,
           "lng": 101.694109
-        }
+        },
+        "interchange": [
+          "AG5"
+        ],
+        "connecting": [
+          "MR9"
+        ]
       },
       {
         "code": "SP6",
@@ -245,7 +341,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.155567,
           "lng": 101.694485
-        }
+        },
+        "interchange": [
+          "AG6"
+        ],
+        "connecting": []
       },
       {
         "code": "SP7",
@@ -254,7 +354,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14927,
           "lng": 101.696377
-        }
+        },
+        "interchange": [
+          "AG7",
+          "KJ13"
+        ],
+        "connecting": []
       },
       {
         "code": "SP8",
@@ -263,7 +368,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.144049,
           "lng": 101.702105
-        }
+        },
+        "interchange": [
+          "AG8",
+          "KG17"
+        ],
+        "connecting": []
       },
       {
         "code": "SP9",
@@ -272,7 +382,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.140012,
           "lng": 101.705984
-        }
+        },
+        "interchange": [
+          "AG9",
+          "MR4"
+        ],
+        "connecting": []
       },
       {
         "code": "SP10",
@@ -281,7 +396,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.134879,
           "lng": 101.711957
-        }
+        },
+        "interchange": [
+          "AG10"
+        ],
+        "connecting": []
       },
       {
         "code": "SP11",
@@ -290,7 +409,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.128105,
           "lng": 101.715637
-        }
+        },
+        "interchange": [
+          "AG11",
+          "PY24"
+        ],
+        "connecting": []
       },
       {
         "code": "SP12",
@@ -299,7 +423,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.112609,
           "lng": 101.714178
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP13",
@@ -308,7 +434,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.102201,
           "lng": 101.706179
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP14",
@@ -317,7 +445,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.089576,
           "lng": 101.712466
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP15",
@@ -326,7 +456,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.076058,
           "lng": 101.711107
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP16",
@@ -335,7 +467,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.063842,
           "lng": 101.708062
-        }
+        },
+        "interchange": [
+          "PY29"
+        ],
+        "connecting": []
       },
       {
         "code": "SP17",
@@ -344,7 +480,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.058196,
           "lng": 101.692125
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP18",
@@ -353,7 +491,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.061445,
           "lng": 101.687074
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP19",
@@ -362,7 +502,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.062131,
           "lng": 101.670555
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP20",
@@ -371,7 +513,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.062229,
           "lng": 101.662552
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP21",
@@ -380,7 +524,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0547,
           "lng": 101.656468
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP22",
@@ -389,7 +535,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.050506,
           "lng": 101.644294
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP24",
@@ -398,7 +546,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.048101,
           "lng": 101.62095
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP25",
@@ -407,7 +557,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.033194,
           "lng": 101.616057
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP26",
@@ -416,7 +568,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.022814,
           "lng": 101.613514
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP27",
@@ -425,7 +579,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.017111,
           "lng": 101.612855
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP28",
@@ -434,7 +590,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.007913,
           "lng": 101.605021
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP29",
@@ -443,7 +601,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.999808,
           "lng": 101.596692
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SP31",
@@ -452,7 +612,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.996016,
           "lng": 101.575521
-        }
+        },
+        "interchange": [
+          "KJ37"
+        ],
+        "connecting": []
       }
     ]
   },
@@ -469,7 +633,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.231793,
           "lng": 101.724427
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ2",
@@ -478,7 +644,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.219558,
           "lng": 101.72197
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ3",
@@ -487,7 +655,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.205751,
           "lng": 101.731796
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ4",
@@ -496,7 +666,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.199176,
           "lng": 101.73747
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ5",
@@ -505,7 +677,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.17576,
           "lng": 101.73584
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ6",
@@ -514,7 +688,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.167204,
           "lng": 101.735344
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ7",
@@ -523,7 +699,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.16509,
           "lng": 101.73184
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ8",
@@ -532,7 +710,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.164406,
           "lng": 101.724489
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ9",
@@ -541,7 +721,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.159894,
           "lng": 101.719017
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "PY20"
+        ]
       },
       {
         "code": "KJ10",
@@ -550,7 +734,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.158935,
           "lng": 101.713287
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ11",
@@ -559,7 +745,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.161386,
           "lng": 101.706608
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ12",
@@ -568,7 +756,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.156942,
           "lng": 101.701975
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "MR8"
+        ]
       },
       {
         "code": "KJ13",
@@ -577,7 +769,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.149714,
           "lng": 101.696815
-        }
+        },
+        "interchange": [
+          "AG7",
+          "SP7"
+        ],
+        "connecting": []
       },
       {
         "code": "KJ14",
@@ -586,7 +783,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.142439,
           "lng": 101.69531
-        }
+        },
+        "interchange": [
+          "KG16"
+        ],
+        "connecting": []
       },
       {
         "code": "KJ15",
@@ -595,7 +796,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.13442,
           "lng": 101.68625
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KG15",
+          "MR1"
+        ]
       },
       {
         "code": "KJ16",
@@ -604,7 +810,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.127588,
           "lng": 101.679062
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ17",
@@ -613,7 +821,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.118735,
           "lng": 101.672897
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ18",
@@ -622,7 +832,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.115506,
           "lng": 101.668572
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ19",
@@ -631,7 +843,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.114616,
           "lng": 101.661639
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ20",
@@ -640,7 +854,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.104086,
           "lng": 101.645248
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ21",
@@ -649,7 +865,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.104343,
           "lng": 101.637695
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ22",
@@ -658,7 +876,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.104716,
           "lng": 101.623192
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ23",
@@ -667,7 +887,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.11079,
           "lng": 101.612856
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ24",
@@ -676,7 +898,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.112497,
           "lng": 101.6043
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ25",
@@ -685,7 +909,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.112094,
           "lng": 101.591034
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ26",
@@ -694,7 +920,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.108643,
           "lng": 101.586372
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ27",
@@ -703,7 +931,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.094732,
           "lng": 101.590622
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "SA7"
+        ]
       },
       {
         "code": "KJ28",
@@ -712,7 +944,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.08466,
           "lng": 101.588127
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ29",
@@ -721,7 +955,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.075972,
           "lng": 101.585983
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ30",
@@ -730,7 +966,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.067182,
           "lng": 101.585945
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ31",
@@ -739,7 +977,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.054956,
           "lng": 101.592194
-        }
+        },
+        "interchange": [
+          "BRT7"
+        ],
+        "connecting": []
       },
       {
         "code": "KJ32",
@@ -748,7 +990,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.04815,
           "lng": 101.590233
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ33",
@@ -757,7 +1001,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.035062,
           "lng": 101.588348
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ34",
@@ -766,7 +1012,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.029881,
           "lng": 101.581711
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ35",
@@ -775,7 +1023,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.023151,
           "lng": 101.572029
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ36",
@@ -784,7 +1034,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.009421,
           "lng": 101.572281
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KJ37",
@@ -793,7 +1045,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.996227,
           "lng": 101.575462
-        }
+        },
+        "interchange": [
+          "SP31"
+        ],
+        "connecting": []
       }
     ]
   },
@@ -810,7 +1066,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.176146,
           "lng": 101.572052
-        }
+        },
+        "interchange": [
+          "PY1"
+        ],
+        "connecting": []
       },
       {
         "code": "KG5",
@@ -819,7 +1079,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.170112,
           "lng": 101.564651
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG6",
@@ -828,7 +1090,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.150134,
           "lng": 101.57869
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG7",
@@ -837,7 +1101,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14948,
           "lng": 101.593925
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG8",
@@ -846,7 +1112,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.155301,
           "lng": 101.609077
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG9",
@@ -855,7 +1123,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14671,
           "lng": 101.618599
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "SA1"
+        ]
       },
       {
         "code": "KG10",
@@ -864,7 +1136,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.13613,
           "lng": 101.630539
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG12",
@@ -873,7 +1147,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.129864,
           "lng": 101.642471
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG13",
@@ -882,7 +1158,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.143444,
           "lng": 101.662857
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG14",
@@ -891,7 +1169,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.150977,
           "lng": 101.665497
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG15",
@@ -900,7 +1180,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.137317,
           "lng": 101.687336
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KJ15",
+          "MR1"
+        ]
       },
       {
         "code": "KG16",
@@ -909,7 +1194,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.142293265,
           "lng": 101.6955642
-        }
+        },
+        "interchange": [
+          "KJ14"
+        ],
+        "connecting": []
       },
       {
         "code": "KG17",
@@ -918,7 +1207,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.141969,
           "lng": 101.70205
-        }
+        },
+        "interchange": [
+          "AG8",
+          "SP8"
+        ],
+        "connecting": []
       },
       {
         "code": "KG18",
@@ -927,7 +1221,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.146503,
           "lng": 101.710947
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "MR6"
+        ]
       },
       {
         "code": "KG20",
@@ -936,7 +1234,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.142403,
           "lng": 101.720156
-        }
+        },
+        "interchange": [
+          "PY23"
+        ],
+        "connecting": []
       },
       {
         "code": "KG21",
@@ -945,7 +1247,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.132829,
           "lng": 101.722962
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG22",
@@ -954,7 +1258,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.123623,
           "lng": 101.727809
-        }
+        },
+        "interchange": [
+          "AG13"
+        ],
+        "connecting": []
       },
       {
         "code": "KG23",
@@ -963,7 +1271,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.112547,
           "lng": 101.729371
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG24",
@@ -972,7 +1282,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.104505,
           "lng": 101.732186
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG25",
@@ -981,7 +1293,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.090989,
           "lng": 101.740453
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG26",
@@ -990,7 +1304,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.079172,
           "lng": 101.74522
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG27",
@@ -999,7 +1315,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.071578,
           "lng": 101.763552
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG28",
@@ -1008,7 +1326,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.062273,
           "lng": 101.772899
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG29",
@@ -1017,7 +1337,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.048223,
           "lng": 101.775109
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG30",
@@ -1026,7 +1348,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.041339,
           "lng": 101.773383
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG31",
@@ -1035,7 +1359,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.026413,
           "lng": 101.771072
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG33",
@@ -1044,7 +1370,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.000948,
           "lng": 101.783857
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG34",
@@ -1053,7 +1381,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.994514,
           "lng": 101.786338
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "KG35",
@@ -1062,7 +1392,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.982778,
           "lng": 101.790278
-        }
+        },
+        "interchange": [],
+        "connecting": []
       }
     ]
   },
@@ -1079,7 +1411,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.1763324,
           "lng": 101.5721456
-        }
+        },
+        "interchange": [
+          "KG4"
+        ],
+        "connecting": []
       },
       {
         "code": "PY3",
@@ -1088,7 +1424,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.197266,
           "lng": 101.578499
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY4",
@@ -1097,7 +1435,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.206429,
           "lng": 101.581779
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY5",
@@ -1106,7 +1446,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.199892,
           "lng": 101.592623
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY6",
@@ -1115,7 +1457,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.198197,
           "lng": 101.608302
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY7",
@@ -1124,7 +1468,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.198815,
           "lng": 101.621396
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY8",
@@ -1133,7 +1479,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.207832,
           "lng": 101.628716
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY9",
@@ -1142,7 +1490,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.214438,
           "lng": 101.639402
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY10",
@@ -1151,7 +1501,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.211663,
           "lng": 101.648193
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY11",
@@ -1160,7 +1512,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.209544,
           "lng": 101.655829
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY12",
@@ -1169,7 +1523,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.207108,
           "lng": 101.665749
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY13",
@@ -1178,7 +1534,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.205521,
           "lng": 101.675473
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY14",
@@ -1187,7 +1545,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.19563,
           "lng": 101.6797
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY15",
@@ -1196,7 +1556,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.189319,
           "lng": 101.681145
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY16",
@@ -1205,7 +1567,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.179369,
           "lng": 101.684742
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY17",
@@ -1214,7 +1578,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.17408,
           "lng": 101.69581
-        }
+        },
+        "interchange": [
+          "AG3",
+          "MR11",
+          "SP3"
+        ],
+        "connecting": []
       },
       {
         "code": "PY18",
@@ -1223,7 +1593,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.17405,
           "lng": 101.70239
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY19",
@@ -1232,7 +1604,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.16794,
           "lng": 101.71017
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY20",
@@ -1241,7 +1615,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.16225,
           "lng": 101.71781
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KJ9"
+        ]
       },
       {
         "code": "PY21",
@@ -1250,7 +1628,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.15712,
           "lng": 101.71834
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY22",
@@ -1259,7 +1639,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.15145,
           "lng": 101.71801
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY23",
@@ -1268,7 +1650,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14289,
           "lng": 101.72034
-        }
+        },
+        "interchange": [
+          "KG20"
+        ],
+        "connecting": []
       },
       {
         "code": "PY24",
@@ -1277,7 +1663,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.12839,
           "lng": 101.71663
-        }
+        },
+        "interchange": [
+          "AG11",
+          "SP11"
+        ],
+        "connecting": []
       },
       {
         "code": "PY27",
@@ -1286,7 +1677,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.089546,
           "lng": 101.694124
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY28",
@@ -1295,7 +1688,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.077688,
           "lng": 101.699867
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY29",
@@ -1304,7 +1699,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.063737,
           "lng": 101.7084
-        }
+        },
+        "interchange": [
+          "SP16"
+        ],
+        "connecting": []
       },
       {
         "code": "PY31",
@@ -1313,7 +1712,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.041674,
           "lng": 101.704928
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY32",
@@ -1322,7 +1723,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.028463,
           "lng": 101.707514
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY33",
@@ -1331,7 +1734,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0216,
           "lng": 101.709
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY34",
@@ -1340,7 +1745,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.008489,
           "lng": 101.705396
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY36",
@@ -1349,7 +1756,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.98942,
           "lng": 101.67244
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY37",
@@ -1358,7 +1767,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.98339,
           "lng": 101.66099
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY38",
@@ -1367,7 +1778,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.964974,
           "lng": 101.654812
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY39",
@@ -1376,7 +1789,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.95,
           "lng": 101.6573
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY40",
@@ -1385,7 +1800,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.9384,
           "lng": 101.6659
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "PY41",
@@ -1394,7 +1811,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.9313,
           "lng": 101.6715
-        }
+        },
+        "interchange": [],
+        "connecting": []
       }
     ]
   },
@@ -1411,7 +1830,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.132852,
           "lng": 101.687817
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KG15",
+          "KJ15"
+        ]
       },
       {
         "code": "MR2",
@@ -1420,7 +1844,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.13132,
           "lng": 101.69085
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "MR3",
@@ -1429,7 +1855,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.138743,
           "lng": 101.699268
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "MR4",
@@ -1438,7 +1866,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.140511,
           "lng": 101.706029
-        }
+        },
+        "interchange": [
+          "AG9",
+          "SP9"
+        ],
+        "connecting": []
       },
       {
         "code": "MR5",
@@ -1447,7 +1880,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.14283,
           "lng": 101.70945
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "MR6",
@@ -1456,7 +1891,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.146022,
           "lng": 101.7115
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KG18"
+        ]
       },
       {
         "code": "MR7",
@@ -1465,7 +1904,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.150878,
           "lng": 101.710432
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "MR8",
@@ -1474,7 +1915,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.156214,
           "lng": 101.704809
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KJ12"
+        ]
       },
       {
         "code": "MR9",
@@ -1483,7 +1928,12 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.15935,
           "lng": 101.69888
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "AG5",
+          "SP5"
+        ]
       },
       {
         "code": "MR10",
@@ -1492,7 +1942,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.167358,
           "lng": 101.698379
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "MR11",
@@ -1501,7 +1953,13 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.173192,
           "lng": 101.696022
-        }
+        },
+        "interchange": [
+          "AG3",
+          "PY17",
+          "SP3"
+        ],
+        "connecting": []
       }
     ]
   },
@@ -1518,7 +1976,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0828,
           "lng": 101.6123
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT2",
@@ -1527,7 +1987,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0761,
           "lng": 101.6101
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT3",
@@ -1536,7 +1998,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0706,
           "lng": 101.6107
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT4",
@@ -1545,7 +2009,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0656,
           "lng": 101.6087
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT5",
@@ -1554,7 +2020,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0654,
           "lng": 101.6016
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT6",
@@ -1563,7 +2031,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0617,
           "lng": 101.5969
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "BRT7",
@@ -1572,7 +2042,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0553,
           "lng": 101.5919
-        }
+        },
+        "interchange": [
+          "KJ31"
+        ],
+        "connecting": []
       }
     ]
   },
@@ -1589,7 +2063,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.144722,
           "lng": 101.618611
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KG9"
+        ]
       },
       {
         "code": "SA2",
@@ -1598,7 +2076,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.134722,
           "lng": 101.616667
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA3",
@@ -1607,7 +2087,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.133333,
           "lng": 101.604444
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA5",
@@ -1616,7 +2098,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.122778,
           "lng": 101.594167
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA6",
@@ -1625,7 +2109,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.106111,
           "lng": 101.591111
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA7",
@@ -1634,7 +2120,11 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.095278,
           "lng": 101.588611
-        }
+        },
+        "interchange": [],
+        "connecting": [
+          "KJ27"
+        ]
       },
       {
         "code": "SA9",
@@ -1643,7 +2133,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.082222,
           "lng": 101.561944
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA10",
@@ -1652,7 +2144,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.079722,
           "lng": 101.548889
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA12",
@@ -1661,7 +2155,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.069722,
           "lng": 101.521111
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA14",
@@ -1670,7 +2166,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0625,
           "lng": 101.501111
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA15",
@@ -1679,7 +2177,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.067222,
           "lng": 101.486667
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA17",
@@ -1688,7 +2188,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.0625,
           "lng": 101.465556
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA18",
@@ -1697,7 +2199,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.067778,
           "lng": 101.450833
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA19",
@@ -1706,7 +2210,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.058889,
           "lng": 101.451944
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA20",
@@ -1715,7 +2221,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.047222,
           "lng": 101.4475
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA21",
@@ -1724,7 +2232,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.026667,
           "lng": 101.442222
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA22",
@@ -1733,7 +2243,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.015833,
           "lng": 101.440556
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA23",
@@ -1742,7 +2254,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 3.005278,
           "lng": 101.441667
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA24",
@@ -1751,7 +2265,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.993056,
           "lng": 101.445833
-        }
+        },
+        "interchange": [],
+        "connecting": []
       },
       {
         "code": "SA26",
@@ -1760,7 +2276,9 @@ export const lines: NetworkLine[] = [
         "coordinates": {
           "lat": 2.976111,
           "lng": 101.459167
-        }
+        },
+        "interchange": [],
+        "connecting": []
       }
     ]
   }
