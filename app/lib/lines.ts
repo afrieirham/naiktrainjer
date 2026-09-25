@@ -1,4 +1,5 @@
 import { placeStations, type Place } from "./browse-filter.ts";
+import type { Connection } from "./contribution.ts";
 
 /**
  * A Station as the network reference describes it: every Station on the
@@ -39,6 +40,116 @@ export function stationNamesByCode(lines: Line[]): Map<string, string> {
 }
 
 /**
+ * Every Station on every Line, by network code. A Connection's Interchange and
+ * Connecting links name Stations on other Lines, so the whole network is needed
+ * to resolve what one Station reaches.
+ */
+export function stationsByCode(lines: Line[]): Map<string, LineStation> {
+  const byCode = new Map<string, LineStation>();
+  for (const line of lines) {
+    for (const station of line.stations) byCode.set(station.code, station);
+  }
+  return byCode;
+}
+
+/**
+ * One Place as it appears under one Station: the Place itself, the Station the
+ * listing sits under, and the Connection whose stored Route frame answers for
+ * it.
+ *
+ * Most listings are a true Connection, where `connection.station` is
+ * `stationCode`. Two kinds are derived, and both reuse the anchor Connection's
+ * route rather than storing one of their own:
+ *
+ * - an **Interchange** twin — the same physical Station on another Line, so no
+ *   label and no `alsoNearCode`;
+ * - an **Also near** neighbour reached by a walkway — `alsoNearCode` names the
+ *   anchor Station whose route the listing borrows, so the page can say
+ *   "also near <the other Station>".
+ */
+export type StationListing = {
+  place: Place;
+  stationCode: string;
+  connection: Connection;
+  alsoNearCode?: string;
+};
+
+/**
+ * Every listing a Place reaches: one per true Connection, in record order, then
+ * an Interchange twin and an Also-near neighbour for each. A true Connection or
+ * an Interchange twin at a Station wins over an Also-near listing there, so a
+ * Place is never doubled up by a walkway it already reaches directly.
+ *
+ * Pure: `stations` comes from `stationsByCode`.
+ */
+export function placeListings(
+  place: Place,
+  stations: Map<string, LineStation>,
+): StationListing[] {
+  const connections = place.connections ?? [];
+  const trueListings: StationListing[] = [];
+  const twinListings: StationListing[] = [];
+  const nearListings: StationListing[] = [];
+
+  const reached = new Set<string>();
+  for (const connection of connections) {
+    if (reached.has(connection.station)) continue;
+    reached.add(connection.station);
+    trueListings.push({ place, stationCode: connection.station, connection });
+  }
+
+  const twins = new Set<string>();
+  for (const connection of connections) {
+    const station = stations.get(connection.station);
+    if (!station) continue;
+    for (const twin of station.interchange ?? []) {
+      if (reached.has(twin) || twins.has(twin)) continue;
+      twins.add(twin);
+      twinListings.push({ place, stationCode: twin, connection });
+    }
+  }
+
+  for (const connection of connections) {
+    const station = stations.get(connection.station);
+    if (!station) continue;
+    for (const neighbour of station.connecting ?? []) {
+      if (reached.has(neighbour) || twins.has(neighbour)) continue;
+      reached.add(neighbour);
+      nearListings.push({
+        place,
+        stationCode: neighbour,
+        connection,
+        alsoNearCode: connection.station,
+      });
+    }
+  }
+
+  return [...trueListings, ...twinListings, ...nearListings];
+}
+
+/**
+ * Every Station's listings, by Station code, for the given Places. A Place
+ * reaches a Station when it truly Connects to it, or by Interchange or a
+ * Connecting neighbour; `lines` is the whole network, because a twin or
+ * neighbour may sit on another Line.
+ */
+export function listingsByStation(
+  lines: Line[],
+  places: Place[],
+): Map<string, StationListing[]> {
+  const stations = stationsByCode(lines);
+  const byStation = new Map<string, StationListing[]>();
+  for (const place of places) {
+    for (const listing of placeListings(place, stations)) {
+      const list = byStation.get(listing.stationCode);
+      if (list) list.push(listing);
+      else byStation.set(listing.stationCode, [listing]);
+    }
+  }
+  return byStation;
+}
+
+/**
  * The Lines the directory covers: those holding at least one Place, in the
  * network's own order.
  *
@@ -53,7 +164,14 @@ export function coveredLines(lines: Line[], places: Place[]): Line[] {
   );
 }
 
-/** Every Station code any Place Connects to. */
+/**
+ * Every Station code any Place truly Connects to.
+ *
+ * Coverage counts Connections only: an Interchange twin or a Connecting
+ * neighbour is a derived listing (`placeListings`), never a Connection, so it
+ * never moves this count. The directory states what it holds, not what it merely
+ * mentions.
+ */
 function coveredCodes(places: Place[]): Set<string> {
   const codes = new Set<string>();
   for (const place of places) {
