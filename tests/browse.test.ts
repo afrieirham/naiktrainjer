@@ -10,8 +10,10 @@ import {
   type Place,
 } from "../app/lib/browse-filter.ts";
 import {
+  coverage,
   coveredLine,
   coveredLines,
+  listingsByStation,
   selectedLine,
   type Line,
 } from "../app/lib/lines.ts";
@@ -473,12 +475,11 @@ describe("pure filter/corridor functions", () => {
 });
 
 describe("line selection", () => {
-  const withPlaces = new Set(places.flatMap((place) => placeStations(place)));
-
   it("returns only the Lines that hold a Place, in network order", () => {
     const covered = coveredLines(lines, places);
+    const reached = new Set(listingsByStation(lines, places).keys());
     const expected = lines.filter((line) =>
-      line.stations.some((station) => withPlaces.has(station.code)),
+      line.stations.some((station) => reached.has(station.code)),
     );
     assert.deepEqual(
       covered.map((line) => line.slug),
@@ -486,10 +487,28 @@ describe("line selection", () => {
     );
     for (const line of covered) {
       assert.ok(
-        line.stations.some((station) => withPlaces.has(station.code)),
+        line.stations.some((station) => reached.has(station.code)),
         `"${line.slug}" is offered without a Place`,
       );
     }
+  });
+
+  it("offers a Line a Place only reaches by derivation, but does not count it as coverage", () => {
+    const coveredSlugs = coveredLines(lines, places).map((line) => line.slug);
+    assert.ok(
+      coveredSlugs.includes("shah-alam"),
+      "The Shah Alam line holds Also-near listings of Glenmarie places",
+    );
+    const shahAlam = lines.find((line) => line.slug === "shah-alam")!;
+    const trueCodes = new Set(places.flatMap((place) => placeStations(place)));
+    const trueStations = shahAlam.stations.filter((station) =>
+      trueCodes.has(station.code),
+    ).length;
+    assert.equal(
+      coverage(shahAlam, places).coveredCount,
+      trueStations,
+      "Coverage must still count true Connections only",
+    );
   });
 
   /**

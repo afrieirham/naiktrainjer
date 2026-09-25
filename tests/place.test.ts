@@ -15,6 +15,16 @@ function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
 }
 
+/** The text as the prerendered HTML carries it: React escapes entities. */
+function asHtmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/'/g, "&#x27;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function extractMeta(html: string, name: string): string | null {
   const pattern = new RegExp(
     `<meta[^>]*name="${name}"[^>]*content="([^"]*)"`,
@@ -300,6 +310,28 @@ describe("place page content", () => {
         assert.ok(
           html.includes(stationName),
           `Page "${place.slug}" does not show its other station "${stationName}"`,
+        );
+      }
+    }
+  });
+
+  it("shows every Station as `<code> <name>`", () => {
+    const stationNameMap = STATION_NAMES;
+    for (const place of data.places) {
+      const pagePath = resolve(
+        BUILD_DIR,
+        "places",
+        place.slug,
+        "index.html",
+      );
+      const html = stripComments(readFileSync(pagePath, "utf-8"));
+      for (const connection of place.connections) {
+        const label = asHtmlText(
+          `${connection.station} ${stationNameMap.get(connection.station)!}`,
+        );
+        assert.ok(
+          html.includes(label),
+          `Page "${place.slug}" must show "${label}"`,
         );
       }
     }
