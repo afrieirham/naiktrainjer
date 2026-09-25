@@ -408,6 +408,26 @@ describe("contribute page", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Admin shell
+// ---------------------------------------------------------------------------
+
+describe("admin shell", () => {
+  it("prerenders the gated shell, not the Access-gated picker", () => {
+    const adminHtml = stripComments(
+      readFileSync(resolve(BUILD_DIR, "admin", "index.html"), "utf-8"),
+    );
+    assert.ok(
+      adminHtml.includes('name="robots" content="noindex, nofollow"'),
+      "The admin shell must stay out of the index",
+    );
+    assert.ok(
+      adminHtml.includes("Loading…"),
+      "The admin shell prerenders its loading state; the form is client-only behind Access",
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Cloudflare Web Analytics
 // ---------------------------------------------------------------------------
 
