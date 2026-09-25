@@ -276,6 +276,22 @@ describe("contribute page", () => {
     }
   });
 
+  it("names an Interchange Station by its joined codes and the other Lines it reaches", () => {
+    assert.ok(
+      contributeHtml.includes(
+        "AG7/SP7/KJ13 Masjid Jamek · Kelana Jaya, Sri Petaling",
+      ),
+      "The picker must join Masjid Jamek's twin codes and name the Lines it reaches",
+    );
+  });
+
+  it("starts with one blank Connection row whose Remove is disabled", () => {
+    assert.ok(
+      /<button[^>]*\bdisabled\b[^>]*>Remove<\/button>/.test(contributeHtml),
+      "The only Connection row's Remove must be disabled",
+    );
+  });
+
   it("offers the controlled Type list, but not as a requirement", () => {
     assert.ok(
       contributeHtml.includes('id="type"'),

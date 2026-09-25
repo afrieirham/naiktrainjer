@@ -4,6 +4,7 @@ import { coveredLine, coverage } from "../lib/lines";
 import { lines, places } from "../data/directory";
 import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
 import { Field, FIELD_CLASS } from "../components/Field";
+import { StationPicker } from "../components/StationPicker";
 import { TYPE_LABELS } from "../lib/labels";
 import { useTurnstile } from "../hooks/use-turnstile";
 import {
@@ -56,36 +57,6 @@ export default function ContributePage() {
 
   function set(field: keyof ContributionDraft, value: string) {
     setFields((current) => ({ ...current, [field]: value }));
-  }
-
-  /** One row of the Station editor: its Station and its optional Route frame. */
-  function setConnection(
-    index: number,
-    patch: Partial<ContributionDraft["connections"][number]>,
-  ) {
-    setFields((current) => ({
-      ...current,
-      connections: current.connections.map((connection, i) =>
-        i === index ? { ...connection, ...patch } : connection,
-      ),
-    }));
-  }
-
-  function addConnection() {
-    setFields((current) => ({
-      ...current,
-      connections: [...current.connections, { station: "", embed: "" }],
-    }));
-  }
-
-  function removeConnection(index: number) {
-    setFields((current) => ({
-      ...current,
-      connections:
-        current.connections.length === 1
-          ? current.connections
-          : current.connections.filter((_, i) => i !== index),
-    }));
   }
 
   async function submit(event: React.FormEvent) {
@@ -188,67 +159,14 @@ export default function ContributePage() {
                 />
               </Field>
 
-              <fieldset className="flex flex-col gap-3">
-                <legend className="text-[12px] font-medium text-ink-soft">
-                  Connections — the stations this place is near
-                </legend>
-                {fields.connections.map((connection, index) => (
-                  <div
-                    key={index}
-                    className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
-                  >
-                    <select
-                      aria-label={`Station ${index + 1}`}
-                      aria-required="true"
-                      value={connection.station}
-                      onChange={(event) =>
-                        setConnection(index, { station: event.target.value })
-                      }
-                      className={FIELD_CLASS}
-                    >
-                      <option value="">Choose a station</option>
-                      {lines.map((line) => (
-                        <optgroup key={line.slug} label={line.name}>
-                          {line.stations.map((station) => (
-                            <option key={station.code} value={station.code}>
-                              {station.code} {station.name}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                    <input
-                      aria-label={`Route frame ${index + 1} (optional)`}
-                      value={connection.embed}
-                      onChange={(event) =>
-                        setConnection(index, { embed: event.target.value })
-                      }
-                      placeholder="Route frame (optional)"
-                      className={FIELD_CLASS}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeConnection(index)}
-                      disabled={fields.connections.length === 1}
-                      className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band disabled:opacity-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                {errors.connections && (
-                  <p className="text-[12px] font-medium text-ink">
-                    {errors.connections}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={addConnection}
-                  className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band"
-                >
-                  Add another station
-                </button>
-              </fieldset>
+              <StationPicker
+                connections={fields.connections}
+                onChange={(connections) =>
+                  setFields((current) => ({ ...current, connections }))
+                }
+                lines={lines}
+                error={errors.connections}
+              />
 
               <Field label="Type (optional)" error={errors.type} htmlFor="type">
                 <select
