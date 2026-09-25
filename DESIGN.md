@@ -267,7 +267,7 @@ The one control that chooses Stations, used by the Contribute form and both admi
 - **Selection language:** ink and the global Line-coloured ring, like every other control; the accent is not used on the picker.
 
 ### Station Band & Place Row
-- **Station Band:** the warm-grey heading strip for a stop that carries Places — `band` fill, `py-2.5 pl-[52px] pr-4`, a 12px/700 uppercase 0.1em `ink` name and a 12px `tabular-nums` `ink-soft` Place count.
+- **Station Band:** the warm-grey heading strip for a stop that carries Places — `band` fill, `py-2.5 pl-[52px] pr-4`, a 12px/700 uppercase 0.1em `ink` `<code> <name>` (the code in `tabular-nums`) and a 12px `tabular-nums` `ink-soft` Place count.
 - **Place Row:** a full-width button, `py-3 pl-[52px] pr-12`, `hover:bg-band`; a 13.5px/600 `ink` name over a 12px `ink-soft` `kind · type` meta. The selected state is a `color-mix` tint from `--line-accent` (8% at rest, 12% on hover) plus a filled marker — never a side-tab. A trailing 15px authored `OpenIcon` link sits at `right-2`.
 
 ### Corridor Spine & Stop Marker (signature)
@@ -278,7 +278,7 @@ Before a Place is picked, the Browse map column shows the whole corridor at scal
 
 ### Route Strip & Route Frame
 - **Route Strip:** a `shrink-0 border-t border-rule` bar at the foot of the map column — `paper`, `px-4 py-3`, `flex-wrap gap-x-5 gap-y-3`. On the Browse page at rest it reads `Pick a place from the corridor — its walk or drive route appears here.`; once a Place is selected it carries `All places`, the Place name (13.5px/600) over its `kind · type · station` meta (12.5px `ink-soft`), the shared `TravelMode`, `Open route`, `Full page`, and `On Maps`. Its content arrives with the 420ms `app-reveal` (opacity + 6px rise, `cubic-bezier(0.16, 1, 0.3, 1)`; disabled under reduced motion). The Place page's strip is the same bar holding `TravelMode`, `Open route`, and `Place on Google Maps`.
-- **Route Frame:** the embedded Google Maps iframe, built client-side from the Connection stored for the Station being viewed — the hand-pasted Route frame, or the Place's Map link when that Connection has none — with the driving view derived from the stored walking link. It fills its box (`absolute inset-0`, border-0) on Browse, and is `h-[52vh]` on a phone / `md:flex-1` on the Place page. It cannot be styled, read, or clicked into, and nothing is laid over it.
+- **Route Frame:** the embedded Google Maps iframe, built client-side from the Connection stored for the Station being viewed — the hand-pasted Route frame — with the driving view derived from the stored walking link. A Connection with no stored frame renders **no iframe**: the Place's Map link stands in its place as a plain `Place on Google Maps` link, so a share link is never forced into a frame. The frame fills its box (`absolute inset-0`, border-0) on Browse, and is `h-[52vh]` on a phone / `md:flex-1` on the Place page. It cannot be styled, read, or clicked into, and nothing is laid over it.
 
 ### Contribute Form
 The visitor's one working surface, and the only place a person other than the maintainer writes to the directory. It is one measured column under the shared `AppBar`, built from the same `Field`, buttons and picker as every other surface; nothing on it is a third-party frame, and the Turnstile widget is the one foreign element and is not drawn around.

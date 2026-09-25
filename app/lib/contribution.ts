@@ -393,7 +393,7 @@ export function contributionPullRequestBody(
     "A Contribution is a proposal, not a Place. It is never rendered until it is approved.",
     "",
     `- Type: ${contribution.type ?? "not given"}`,
-    `- Map: ${contribution.map ?? "not given"}`,
+    `- Map: ${contribution.map}`,
     `- Contributor: ${contributor}`,
   ];
 

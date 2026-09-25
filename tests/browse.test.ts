@@ -13,7 +13,7 @@ import {
   coverage,
   coveredLine,
   coveredLines,
-  listingsByStation,
+  stationPlacesByCode,
   selectedLine,
   type Line,
 } from "../app/lib/lines.ts";
@@ -45,7 +45,7 @@ function asHtmlText(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-/** The Place listings on a Line: a Place with two Connections on it counts twice. */
+/** The Station entries on a Line: a Place with two Connections on it counts twice. */
 function linePlaceRows(places: Place[], line: Line): number {
   const codes = new Set(line.stations.map((station) => station.code));
   return places.reduce(
@@ -140,7 +140,7 @@ describe("prerendered HTML", () => {
     assert.equal(
       sum,
       expected,
-      `Expected sum of group counts to equal the Line's ${expected} listings, got ${sum}`,
+      `Expected sum of group counts to equal the Line's ${expected} station entries, got ${sum}`,
     );
   });
 
@@ -312,7 +312,7 @@ describe("prerendered HTML", () => {
     assert.ok(!cleanHtml.includes("Most places"), "No sort options should render");
   });
 
-  it("offers a Line selector listing only the covered Lines", () => {
+  it("offers a Line selector offering only the covered Lines", () => {
     assert.ok(cleanHtml.includes('id="line-selector"'), "Line selector missing");
 
     const covered = coveredLines(data.lines, data.places);
@@ -477,7 +477,7 @@ describe("pure filter/corridor functions", () => {
 describe("line selection", () => {
   it("returns only the Lines that hold a Place, in network order", () => {
     const covered = coveredLines(lines, places);
-    const reached = new Set(listingsByStation(lines, places).keys());
+    const reached = new Set(stationPlacesByCode(lines, places).keys());
     const expected = lines.filter((line) =>
       line.stations.some((station) => reached.has(station.code)),
     );
@@ -497,7 +497,7 @@ describe("line selection", () => {
     const coveredSlugs = coveredLines(lines, places).map((line) => line.slug);
     assert.ok(
       coveredSlugs.includes("shah-alam"),
-      "The Shah Alam line holds Also-near listings of Glenmarie places",
+      "The Shah Alam line holds Also-near placements of Glenmarie places",
     );
     const shahAlam = lines.find((line) => line.slug === "shah-alam")!;
     const trueCodes = new Set(places.flatMap((place) => placeStations(place)));
@@ -634,25 +634,24 @@ describe("route URL builders", () => {
       assert.equal(buildRouteFrameUrl(placeWithEmbed(stored), "KJ20", "drive"), stored);
     });
 
-    it("falls back to the Place's Map link when the Connection has no frame", () => {
+    it("is null when the Connection has no frame, so the Map link is never framed", () => {
       const place = placeWithEmbed(null);
-      assert.equal(buildRouteFrameUrl(place, "KJ20", "walk"), place.map);
-      assert.equal(buildRouteFrameUrl(place, "KJ20", "drive"), place.map);
+      assert.equal(buildRouteFrameUrl(place, "KJ20", "walk"), null);
+      assert.equal(buildRouteFrameUrl(place, "KJ20", "drive"), null);
     });
 
-    it("falls back to the Map link for a Station the Place does not connect to", () => {
+    it("is null for a Station the Place does not connect to", () => {
       const place = placeWithEmbed(null);
-      assert.equal(buildRouteFrameUrl(place, "AG1", "walk"), place.map);
+      assert.equal(buildRouteFrameUrl(place, "AG1", "walk"), null);
     });
 
-    it("resolves a frame for every Station in the real data", () => {
+    it("resolves a frame for every Station in the real data, or none when no frame is stored", () => {
       for (const place of places) {
         for (const connection of place.connections) {
-          const url = buildRouteFrameUrl(place, connection.station, "walk");
           assert.equal(
-            url,
-            connection.embed ?? place.map,
-            `Frame for "${place.name}" must be the stored link or the Map link`,
+            buildRouteFrameUrl(place, connection.station, "walk"),
+            connection.embed ?? null,
+            `Frame for "${place.name}" must be the stored link, or null when none is stored`,
           );
         }
       }

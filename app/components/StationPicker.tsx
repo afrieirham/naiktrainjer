@@ -5,10 +5,10 @@ import {
 import { stationOptionLabel, type Line } from "../lib/lines";
 import { FIELD_CLASS } from "./Field";
 
-const REMOVE_CLASS =
-  "self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band disabled:opacity-50";
-const ADD_CLASS =
+const ROW_BUTTON_CLASS =
   "self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band";
+const REMOVE_CLASS = `${ROW_BUTTON_CLASS} disabled:opacity-50`;
+const ADD_CLASS = ROW_BUTTON_CLASS;
 
 /**
  * The one control that chooses Stations, used by the Contribute form and both
@@ -59,7 +59,7 @@ export function StationPicker({
               onChange={(event) =>
                 setConnection(index, { station: event.target.value })
               }
-              className={FIELD_CLASS}
+              className={`${FIELD_CLASS} tabular-nums`}
             >
               <option value="">Choose a station</option>
               {lines.map((line) => (
