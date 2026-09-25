@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { lines } from '../data/network.ts';
-import { isGoogleMapsEmbed } from '../app/lib/contribution.ts';
+import { isGoogleMapsEmbed, normalizeRouteFrame } from '../app/lib/contribution.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -139,8 +139,14 @@ try {
         else if (!corridor.has(connection.station)) err(`${label}: Connection station "${connection.station}" does not resolve to a network station code`);
 
         if (connection.embed !== undefined && connection.embed !== null) {
-          if (typeof connection.embed !== 'string' || !isGoogleMapsEmbed(connection.embed))
+          const normalized =
+            typeof connection.embed === 'string'
+              ? normalizeRouteFrame(connection.embed)
+              : null;
+          if (normalized === null || !isGoogleMapsEmbed(normalized))
             err(`${label}: Connection embed "${connection.embed}" is not a Google Maps embed link`);
+          else if (normalized !== connection.embed)
+            err(`${label}: Connection embed "${connection.embed}" is not a normalised Google Maps embed link`);
         }
       }
     }
