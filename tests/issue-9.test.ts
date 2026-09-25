@@ -253,7 +253,7 @@ describe("contribute page", () => {
 
   it("offers every Station on every Line, grouped by Line", () => {
     assert.ok(
-      contributeHtml.includes('id="station"'),
+      contributeHtml.includes('aria-label="Station 1"'),
       "Contribute page must hold the Station picker",
     );
     assert.ok(
@@ -289,7 +289,7 @@ describe("contribute page", () => {
     }
   });
 
-  it("offers the optional map link, note, and Contributor fields", () => {
+  it("offers the required Map link, the note, and Contributor fields", () => {
     for (const id of ["map", "note", "contributorName", "contributorHref"]) {
       assert.ok(
         contributeHtml.includes(`id="${id}"`),

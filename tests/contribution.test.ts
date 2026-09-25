@@ -21,7 +21,7 @@ function draft(overrides: Partial<ContributionDraft> = {}): ContributionDraft {
     name: "Amcorp Service Suite",
     connections: [{ station: "KJ20", embed: "" }],
     type: "",
-    map: "",
+    map: "https://maps.app.goo.gl/amcorp",
     note: "",
     contributorName: "",
     contributorHref: "",
@@ -50,7 +50,7 @@ describe("validateContribution", () => {
       name: "Amcorp Service Suite",
       connections: [{ station: "KJ20", embed: null }],
       type: null,
-      map: null,
+      map: "https://maps.app.goo.gl/amcorp",
       note: null,
       contributor: null,
     });
@@ -59,6 +59,31 @@ describe("validateContribution", () => {
   it("requires a place name", () => {
     assert.match(errorsFor({ name: "" }).name, /Give the place a name/);
     assert.match(errorsFor({ name: "   " }).name, /Give the place a name/);
+  });
+
+  it("requires a Map link", () => {
+    assert.match(errorsFor({ map: "" }).map, /Map link/);
+    assert.match(errorsFor({ map: "   " }).map, /Map link/);
+  });
+
+  it("accepts several Connections, each carrying its own Route frame", () => {
+    const embed = "https://www.google.com/maps/embed?pb=!3e2!walk";
+    const { errors, contribution } = validateContribution(
+      draft({
+        connections: [
+          { station: "KJ20", embed },
+          { station: "AG1", embed: "" },
+        ],
+      }),
+      STATIONS,
+      TYPES,
+    );
+
+    assert.deepEqual(errors, {});
+    assert.deepEqual(contribution?.connections, [
+      { station: "KJ20", embed },
+      { station: "AG1", embed: null },
+    ]);
   });
 
   it("rejects a name longer than the limit", () => {
@@ -330,7 +355,7 @@ describe("buildContributionFile", () => {
       name: "Amcorp Service Suite",
       connections: [{ station: "KJ20" }],
       type: null,
-      map: null,
+      map: "https://maps.app.goo.gl/amcorp",
       note: null,
       contributor: null,
     });
