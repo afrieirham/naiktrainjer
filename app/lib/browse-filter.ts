@@ -1,5 +1,6 @@
 import type { Connection } from "./contribution";
-import type { Line, LineStation } from "./lines";
+import { listingsByStation } from "./lines.ts";
+import type { Line, LineStation, StationListing } from "./lines.ts";
 
 export type Place = {
   slug: string;
@@ -25,13 +26,18 @@ export function placeStations(place: Place): string[] {
 }
 
 /**
- * One row of the corridor: a Station on the Line, with the Places it holds.
+ * One row of the corridor: a Station on the Line, with the listings it shows.
  * A Station holding none carries an empty list.
+ *
+ * `listings` is the page's shape: each entry names the Place, the Station the
+ * row sits under, and the Connection whose route answers. `places` is those
+ * Places in the same order, kept for the corridor's rendering.
  */
 export type StationRow = {
   code: string;
   name: string;
   count: number;
+  listings: StationListing[];
   places: Place[];
 };
 
@@ -43,8 +49,13 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
  * Build the corridor: every Station on the Line, in the Line's own order, with
  * the Places that match the current filter under the Stations that hold any.
  *
- * A Place sits under every Station it Connects to, so a Place near two Stations
- * on one Line appears twice, once per Connection.
+ * A Place sits under every Station it reaches: each true Connection, every
+ * Interchange twin, and every Connecting neighbour as an Also-near listing
+ * (`listingsByStation`). A Place near two Stations on one Line appears twice,
+ * once per Connection, each listing carrying its own route.
+ *
+ * `network` is the whole network, so a twin or neighbour on another Line still
+ * resolves. It defaults to the Line at hand, enough when every link is local.
  *
  * A Station the filter empties is dropped, so a type filter never looks like the
  * directory has no Places there. A Station the data holds nothing for stays on
@@ -57,35 +68,24 @@ export function buildStationRows(
   line: Line,
   allPlaces: Place[],
   matchedPlaces: Place[],
+  network: Line[] = [line],
 ): StationRow[] {
-  const totalByCode = new Map<string, number>();
-  for (const place of allPlaces) {
-    for (const code of placeStations(place)) {
-      totalByCode.set(code, (totalByCode.get(code) ?? 0) + 1);
-    }
-  }
-
-  const matchedByCode = new Map<string, Place[]>();
-  for (const place of matchedPlaces) {
-    for (const code of placeStations(place)) {
-      const list = matchedByCode.get(code);
-      if (list) list.push(place);
-      else matchedByCode.set(code, [place]);
-    }
-  }
+  const allListings = listingsByStation(network, allPlaces);
+  const matchedListings = listingsByStation(network, matchedPlaces);
 
   const rows: StationRow[] = [];
   for (const station of [...line.stations].sort((a, b) => b.sort - a.sort)) {
-    const places = [...(matchedByCode.get(station.code) ?? [])].sort((a, b) =>
-      a.name.localeCompare(b.name),
+    const listings = [...(matchedListings.get(station.code) ?? [])].sort((a, b) =>
+      a.place.name.localeCompare(b.place.name),
     );
-    if (places.length === 0 && (totalByCode.get(station.code) ?? 0) > 0) continue;
+    if (listings.length === 0 && (allListings.get(station.code)?.length ?? 0) > 0) continue;
 
     rows.push({
       code: station.code,
       name: station.name,
-      count: places.length,
-      places,
+      count: listings.length,
+      listings,
+      places: listings.map((listing) => listing.place),
     });
   }
 
