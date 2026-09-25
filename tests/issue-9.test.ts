@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { placeStations, type Place } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
-import { coveredLine, coverage } from "../app/lib/lines.ts";
+import { coveredLine, coverage, listingsByStation } from "../app/lib/lines.ts";
 import { CONTRIBUTION_TYPES } from "../app/lib/contribution.ts";
 import { lines, places } from "../app/data/directory.node.ts";
 
@@ -19,6 +19,16 @@ const RETIRED_ROUTE = ["/sub", "mit"].join("");
 
 function stripComments(html: string): string {
   return html.replace(/<!--.*?-->/g, "");
+}
+
+/** The name as the prerendered HTML carries it: React escapes the apostrophe. */
+function asHtmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/'/g, "&#x27;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 /** The one paragraph carrying a phrase — used to read copy without the whole page. */
@@ -142,6 +152,57 @@ describe("the Line is read from the data", () => {
       assert.ok(
         html.includes(`${line.name} line`),
         `Place page "${place.slug}" must name the ${line.name} line`,
+      );
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Station codes on the corridor
+// ---------------------------------------------------------------------------
+
+describe("browse page station codes", () => {
+  it("shows every Station on the covered Line as `<code> <name>`", () => {
+    const line = coveredLine(data.lines, data.places);
+    for (const station of line.stations) {
+      const label = asHtmlText(`${station.code} ${station.name}`);
+      assert.ok(
+        browseHtml.includes(label),
+        `Browse page must show "${station.code} ${station.name}"`,
+      );
+    }
+  });
+
+  it("shows a Place under each Station it Connects to, once per Connection", () => {
+    const line = coveredLine(data.lines, data.places);
+    const lineCodes = new Set(line.stations.map((station) => station.code));
+    const twice = data.places.filter(
+      (place) =>
+        placeStations(place).filter((code) => lineCodes.has(code)).length > 1,
+    );
+    assert.ok(twice.length > 0, "The corridor must hold a twice-listed Place");
+
+    for (const place of twice) {
+      const name = asHtmlText(place.name);
+      const rendered = browseHtml.split(name).length - 1;
+      assert.ok(
+        rendered >= 2,
+        `Place "${place.name}" must render once per Connection on the Line, got ${rendered}`,
+      );
+    }
+  });
+
+  it("offers every Line a Place reaches, including by derivation", () => {
+    const offered = new Set([
+      ...browseHtml.matchAll(/<option[^>]*value="([^"]+)"/g),
+    ].map((match) => match[1]));
+    const reached = new Set(listingsByStation(data.lines, data.places).keys());
+    for (const line of data.lines) {
+      const reachable = line.stations.some((station) => reached.has(station.code));
+      assert.equal(
+        offered.has(line.slug),
+        reachable,
+        `Line "${line.slug}" must be offered exactly when a Place reaches it`,
       );
     }
   });

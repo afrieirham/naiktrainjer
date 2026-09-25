@@ -7,6 +7,8 @@ import {
 } from "../app/lib/browse-filter.ts";
 import {
   coverage,
+  coveredLines,
+  listedPlaces,
   listingsByStation,
   placeListings,
   stationsByCode,
@@ -174,6 +176,34 @@ describe("Coverage counts Connections only", () => {
     const neighbour = buildStationRows(lineC, [placeAtA1], [placeAtA1], network);
     assert.equal(twin.find((row) => row.code === "B1")!.count, 1);
     assert.equal(neighbour.find((row) => row.code === "C1")!.count, 1);
+  });
+});
+
+describe("a derived listing makes its Line browsable", () => {
+  it("lists the Place on the twin and neighbour Lines", () => {
+    assert.deepEqual(listedPlaces(lineA, network, [placeAtA1]), [placeAtA1]);
+    assert.deepEqual(listedPlaces(lineB, network, [placeAtA1]), [placeAtA1]);
+    assert.deepEqual(listedPlaces(lineC, network, [placeAtA1]), [placeAtA1]);
+  });
+
+  it("offers every Line a Place reaches, while Coverage stays on true Connections", () => {
+    assert.deepEqual(
+      coveredLines(network, [placeAtA1]).map((line) => line.slug),
+      ["line-a", "line-b", "line-c"],
+    );
+    assert.equal(coverage(lineB, [placeAtA1]).coveredCount, 0);
+    assert.equal(coverage(lineC, [placeAtA1]).coveredCount, 0);
+  });
+
+  it("names the anchor Station on the neighbour's row and reuses its route", () => {
+    const rows = buildStationRows(lineC, [placeAtA1], [placeAtA1], network);
+    const listing = rows.find((row) => row.code === "C1")!.listings[0];
+    assert.equal(listing.stationCode, "C1");
+    assert.equal(listing.alsoNearCode, "A1");
+    assert.equal(
+      buildListingRouteFrameUrl(listing.place, listing.connection, "walk"),
+      WALK_A1,
+    );
   });
 });
 
