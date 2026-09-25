@@ -136,6 +136,34 @@ describe("validatePlace", () => {
     );
   });
 
+  it("rejects a Route frame that is not a Google Maps embed", () => {
+    assert.match(
+      validatePlace(
+        draft({
+          connections: [
+            { station: "KJ20", embed: "https://maps.app.goo.gl/x" },
+          ],
+        }),
+        STATIONS,
+      ).errors.connections,
+      /Google Maps embed/,
+    );
+    assert.equal(
+      validatePlace(
+        draft({
+          connections: [
+            {
+              station: "KJ20",
+              embed: "https://www.google.com/maps/embed?pb=!3e2!walk",
+            },
+          ],
+        }),
+        STATIONS,
+      ).errors.connections,
+      undefined,
+    );
+  });
+
   it("rejects a bad contributor link but allows a blank one", () => {
     assert.match(
       validatePlace(draft({ contributorHref: "nope" }), STATIONS).errors
