@@ -52,6 +52,53 @@ export function stationsByCode(lines: Line[]): Map<string, LineStation> {
   return byCode;
 }
 
+/** The Line a Station code belongs to, or undefined when the network lacks it. */
+function lineOfCode(lines: Line[], code: string): Line | undefined {
+  return lines.find((line) =>
+    line.stations.some((station) => station.code === code),
+  );
+}
+
+/**
+ * Every network code of one physical Station — a Station's own code plus its
+ * Interchange twins — ordered by the network's own Line order, so the joined
+ * label reads the same whichever twin is picked. A Station with no twin is just
+ * itself.
+ */
+export function stationGroupCodes(station: LineStation, lines: Line[]): string[] {
+  const group = new Set<string>([station.code, ...(station.interchange ?? [])]);
+  const ordered: string[] = [];
+  for (const line of lines) {
+    for (const member of line.stations) {
+      if (group.has(member.code)) ordered.push(member.code);
+    }
+  }
+  for (const code of group) if (!ordered.includes(code)) ordered.push(code);
+  return ordered;
+}
+
+/**
+ * One Station as a picker reads it: `<code> <name>` for a plain Station, and
+ * `<twin codes> <name> · <other Lines>` for an Interchange Station, e.g.
+ * `AG7/SP7/KJ13 Masjid Jamek · Kelana Jaya, Sri Petaling`. Every twin carries
+ * the same label, so one physical Station is named once.
+ *
+ * Pure: `lines` is the whole network.
+ */
+export function stationOptionLabel(station: LineStation, lines: Line[]): string {
+  const codes = stationGroupCodes(station, lines);
+  if (codes.length <= 1) return `${station.code} ${station.name}`;
+
+  const anchor = lineOfCode(lines, codes[0]);
+  const reached = codes
+    .map((code) => lineOfCode(lines, code))
+    .filter((line): line is Line => line !== undefined && line !== anchor)
+    .map((line) => line.name)
+    .sort((a, b) => a.localeCompare(b));
+
+  return `${codes.join("/")} ${station.name} · ${reached.join(", ")}`;
+}
+
 /**
  * One Place as it appears under one Station: the Place itself, the Station the
  * listing sits under, and the Connection whose stored Route frame answers for
