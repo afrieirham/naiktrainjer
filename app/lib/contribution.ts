@@ -76,7 +76,7 @@ export interface ValidatedContribution {
   name: string;
   connections: Connection[];
   type: string | null;
-  map: string | null;
+  map: string;
   note: string | null;
   contributor: { name: string; href: string | null } | null;
 }
@@ -288,7 +288,9 @@ export function validateFields(
   }
 
   const map = draft.map.trim();
-  if (map.length > 0 && !isWebAddress(map)) {
+  if (map.length === 0) {
+    errors.map = "Give the place a Map link.";
+  } else if (!isWebAddress(map)) {
     errors.map = "That link does not look like a web address.";
   }
 
@@ -334,7 +336,7 @@ export function validateContribution(
       name: draft.name.trim(),
       connections: toConnections(draft.connections),
       type: optional(draft.type),
-      map: optional(draft.map),
+      map: draft.map.trim(),
       note: optional(draft.note),
       contributor:
         contributorName === null
