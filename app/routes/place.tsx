@@ -5,6 +5,7 @@ import { lines, places } from "../data/directory";
 import {
   buildRouteFrameUrl,
   buildOpenRouteUrl,
+  buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
@@ -211,13 +212,12 @@ export default function PlacePage() {
           </div>
 
           <div className="relative h-[52vh] shrink-0 md:h-auto md:min-h-0 md:flex-1">
-            {routeFrameUrl ? (
-              <RouteFrame
-                src={routeFrameUrl}
-                mode={routeMode}
-                className="absolute inset-0 block h-full w-full border-0"
-              />
-            ) : null}
+            <RouteFrame
+              src={routeFrameUrl}
+              mode={routeMode}
+              mapUrl={buildPlacePinUrl(place)}
+              className="absolute inset-0 block h-full w-full border-0"
+            />
           </div>
 
           <div className="shrink-0 border-t border-rule bg-paper px-3 py-2.5 sm:px-4 sm:py-3">

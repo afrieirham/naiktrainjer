@@ -22,32 +22,33 @@ function withTravelMode(url: string, mode: RouteMode): string {
 }
 
 /**
+ * The Route frame a Connection stored, or null when it stored none. Only a
+ * stored Google Maps embed is framed: a Connection with no frame has no map to
+ * render, so the Place's Map link is shown as a plain link instead. Never a
+ * calculated route, and never the Map link, which cannot be framed.
+ */
+export function buildConnectionRouteFrameUrl(
+  connection: Connection | null | undefined,
+  mode: RouteMode,
+): string | null {
+  if (!connection?.embed) return null;
+  return withTravelMode(connection.embed, mode);
+}
+
+/**
  * The Route frame for the Station being viewed: the Connection's stored embed,
- * falling back to the Place's Map link when that Connection has no frame. Never
- * a calculated route.
+ * or null when that Connection has no frame. Never a calculated route, and
+ * never the Map link, which cannot be framed.
  */
 export function buildRouteFrameUrl(
   place: Place,
   stationCode: string,
   mode: RouteMode,
-): string {
-  const connection = connectionForStation(place, stationCode);
-  const stored = connection?.embed ?? place.map;
-  return withTravelMode(stored, mode);
-}
-
-/**
- * The Route frame for one listing, from the Connection it borrows. A true
- * Connection is the Place's own; an Interchange twin or an Also-near listing
- * reuses its anchor Connection's route. Falls back to the Place's Map link when
- * that Connection stored no frame.
- */
-export function buildListingRouteFrameUrl(
-  place: Place,
-  connection: Connection,
-  mode: RouteMode,
-): string {
-  return withTravelMode(connection.embed ?? place.map, mode);
+): string | null {
+  return buildConnectionRouteFrameUrl(
+    connectionForStation(place, stationCode),
+    mode,
+  );
 }
 
 /** The route opened in Google Maps, from the Place's name to the Station. */
