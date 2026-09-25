@@ -129,7 +129,7 @@ export type StationPlace = {
  *
  * Pure: `stations` comes from `stationsByCode`.
  */
-export function placeStationsByStation(
+export function stationPlacesForPlace(
   place: Place,
   stations: Map<string, LineStation>,
 ): StationPlace[] {
@@ -180,14 +180,14 @@ export function placeStationsByStation(
  * Connecting neighbour; `lines` is the whole network, because a twin or
  * neighbour may sit on another Line.
  */
-export function stationPlacesByStation(
+export function stationPlacesByCode(
   lines: Line[],
   places: Place[],
 ): Map<string, StationPlace[]> {
   const stations = stationsByCode(lines);
   const byStation = new Map<string, StationPlace[]>();
   for (const place of places) {
-    for (const entry of placeStationsByStation(place, stations)) {
+    for (const entry of stationPlacesForPlace(place, stations)) {
       const list = byStation.get(entry.stationCode);
       if (list) list.push(entry);
       else byStation.set(entry.stationCode, [entry]);
@@ -207,7 +207,7 @@ export function placesOnLine(
   lines: Line[],
   places: Place[],
 ): Place[] {
-  const byStation = stationPlacesByStation(lines, places);
+  const byStation = stationPlacesByCode(lines, places);
   const codes = new Set(line.stations.map((station) => station.code));
   const seen = new Set<string>();
   const onLine: Place[] = [];
@@ -233,7 +233,7 @@ export function placesOnLine(
  * stating what the directory holds rather than what it merely mentions.
  */
 export function coveredLines(lines: Line[], places: Place[]): Line[] {
-  const reached = new Set(stationPlacesByStation(lines, places).keys());
+  const reached = new Set(stationPlacesByCode(lines, places).keys());
   return lines.filter((line) =>
     line.stations.some((station) => reached.has(station.code)),
   );
@@ -243,7 +243,7 @@ export function coveredLines(lines: Line[], places: Place[]): Line[] {
  * Every Station code any Place truly Connects to.
  *
  * Coverage counts Connections only: an Interchange twin or a Connecting
- * neighbour is a derived entry (`placeStationsByStation`), never a Connection,
+ * neighbour is a derived entry (`stationPlacesForPlace`), never a Connection,
  * so it never moves this count. The directory states what it holds, not what it
  * merely mentions.
  */

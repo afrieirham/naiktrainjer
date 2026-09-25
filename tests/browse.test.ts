@@ -13,7 +13,7 @@ import {
   coverage,
   coveredLine,
   coveredLines,
-  stationPlacesByStation,
+  stationPlacesByCode,
   selectedLine,
   type Line,
 } from "../app/lib/lines.ts";
@@ -477,7 +477,7 @@ describe("pure filter/corridor functions", () => {
 describe("line selection", () => {
   it("returns only the Lines that hold a Place, in network order", () => {
     const covered = coveredLines(lines, places);
-    const reached = new Set(stationPlacesByStation(lines, places).keys());
+    const reached = new Set(stationPlacesByCode(lines, places).keys());
     const expected = lines.filter((line) =>
       line.stations.some((station) => reached.has(station.code)),
     );

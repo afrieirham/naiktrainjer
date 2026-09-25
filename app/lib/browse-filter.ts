@@ -1,5 +1,5 @@
 import type { Connection } from "./contribution";
-import { stationPlacesByStation } from "./lines.ts";
+import { stationPlacesByCode } from "./lines.ts";
 import type { Line, LineStation, StationPlace } from "./lines.ts";
 
 export type Place = {
@@ -51,7 +51,7 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
  *
  * A Place sits under every Station it reaches: each true Connection, every
  * Interchange twin, and every Connecting neighbour as an Also-near entry
- * (`stationPlacesByStation`). A Place near two Stations on one Line appears
+ * (`stationPlacesByCode`). A Place near two Stations on one Line appears
  * twice, once per Connection, each entry carrying its own route.
  *
  * `network` is the whole network, so a twin or neighbour on another Line still
@@ -70,8 +70,8 @@ export function buildStationRows(
   matchedPlaces: Place[],
   network: Line[] = [line],
 ): StationRow[] {
-  const allEntries = stationPlacesByStation(network, allPlaces);
-  const matchedEntries = stationPlacesByStation(network, matchedPlaces);
+  const allEntries = stationPlacesByCode(network, allPlaces);
+  const matchedEntries = stationPlacesByCode(network, matchedPlaces);
 
   const rows: StationRow[] = [];
   for (const station of [...line.stations].sort((a, b) => b.sort - a.sort)) {

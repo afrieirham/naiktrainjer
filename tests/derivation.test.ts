@@ -9,8 +9,8 @@ import {
   coverage,
   coveredLines,
   placesOnLine,
-  stationPlacesByStation,
-  placeStationsByStation,
+  stationPlacesByCode,
+  stationPlacesForPlace,
   stationsByCode,
   type Line,
 } from "../app/lib/lines.ts";
@@ -102,14 +102,14 @@ describe("Connecting neighbours", () => {
   });
 
   it("reuses the anchor Connection's route, and frames nothing when it stored none", () => {
-    const entry = stationPlacesByStation(network, [placeAtA1]).get("C1")![0];
+    const entry = stationPlacesByCode(network, [placeAtA1]).get("C1")![0];
     assert.equal(
       buildConnectionRouteFrameUrl(entry.connection, "walk"),
       WALK_A1,
     );
 
     const bare = place("bare", [{ station: "A1", embed: null }]);
-    const bareEntry = stationPlacesByStation(network, [bare]).get("C1")![0];
+    const bareEntry = stationPlacesByCode(network, [bare]).get("C1")![0];
     assert.equal(
       buildConnectionRouteFrameUrl(bareEntry.connection, "walk"),
       null,
@@ -156,7 +156,7 @@ describe("selection keyed by Place + Station", () => {
       { station: "A1", embed: null },
       { station: "B1", embed: null },
     ]);
-    const atA1 = placeStationsByStation(both, stationsByCode(network)).filter(
+    const atA1 = stationPlacesForPlace(both, stationsByCode(network)).filter(
       (entry) => entry.stationCode === "A1",
     );
     assert.equal(atA1.length, 1);
@@ -209,7 +209,7 @@ describe("a derived station entry makes its Line browsable", () => {
 });
 
 describe("the real network reaches its twins and neighbours", () => {
-  const byStation = stationPlacesByStation(lines, places);
+  const byStation = stationPlacesByCode(lines, places);
 
   it("derives the BRT twin of KJ31 USJ 7 with no Also-near label", () => {
     const brt7 = byStation.get("BRT7") ?? [];
