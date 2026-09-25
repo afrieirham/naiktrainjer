@@ -606,6 +606,15 @@ describe("route URL builders", () => {
       assert.equal(url, embed.replace("!3e2", "!3e0"));
     });
 
+    it("presents the walk mode even when the stored link carries another mode", () => {
+      const stored = "https://www.google.com/maps/embed?pb=!3e0!drive";
+      assert.equal(
+        buildRouteFrameUrl(placeWithEmbed(stored), "KJ20", "walk"),
+        stored.replace("!3e0", "!3e2"),
+      );
+      assert.equal(buildRouteFrameUrl(placeWithEmbed(stored), "KJ20", "drive"), stored);
+    });
+
     it("falls back to the Place's Map link when the Connection has no frame", () => {
       const place = placeWithEmbed(null);
       assert.equal(buildRouteFrameUrl(place, "KJ20", "walk"), place.map);
