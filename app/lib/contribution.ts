@@ -126,10 +126,48 @@ export function isGoogleMapsEmbed(value: string): boolean {
   return parsed.searchParams.has("pb");
 }
 
+/** The `src` of a pasted `<iframe>` tag, or null when the paste is not one. */
+function iframeSrc(value: string): string | null {
+  const match = value.match(
+    /<iframe\b[^>]*?\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i,
+  );
+  if (!match) return null;
+  return match[1] ?? match[2] ?? match[3] ?? null;
+}
+
+/** The entity an iframe's `src` carries, back to the character it stands for. */
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&amp;/g, "&").replace(/&#38;/g, "&");
+}
+
+/** The walking form of an embed link: its mode segment is always `!3e2`. */
+function walkRouteFrame(value: string): string {
+  return value.replace(/!3e\d/g, "!3e2");
+}
+
+/**
+ * The Route frame a paste becomes. A whole `<iframe>` tag is unwrapped to its
+ * `src`; a bare Google Maps embed URL is kept. The result is stored as the
+ * walking route (`!3e2`), matching ADR-0006: one link, walked and driven. Any
+ * other link is returned as pasted, for `isGoogleMapsEmbed` to refuse. Null when
+ * nothing was pasted.
+ */
+export function normalizeRouteFrame(value: string): string | null {
+  const trimmed = (value ?? "").trim();
+  if (trimmed.length === 0) return null;
+
+  const src = iframeSrc(trimmed);
+  const url = decodeHtmlEntities(src ?? trimmed).trim();
+  if (url.length === 0) return null;
+
+  return isGoogleMapsEmbed(url) ? walkRouteFrame(url) : url;
+}
+
 /**
  * The Connections a set of drafts carries, with the blanks dropped. A row whose
  * Station and Route frame are both blank is an editor's spare line, not a
- * Connection.
+ * Connection. The Route frame is normalised here, at the boundary where a draft
+ * becomes a record, so the stored link is always the bare walking embed.
  */
 export function toConnections(connections: ConnectionDraft[]): Connection[] {
   return (connections ?? [])
@@ -140,7 +178,7 @@ export function toConnections(connections: ConnectionDraft[]): Connection[] {
     )
     .map((connection) => ({
       station: (connection.station ?? "").trim(),
-      embed: optional(connection.embed ?? ""),
+      embed: normalizeRouteFrame(connection.embed ?? ""),
     }));
 }
 
