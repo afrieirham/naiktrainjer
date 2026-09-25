@@ -8,13 +8,13 @@ import {
 import {
   coverage,
   coveredLines,
-  listedPlaces,
-  listingsByStation,
-  placeListings,
+  placesOnLine,
+  stationPlacesByStation,
+  placeStationsByStation,
   stationsByCode,
   type Line,
 } from "../app/lib/lines.ts";
-import { buildListingRouteFrameUrl } from "../app/lib/route-url.ts";
+import { buildConnectionRouteFrameUrl } from "../app/lib/route-url.ts";
 import { lines, places } from "../app/data/directory.node.ts";
 
 /**
@@ -69,12 +69,12 @@ describe("Interchange propagation", () => {
     assert.equal(b1.count, 1);
     assert.equal(b1.places[0].slug, "place-a1");
 
-    const listing = b1.listings[0];
-    assert.equal(listing.stationCode, "B1");
-    assert.equal(listing.alsoNearCode, undefined, "a twin is not an Also-near row");
-    assert.equal(listing.connection, placeAtA1.connections[0], "a twin shares the anchor route");
+    const entry = b1.stationPlaces[0];
+    assert.equal(entry.stationCode, "B1");
+    assert.equal(entry.alsoNearCode, undefined, "a twin is not an Also-near row");
+    assert.equal(entry.connection, placeAtA1.connections[0], "a twin shares the anchor route");
     assert.equal(
-      buildListingRouteFrameUrl(listing.place, listing.connection, "walk"),
+      buildConnectionRouteFrameUrl(entry.connection, "walk"),
       WALK_A1,
     );
   });
@@ -83,8 +83,8 @@ describe("Interchange propagation", () => {
     const rows = buildStationRows(lineA, [placeAtA1], [placeAtA1], network);
     const a1 = rows.find((row) => row.code === "A1");
     assert.ok(a1);
-    assert.equal(a1.listings[0].stationCode, "A1");
-    assert.equal(a1.listings[0].alsoNearCode, undefined);
+    assert.equal(a1.stationPlaces[0].stationCode, "A1");
+    assert.equal(a1.stationPlaces[0].alsoNearCode, undefined);
   });
 });
 
@@ -95,24 +95,25 @@ describe("Connecting neighbours", () => {
     assert.ok(c1, "the neighbour Station must carry the Place");
     assert.equal(c1.count, 1);
 
-    const listing = c1.listings[0];
-    assert.equal(listing.stationCode, "C1");
-    assert.equal(listing.alsoNearCode, "A1", "the listing names the anchor Station");
-    assert.equal(listing.connection, placeAtA1.connections[0]);
+    const entry = c1.stationPlaces[0];
+    assert.equal(entry.stationCode, "C1");
+    assert.equal(entry.alsoNearCode, "A1", "the entry names the anchor Station");
+    assert.equal(entry.connection, placeAtA1.connections[0]);
   });
 
-  it("reuses the anchor Connection's route, falling back to the Map link", () => {
-    const listing = listingsByStation(network, [placeAtA1]).get("C1")![0];
+  it("reuses the anchor Connection's route, and frames nothing when it stored none", () => {
+    const entry = stationPlacesByStation(network, [placeAtA1]).get("C1")![0];
     assert.equal(
-      buildListingRouteFrameUrl(listing.place, listing.connection, "walk"),
+      buildConnectionRouteFrameUrl(entry.connection, "walk"),
       WALK_A1,
     );
 
     const bare = place("bare", [{ station: "A1", embed: null }]);
-    const bareListing = listingsByStation(network, [bare]).get("C1")![0];
+    const bareEntry = stationPlacesByStation(network, [bare]).get("C1")![0];
     assert.equal(
-      buildListingRouteFrameUrl(bareListing.place, bareListing.connection, "walk"),
-      bare.map,
+      buildConnectionRouteFrameUrl(bareEntry.connection, "walk"),
+      null,
+      "a Connection with no stored frame must not frame the Map link",
     );
   });
 });
@@ -140,23 +141,23 @@ describe("selection keyed by Place + Station", () => {
 
   it("resolves each row's own route", () => {
     const rows = buildStationRows(lineA, [twoStations], [twoStations], network);
-    const a1 = rows.find((row) => row.code === "A1")!.listings[0];
-    const a2 = rows.find((row) => row.code === "A2")!.listings[0];
+    const a1 = rows.find((row) => row.code === "A1")!.stationPlaces[0];
+    const a2 = rows.find((row) => row.code === "A2")!.stationPlaces[0];
     assert.equal(a1.connection.embed, E1);
     assert.equal(a2.connection.embed, E2);
     assert.notEqual(
-      buildListingRouteFrameUrl(twoStations, a1.connection, "walk"),
-      buildListingRouteFrameUrl(twoStations, a2.connection, "walk"),
+      buildConnectionRouteFrameUrl(a1.connection, "walk"),
+      buildConnectionRouteFrameUrl(a2.connection, "walk"),
     );
   });
 
-  it("prefers a true Connection over a derived listing at the same Station", () => {
+  it("prefers a true Connection over a derived station entry at the same Station", () => {
     const both = place("both", [
       { station: "A1", embed: null },
       { station: "B1", embed: null },
     ]);
-    const atA1 = placeListings(both, stationsByCode(network)).filter(
-      (listing) => listing.stationCode === "A1",
+    const atA1 = placeStationsByStation(both, stationsByCode(network)).filter(
+      (entry) => entry.stationCode === "A1",
     );
     assert.equal(atA1.length, 1);
     assert.equal(atA1[0].connection.station, "A1");
@@ -179,11 +180,11 @@ describe("Coverage counts Connections only", () => {
   });
 });
 
-describe("a derived listing makes its Line browsable", () => {
+describe("a derived station entry makes its Line browsable", () => {
   it("lists the Place on the twin and neighbour Lines", () => {
-    assert.deepEqual(listedPlaces(lineA, network, [placeAtA1]), [placeAtA1]);
-    assert.deepEqual(listedPlaces(lineB, network, [placeAtA1]), [placeAtA1]);
-    assert.deepEqual(listedPlaces(lineC, network, [placeAtA1]), [placeAtA1]);
+    assert.deepEqual(placesOnLine(lineA, network, [placeAtA1]), [placeAtA1]);
+    assert.deepEqual(placesOnLine(lineB, network, [placeAtA1]), [placeAtA1]);
+    assert.deepEqual(placesOnLine(lineC, network, [placeAtA1]), [placeAtA1]);
   });
 
   it("offers every Line a Place reaches, while Coverage stays on true Connections", () => {
@@ -197,31 +198,31 @@ describe("a derived listing makes its Line browsable", () => {
 
   it("names the anchor Station on the neighbour's row and reuses its route", () => {
     const rows = buildStationRows(lineC, [placeAtA1], [placeAtA1], network);
-    const listing = rows.find((row) => row.code === "C1")!.listings[0];
-    assert.equal(listing.stationCode, "C1");
-    assert.equal(listing.alsoNearCode, "A1");
+    const entry = rows.find((row) => row.code === "C1")!.stationPlaces[0];
+    assert.equal(entry.stationCode, "C1");
+    assert.equal(entry.alsoNearCode, "A1");
     assert.equal(
-      buildListingRouteFrameUrl(listing.place, listing.connection, "walk"),
+      buildConnectionRouteFrameUrl(entry.connection, "walk"),
       WALK_A1,
     );
   });
 });
 
 describe("the real network reaches its twins and neighbours", () => {
-  const byStation = listingsByStation(lines, places);
+  const byStation = stationPlacesByStation(lines, places);
 
   it("derives the BRT twin of KJ31 USJ 7 with no Also-near label", () => {
     const brt7 = byStation.get("BRT7") ?? [];
-    const listing = brt7.find((entry) => entry.connection.station === "KJ31");
-    assert.ok(listing, "USJ 7's Places must reach BRT7");
-    assert.equal(listing.alsoNearCode, undefined, "USJ 7 is one physical Station");
+    const entry = brt7.find((entry) => entry.connection.station === "KJ31");
+    assert.ok(entry, "USJ 7's Places must reach BRT7");
+    assert.equal(entry.alsoNearCode, undefined, "USJ 7 is one physical Station");
   });
 
   it("derives the SA neighbour of KJ27 CGC Glenmarie as Also near", () => {
     const sa7 = byStation.get("SA7") ?? [];
-    const listing = sa7.find((entry) => entry.connection.station === "KJ27");
-    assert.ok(listing, "Glenmarie's Places must reach Glenmarie 2");
-    assert.equal(listing.alsoNearCode, "KJ27");
+    const entry = sa7.find((entry) => entry.connection.station === "KJ27");
+    assert.ok(entry, "Glenmarie's Places must reach Glenmarie 2");
+    assert.equal(entry.alsoNearCode, "KJ27");
   });
 
   it("derives the SP twin of KJ37 Putra Heights", () => {

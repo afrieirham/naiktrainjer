@@ -1,6 +1,6 @@
 import type { Connection } from "./contribution";
-import { listingsByStation } from "./lines.ts";
-import type { Line, LineStation, StationListing } from "./lines.ts";
+import { stationPlacesByStation } from "./lines.ts";
+import type { Line, LineStation, StationPlace } from "./lines.ts";
 
 export type Place = {
   slug: string;
@@ -26,18 +26,18 @@ export function placeStations(place: Place): string[] {
 }
 
 /**
- * One row of the corridor: a Station on the Line, with the listings it shows.
- * A Station holding none carries an empty list.
+ * One row of the corridor: a Station on the Line, with the Places it shows. A
+ * Station holding none carries an empty list.
  *
- * `listings` is the page's shape: each entry names the Place, the Station the
- * row sits under, and the Connection whose route answers. `places` is those
+ * `stationPlaces` is the page's shape: each entry names the Place, the Station
+ * the row sits under, and the Connection whose route answers. `places` is those
  * Places in the same order, kept for the corridor's rendering.
  */
 export type StationRow = {
   code: string;
   name: string;
   count: number;
-  listings: StationListing[];
+  stationPlaces: StationPlace[];
   places: Place[];
 };
 
@@ -50,9 +50,9 @@ export function filterPlaces(places: Place[], typeFilter: string): Place[] {
  * the Places that match the current filter under the Stations that hold any.
  *
  * A Place sits under every Station it reaches: each true Connection, every
- * Interchange twin, and every Connecting neighbour as an Also-near listing
- * (`listingsByStation`). A Place near two Stations on one Line appears twice,
- * once per Connection, each listing carrying its own route.
+ * Interchange twin, and every Connecting neighbour as an Also-near entry
+ * (`stationPlacesByStation`). A Place near two Stations on one Line appears
+ * twice, once per Connection, each entry carrying its own route.
  *
  * `network` is the whole network, so a twin or neighbour on another Line still
  * resolves. It defaults to the Line at hand, enough when every link is local.
@@ -70,22 +70,26 @@ export function buildStationRows(
   matchedPlaces: Place[],
   network: Line[] = [line],
 ): StationRow[] {
-  const allListings = listingsByStation(network, allPlaces);
-  const matchedListings = listingsByStation(network, matchedPlaces);
+  const allEntries = stationPlacesByStation(network, allPlaces);
+  const matchedEntries = stationPlacesByStation(network, matchedPlaces);
 
   const rows: StationRow[] = [];
   for (const station of [...line.stations].sort((a, b) => b.sort - a.sort)) {
-    const listings = [...(matchedListings.get(station.code) ?? [])].sort((a, b) =>
-      a.place.name.localeCompare(b.place.name),
+    const stationPlaces = [...(matchedEntries.get(station.code) ?? [])].sort(
+      (a, b) => a.place.name.localeCompare(b.place.name),
     );
-    if (listings.length === 0 && (allListings.get(station.code)?.length ?? 0) > 0) continue;
+    if (
+      stationPlaces.length === 0 &&
+      (allEntries.get(station.code)?.length ?? 0) > 0
+    )
+      continue;
 
     rows.push({
       code: station.code,
       name: station.name,
-      count: listings.length,
-      listings,
-      places: listings.map((listing) => listing.place),
+      count: stationPlaces.length,
+      stationPlaces,
+      places: stationPlaces.map((entry) => entry.place),
     });
   }
 

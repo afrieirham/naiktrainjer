@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { placeStations, type Place } from "../app/lib/browse-filter.ts";
 import type { Line } from "../app/lib/lines.ts";
-import { coveredLine, coverage, listingsByStation } from "../app/lib/lines.ts";
+import { coveredLine, coverage, stationPlacesByStation } from "../app/lib/lines.ts";
 import { CONTRIBUTION_TYPES } from "../app/lib/contribution.ts";
 import { lines, places } from "../app/data/directory.node.ts";
 
@@ -196,7 +196,7 @@ describe("browse page station codes", () => {
     const offered = new Set([
       ...browseHtml.matchAll(/<option[^>]*value="([^"]+)"/g),
     ].map((match) => match[1]));
-    const reached = new Set(listingsByStation(data.lines, data.places).keys());
+    const reached = new Set(stationPlacesByStation(data.lines, data.places).keys());
     for (const line of data.lines) {
       const reachable = line.stations.some((station) => reached.has(station.code));
       assert.equal(
