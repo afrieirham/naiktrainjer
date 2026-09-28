@@ -53,8 +53,12 @@ function request(body?: unknown): Request {
 
 /** A call log shared by the fakes, so the write order can be asserted. */
 function recorder(reads: Record<string, string | null> = {}) {
-  const calls: { op: "read" | "put" | "delete"; path: string; branch: string }[] =
-    [];
+  const calls: {
+    op: "read" | "put" | "delete";
+    path: string;
+    branch: string;
+    contents?: string;
+  }[] = [];
   const pulls: ContributionPullRequest[] = [];
 
   const deps: AdminDeps = {
@@ -63,7 +67,12 @@ function recorder(reads: Record<string, string | null> = {}) {
       return reads[`${input.path}@${input.ref ?? ""}`] ?? null;
     },
     putFile: async (input) => {
-      calls.push({ op: "put", path: input.path, branch: input.branch });
+      calls.push({
+        op: "put",
+        path: input.path,
+        branch: input.branch,
+        contents: input.contents,
+      });
     },
     deleteFile: async (input) => {
       calls.push({ op: "delete", path: input.path, branch: input.branch });
@@ -204,6 +213,62 @@ describe("POST /api/admin/contribution/:id (approve)", () => {
     assert.equal(calls.some((call) => call.op === "put"), false);
   });
 
+  it("files the Place with the visitor's Connections", async () => {
+    const { deps, calls } = recorder({
+      [`data/contributions/${ID}.json@contribution/${ID}`]: JSON.stringify({
+        id: ID,
+        ...CONTRIBUTION,
+        connections: [
+          { station: "KJ20", embed: null },
+          { station: "AG1", embed: null },
+        ],
+      }),
+    });
+
+    const response = await approveContribution(
+      {
+        request: request({
+          ...PLACE,
+          connections: [
+            { station: "KJ20", embed: "" },
+            { station: "AG1", embed: "" },
+          ],
+        }),
+        env: env(),
+        params: { id: ID },
+      },
+      deps,
+    );
+
+    assert.equal(response.status, 200);
+    const put = calls.find((call) => call.op === "put")!;
+    const record = JSON.parse(put.contents!) as Record<string, unknown>;
+    assert.deepEqual(record.connections, [
+      { station: "KJ20" },
+      { station: "AG1" },
+    ]);
+  });
+
+  it("refuses an approval with no Map link and writes nothing", async () => {
+    const { deps, calls } = recorder({
+      [`data/contributions/${ID}.json@contribution/${ID}`]: contributionFile(),
+    });
+
+    const response = await approveContribution(
+      {
+        request: request({ ...PLACE, map: "" }),
+        env: env(),
+        params: { id: ID },
+      },
+      deps,
+    );
+
+    assert.equal(response.status, 422);
+    const body = (await response.json()) as { errors?: Record<string, string> };
+    assert.match(body.errors?.map ?? "", /Map link/);
+    assert.equal(calls.some((call) => call.op === "put"), false);
+  });
+
   it("404s when the Contribution is not on its branch", async () => {
     const response = await approveContribution(
       { request: request(PLACE), env: env(), params: { id: ID } },
@@ -235,6 +300,55 @@ describe("POST /api/admin/place (add)", () => {
     const record = JSON.parse(pulls[0].files[0].contents) as Record<string, unknown>;
     assert.equal(record.slug, "amcorp-service-suite");
     assert.equal(record.source, "owner");
+  });
+
+  it("files every Connection the maintainer picked", async () => {
+    const { deps, pulls } = recorder();
+
+    const response = await addPlace(
+      {
+        request: request({
+          ...PLACE,
+          source: "owner",
+          connections: [
+            {
+              station: "KJ20",
+              embed: "https://www.google.com/maps/embed?pb=!3e0!drive",
+            },
+            { station: "AG1", embed: "" },
+          ],
+        }),
+        env: env(),
+      },
+      deps,
+    );
+
+    assert.equal(response.status, 200);
+    const record = JSON.parse(pulls[0].files[0].contents) as Record<
+      string,
+      unknown
+    >;
+    assert.deepEqual(record.connections, [
+      {
+        station: "KJ20",
+        embed: "https://www.google.com/maps/embed?pb=!3e2!drive",
+      },
+      { station: "AG1" },
+    ]);
+  });
+
+  it("refuses a Place with no Map link and files nothing", async () => {
+    const { deps, pulls } = recorder();
+
+    const response = await addPlace(
+      { request: request({ ...PLACE, map: "" }), env: env() },
+      deps,
+    );
+
+    assert.equal(response.status, 422);
+    const body = (await response.json()) as { errors?: Record<string, string> };
+    assert.match(body.errors?.map ?? "", /Map link/);
+    assert.equal(pulls.length, 0);
   });
 
   it("refuses a Place whose slug already exists", async () => {
@@ -295,6 +409,64 @@ describe("POST /api/admin/place/:slug (edit)", () => {
       JSON.parse(pulls[0].files[0].contents).name,
       "Amcorp Service Suites",
     );
+  });
+
+  it("files every Connection the maintainer picked", async () => {
+    const { deps, pulls } = recorder({
+      "data/places/amcorp-service-suite.json@main": JSON.stringify({
+        slug: "amcorp-service-suite",
+        ...PLACE,
+      }),
+    });
+
+    const response = await editPlace(
+      {
+        request: request({
+          ...PLACE,
+          name: "Amcorp Service Suites",
+          connections: [
+            { station: "KJ20", embed: "" },
+            { station: "AG1", embed: "" },
+          ],
+        }),
+        env: env(),
+        params: { slug: "amcorp-service-suite" },
+      },
+      deps,
+    );
+
+    assert.equal(response.status, 200);
+    const record = JSON.parse(pulls[0].files[0].contents) as Record<
+      string,
+      unknown
+    >;
+    assert.deepEqual(record.connections, [
+      { station: "KJ20" },
+      { station: "AG1" },
+    ]);
+  });
+
+  it("refuses an edit with no Map link and files nothing", async () => {
+    const { deps, pulls } = recorder({
+      "data/places/amcorp-service-suite.json@main": JSON.stringify({
+        slug: "amcorp-service-suite",
+        ...PLACE,
+      }),
+    });
+
+    const response = await editPlace(
+      {
+        request: request({ ...PLACE, map: "" }),
+        env: env(),
+        params: { slug: "amcorp-service-suite" },
+      },
+      deps,
+    );
+
+    assert.equal(response.status, 422);
+    const body = (await response.json()) as { errors?: Record<string, string> };
+    assert.match(body.errors?.map ?? "", /Map link/);
+    assert.equal(pulls.length, 0);
   });
 
   it("404s for an unknown slug and writes nothing", async () => {
