@@ -19,7 +19,8 @@ optional **Route frame**:
    stays retired (ADR-0007).
 2. **One link, two views.** The stored frame is the walking route; the driving view is the same
    link with its mode segment swapped. A Connection without a frame falls back to the Place's Map
-   link, so a Place can enter the directory before its routes are researched.
+   link, shown as a plain link in place of the frame — never framed, because a share link cannot
+   be framed — so a Place can enter the directory before its routes are researched.
 3. **Every Connection is equal.** There is no "nearest station": a Place near two Stations answers
    the walk question for each, and shows under each.
 

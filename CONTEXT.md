@@ -43,8 +43,10 @@ that Place→Station pair (`connections`, `{ station, embed }`). Every Place has
 All Connections are equal: there is no "nearest station", and a Place near two Stations answers
 the walk question for each.
 
-**Also near** — the other Stations a Place Connects to, as Browse labels them beside the viewed
-Station. Derived from Connections; never stored.
+**Also near** — the other Stations a Place is shown beside, as Browse labels them beside the
+viewed Station: every other Station it Connects to, and, for a Connection to a Connecting
+Station, that Station's neighbour, which reuses the anchor Connection's route. Derived from
+Connections; never stored.
 
 **Map link** — the Google Maps link for a Place, as researched by hand (`map`). Required on every
 Place: it is what the Place opens in when no Route frame is stored.
@@ -57,7 +59,8 @@ a page.
 
 **Route frame** — the Google Maps iframe for one Place→Station walk (`embed`), pasted by hand and
 stored whole, never calculated. Optional per Connection; the driving view is derived from the
-stored walking link, and a Connection without one falls back to the Place's Map link.
+stored walking link, and a Connection without one shows the Place's Map link as a plain link
+instead of a frame.
 
 **Browse page** — the directory itself: the Line selector, the type filter, the corridor list
 — every Station on the selected Line, those with Places grouped and those without marked — and
@@ -72,7 +75,8 @@ or social post.
 **Contribute page** — the page holding the native form where a visitor contributes a Place.
 _Prefer over_: Submit page.
 
-**Contribution** — a visitor's proposed Place, carrying a name, a Station and optional detail.
+**Contribution** — a visitor's proposed Place, carrying a name, one or more Connections and a
+required Map link, plus optional detail.
 Private until approved: a Contribution is not a Place and is never rendered. _Avoid_:
 Suggestion, submission, upload.
 

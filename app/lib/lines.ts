@@ -100,21 +100,20 @@ export function stationOptionLabel(station: LineStation, lines: Line[]): string 
 }
 
 /**
- * One Place as it appears under one Station: the Place itself, the Station the
- * listing sits under, and the Connection whose stored Route frame answers for
- * it.
+ * One Place as it appears under one Station: the Place itself, the Station it
+ * appears under, and the Connection whose stored Route frame answers for it.
  *
- * Most listings are a true Connection, where `connection.station` is
- * `stationCode`. Two kinds are derived, and both reuse the anchor Connection's
- * route rather than storing one of their own:
+ * Most are a true Connection, where `connection.station` is `stationCode`. Two
+ * kinds are derived, and both reuse the anchor Connection's route rather than
+ * storing one of their own:
  *
  * - an **Interchange** twin — the same physical Station on another Line, so no
  *   label and no `alsoNearCode`;
  * - an **Also near** neighbour reached by a walkway — `alsoNearCode` names the
- *   anchor Station whose route the listing borrows, so the page can say
+ *   anchor Station whose route it borrows, so the page can say
  *   "also near <the other Station>".
  */
-export type StationListing = {
+export type StationPlace = {
   place: Place;
   stationCode: string;
   connection: Connection;
@@ -122,27 +121,28 @@ export type StationListing = {
 };
 
 /**
- * Every listing a Place reaches: one per true Connection, in record order, then
- * an Interchange twin and an Also-near neighbour for each. A true Connection or
- * an Interchange twin at a Station wins over an Also-near listing there, so a
- * Place is never doubled up by a walkway it already reaches directly.
+ * Every Station entry a Place reaches: one per true Connection, in record
+ * order, then an Interchange twin and an Also-near neighbour for each. A true
+ * Connection or an Interchange twin at a Station wins over an Also-near entry
+ * there, so a Place is never doubled up by a walkway it already reaches
+ * directly.
  *
  * Pure: `stations` comes from `stationsByCode`.
  */
-export function placeListings(
+export function stationPlacesForPlace(
   place: Place,
   stations: Map<string, LineStation>,
-): StationListing[] {
+): StationPlace[] {
   const connections = place.connections ?? [];
-  const trueListings: StationListing[] = [];
-  const twinListings: StationListing[] = [];
-  const nearListings: StationListing[] = [];
+  const trueEntries: StationPlace[] = [];
+  const twinEntries: StationPlace[] = [];
+  const nearEntries: StationPlace[] = [];
 
   const reached = new Set<string>();
   for (const connection of connections) {
     if (reached.has(connection.station)) continue;
     reached.add(connection.station);
-    trueListings.push({ place, stationCode: connection.station, connection });
+    trueEntries.push({ place, stationCode: connection.station, connection });
   }
 
   const twins = new Set<string>();
@@ -152,7 +152,7 @@ export function placeListings(
     for (const twin of station.interchange ?? []) {
       if (reached.has(twin) || twins.has(twin)) continue;
       twins.add(twin);
-      twinListings.push({ place, stationCode: twin, connection });
+      twinEntries.push({ place, stationCode: twin, connection });
     }
   }
 
@@ -162,7 +162,7 @@ export function placeListings(
     for (const neighbour of station.connecting ?? []) {
       if (reached.has(neighbour) || twins.has(neighbour)) continue;
       reached.add(neighbour);
-      nearListings.push({
+      nearEntries.push({
         place,
         stationCode: neighbour,
         connection,
@@ -171,69 +171,69 @@ export function placeListings(
     }
   }
 
-  return [...trueListings, ...twinListings, ...nearListings];
+  return [...trueEntries, ...twinEntries, ...nearEntries];
 }
 
 /**
- * Every Station's listings, by Station code, for the given Places. A Place
+ * Every Station's entries, by Station code, for the given Places. A Place
  * reaches a Station when it truly Connects to it, or by Interchange or a
  * Connecting neighbour; `lines` is the whole network, because a twin or
  * neighbour may sit on another Line.
  */
-export function listingsByStation(
+export function stationPlacesByCode(
   lines: Line[],
   places: Place[],
-): Map<string, StationListing[]> {
+): Map<string, StationPlace[]> {
   const stations = stationsByCode(lines);
-  const byStation = new Map<string, StationListing[]>();
+  const byStation = new Map<string, StationPlace[]>();
   for (const place of places) {
-    for (const listing of placeListings(place, stations)) {
-      const list = byStation.get(listing.stationCode);
-      if (list) list.push(listing);
-      else byStation.set(listing.stationCode, [listing]);
+    for (const entry of stationPlacesForPlace(place, stations)) {
+      const list = byStation.get(entry.stationCode);
+      if (list) list.push(entry);
+      else byStation.set(entry.stationCode, [entry]);
     }
   }
   return byStation;
 }
 
 /**
- * The Places that appear on a Line's corridor, each once: every Place with a
- * listing under a Station on the Line, whether a true Connection or a derived
+ * The Places that appear on a Line's corridor, each once: every Place with an
+ * entry under a Station on the Line, whether a true Connection or a derived
  * Interchange twin or Also-near neighbour. This is what the corridor renders;
  * `coverage` still counts true Connections only.
  */
-export function listedPlaces(
+export function placesOnLine(
   line: Line,
   lines: Line[],
   places: Place[],
 ): Place[] {
-  const byStation = listingsByStation(lines, places);
+  const byStation = stationPlacesByCode(lines, places);
   const codes = new Set(line.stations.map((station) => station.code));
   const seen = new Set<string>();
-  const listed: Place[] = [];
+  const onLine: Place[] = [];
   for (const code of codes) {
-    for (const listing of byStation.get(code) ?? []) {
-      if (seen.has(listing.place.slug)) continue;
-      seen.add(listing.place.slug);
-      listed.push(listing.place);
+    for (const entry of byStation.get(code) ?? []) {
+      if (seen.has(entry.place.slug)) continue;
+      seen.add(entry.place.slug);
+      onLine.push(entry.place);
     }
   }
-  return listed;
+  return onLine;
 }
 
 /**
  * The Lines the directory covers: those holding at least one Place, in the
  * network's own order.
  *
- * A Line is covered when one of its Stations holds a listing — a true Connection
- * or a derived Interchange or Also-near listing — because the corridor shows
- * those listings, so a derived Line is worth browsing. This is deliberately
+ * A Line is covered when one of its Stations holds a Place — a true Connection
+ * or a derived Interchange or Also-near placement — because the corridor shows
+ * those Places, so a derived Line is worth browsing. This is deliberately
  * broader than `coverage`, which counts true Connections only: a Line reached
- * only by derivation reads 0 of N stations while showing the borrowed listing,
+ * only by derivation reads 0 of N stations while showing the borrowed Place,
  * stating what the directory holds rather than what it merely mentions.
  */
 export function coveredLines(lines: Line[], places: Place[]): Line[] {
-  const reached = new Set(listingsByStation(lines, places).keys());
+  const reached = new Set(stationPlacesByCode(lines, places).keys());
   return lines.filter((line) =>
     line.stations.some((station) => reached.has(station.code)),
   );
@@ -243,9 +243,9 @@ export function coveredLines(lines: Line[], places: Place[]): Line[] {
  * Every Station code any Place truly Connects to.
  *
  * Coverage counts Connections only: an Interchange twin or a Connecting
- * neighbour is a derived listing (`placeListings`), never a Connection, so it
- * never moves this count. The directory states what it holds, not what it merely
- * mentions.
+ * neighbour is a derived entry (`stationPlacesForPlace`), never a Connection,
+ * so it never moves this count. The directory states what it holds, not what it
+ * merely mentions.
  */
 function coveredCodes(places: Place[]): Set<string> {
   const codes = new Set<string>();
