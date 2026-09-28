@@ -36,6 +36,20 @@ export function buildRouteFrameUrl(
   return withTravelMode(stored, mode);
 }
 
+/**
+ * The Route frame for one listing, from the Connection it borrows. A true
+ * Connection is the Place's own; an Interchange twin or an Also-near listing
+ * reuses its anchor Connection's route. Falls back to the Place's Map link when
+ * that Connection stored no frame.
+ */
+export function buildListingRouteFrameUrl(
+  place: Place,
+  connection: Connection,
+  mode: RouteMode,
+): string {
+  return withTravelMode(connection.embed ?? place.map, mode);
+}
+
 /** The route opened in Google Maps, from the Place's name to the Station. */
 export function buildOpenRouteUrl(
   place: Place,
