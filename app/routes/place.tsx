@@ -35,27 +35,28 @@ export function loader({ params }: Route.LoaderArgs) {
   }));
   const stationCode = stations[0]?.code ?? "";
   const stationName = stations[0]?.name ?? "";
-  const alsoNearNames = stations.slice(1).map((station) => station.name);
+  const alsoNear = stations.slice(1);
   return {
     place: place as Place,
     stationCode,
     stationName,
-    alsoNearNames,
+    alsoNear,
     lineName: COVERED_LINE.name,
   };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
   if (!loaderData) return [];
-  const { place, stationName, lineName } = loaderData;
+  const { place, stationCode, stationName, lineName } = loaderData;
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
   const kindLabel = KIND_LABELS[place.kind] ?? place.kind;
+  const stationLabel = `${stationCode} ${stationName}`;
 
   let description: string;
   if (place.kind === "area") {
-    description = `${place.name} is a neighbourhood near ${stationName} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
+    description = `${place.name} is a neighbourhood near ${stationLabel} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
   } else {
-    description = `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
+    description = `${place.name} is a ${typeLabel.toLowerCase()} near ${stationLabel} on the ${lineName} line. Walk and drive routes on NaikTrainJer.`;
   }
 
   const ogImage = `https://naiktrainjer.com/og/${place.slug}.png`;
@@ -80,9 +81,10 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function PlacePage() {
-  const { place, stationCode, stationName, alsoNearNames, lineName } =
+  const { place, stationCode, stationName, alsoNear, lineName } =
     useLoaderData<typeof loader>();
   const [routeMode, setRouteMode] = useState<RouteMode>("walk");
+  const stationLabel = `${stationCode} ${stationName}`;
 
   const routeFrameUrl = useMemo(
     () => buildRouteFrameUrl(place, stationCode, routeMode),
@@ -98,8 +100,8 @@ export default function PlacePage() {
   const isBuilding = place.kind === "building";
   const contributor = placeContributor(place);
   const sentence = isBuilding
-    ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationName}, on the ${lineName} line.`
-    : `${place.name} is a neighbourhood near ${stationName}, on the ${lineName} line.`;
+    ? `${place.name} is a ${typeLabel.toLowerCase()} near ${stationLabel}, on the ${lineName} line.`
+    : `${place.name} is a neighbourhood near ${stationLabel}, on the ${lineName} line.`;
 
   return (
     <div
@@ -138,15 +140,19 @@ export default function PlacePage() {
             <dt className="text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
               Nearest station
             </dt>
-            <dd className="mt-1 text-[13.5px] font-semibold text-ink">{stationName}</dd>
+            <dd className="mt-1 text-[13.5px] font-semibold tabular-nums text-ink">
+              {stationLabel}
+            </dd>
 
-            {alsoNearNames.length > 0 && (
+            {alsoNear.length > 0 && (
               <>
                 <dt className="mt-4 text-[12px] font-bold uppercase tracking-[0.1em] text-ink-soft">
                   Also near
                 </dt>
-                <dd className="mt-1 text-[13.5px] font-semibold text-ink">
-                  {alsoNearNames.join(", ")}
+                <dd className="mt-1 text-[13.5px] font-semibold tabular-nums text-ink">
+                  {alsoNear
+                    .map((station) => `${station.code} ${station.name}`)
+                    .join(", ")}
                 </dd>
               </>
             )}
@@ -199,7 +205,9 @@ export default function PlacePage() {
             <p className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink">
               {place.name}
             </p>
-            <p className="mt-0.5 text-[12.5px] text-ink-soft">near {stationName}</p>
+            <p className="mt-0.5 text-[12.5px] tabular-nums text-ink-soft">
+              near {stationLabel}
+            </p>
           </div>
 
           <div className="relative h-[52vh] shrink-0 md:h-auto md:min-h-0 md:flex-1">

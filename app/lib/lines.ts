@@ -197,17 +197,45 @@ export function listingsByStation(
 }
 
 /**
+ * The Places that appear on a Line's corridor, each once: every Place with a
+ * listing under a Station on the Line, whether a true Connection or a derived
+ * Interchange twin or Also-near neighbour. This is what the corridor renders;
+ * `coverage` still counts true Connections only.
+ */
+export function listedPlaces(
+  line: Line,
+  lines: Line[],
+  places: Place[],
+): Place[] {
+  const byStation = listingsByStation(lines, places);
+  const codes = new Set(line.stations.map((station) => station.code));
+  const seen = new Set<string>();
+  const listed: Place[] = [];
+  for (const code of codes) {
+    for (const listing of byStation.get(code) ?? []) {
+      if (seen.has(listing.place.slug)) continue;
+      seen.add(listing.place.slug);
+      listed.push(listing.place);
+    }
+  }
+  return listed;
+}
+
+/**
  * The Lines the directory covers: those holding at least one Place, in the
  * network's own order.
  *
- * A Line is covered when one of its Stations holds a Place, so the selector
- * never offers a corridor with nothing on it. The network still knows every
- * Line; this is only the subset worth browsing.
+ * A Line is covered when one of its Stations holds a listing — a true Connection
+ * or a derived Interchange or Also-near listing — because the corridor shows
+ * those listings, so a derived Line is worth browsing. This is deliberately
+ * broader than `coverage`, which counts true Connections only: a Line reached
+ * only by derivation reads 0 of N stations while showing the borrowed listing,
+ * stating what the directory holds rather than what it merely mentions.
  */
 export function coveredLines(lines: Line[], places: Place[]): Line[] {
-  const withPlaces = coveredCodes(places);
+  const reached = new Set(listingsByStation(lines, places).keys());
   return lines.filter((line) =>
-    line.stations.some((station) => withPlaces.has(station.code)),
+    line.stations.some((station) => reached.has(station.code)),
   );
 }
 
