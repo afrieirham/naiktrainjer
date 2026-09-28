@@ -6,6 +6,8 @@ import {
   buildContributionFile,
   contributionPullRequestBody,
   isGoogleMapsEmbed,
+  normalizeRouteFrame,
+  toConnections,
   validateContribution,
   validateFields,
   type ContributionDraft,
@@ -119,6 +121,28 @@ describe("validateContribution", () => {
     );
   });
 
+  it("accepts a Route frame pasted as a whole <iframe> tag, stored as the bare URL", () => {
+    const { errors, contribution } = validateContribution(
+      draft({
+        connections: [
+          {
+            station: "KJ20",
+            embed:
+              '<iframe src="https://www.google.com/maps/embed?pb=!3e2!walk" width="600" height="450" loading="lazy"></iframe>',
+          },
+        ],
+      }),
+      STATIONS,
+      TYPES,
+    );
+
+    assert.deepEqual(errors, {});
+    assert.equal(
+      contribution?.connections[0].embed,
+      "https://www.google.com/maps/embed?pb=!3e2!walk",
+    );
+  });
+
   it("rejects a contributor link that is not a web address", () => {
     assert.match(
       errorsFor({ contributorHref: "not a url" }).contributorHref,
@@ -183,6 +207,78 @@ describe("validateContribution", () => {
   it("validateFields is the same rules without building a record", () => {
     assert.deepEqual(validateFields(draft(), STATIONS, TYPES), {});
     assert.match(validateFields(draft({ name: "" }), STATIONS, TYPES).name, /name/);
+  });
+});
+
+describe("normalizeRouteFrame", () => {
+  const WALK = "https://www.google.com/maps/embed?pb=!3e2!walk";
+
+  it("extracts the src from a whole <iframe> tag", () => {
+    assert.equal(
+      normalizeRouteFrame(
+        `<iframe src="${WALK}" width="600" height="450" style="border:0;" loading="lazy"></iframe>`,
+      ),
+      WALK,
+    );
+  });
+
+  it("normalises an iframe and the bare URL to the same stored link", () => {
+    assert.equal(normalizeRouteFrame(`<iframe src="${WALK}"></iframe>`), WALK);
+    assert.equal(normalizeRouteFrame(WALK), WALK);
+  });
+
+  it("decodes the HTML entity an iframe src carries", () => {
+    assert.equal(
+      normalizeRouteFrame(
+        '<iframe src="https://www.google.com/maps/embed?pb=a&amp;b"></iframe>',
+      ),
+      "https://www.google.com/maps/embed?pb=a&b",
+    );
+  });
+
+  it("forces the stored frame to the walking mode segment", () => {
+    assert.equal(
+      normalizeRouteFrame("https://www.google.com/maps/embed?pb=!3e0!drive"),
+      "https://www.google.com/maps/embed?pb=!3e2!drive",
+    );
+    assert.equal(
+      normalizeRouteFrame(
+        '<iframe src="https://www.google.com/maps/embed?pb=!3e1!cycle"></iframe>',
+      ),
+      "https://www.google.com/maps/embed?pb=!3e2!cycle",
+    );
+  });
+
+  it("leaves a non-embed link for the strict predicate to refuse", () => {
+    const share = "https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9";
+    const directions =
+      "https://www.google.com/maps/dir/?api=1&origin=a&destination=b";
+    assert.equal(normalizeRouteFrame(share), share);
+    assert.equal(normalizeRouteFrame(directions), directions);
+  });
+
+  it("is null for a blank paste", () => {
+    assert.equal(normalizeRouteFrame("   "), null);
+  });
+});
+
+describe("toConnections", () => {
+  it("normalises a pasted iframe into the stored bare walking link", () => {
+    assert.deepEqual(
+      toConnections([
+        {
+          station: "KJ20",
+          embed:
+            '<iframe src="https://www.google.com/maps/embed?pb=!3e0!drive"></iframe>',
+        },
+      ]),
+      [
+        {
+          station: "KJ20",
+          embed: "https://www.google.com/maps/embed?pb=!3e2!drive",
+        },
+      ],
+    );
   });
 });
 

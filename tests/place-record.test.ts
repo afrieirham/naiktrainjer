@@ -164,6 +164,44 @@ describe("validatePlace", () => {
     );
   });
 
+  it("normalises a whole <iframe> Route frame to the bare walking URL", () => {
+    const { errors, place } = validatePlace(
+      draft({
+        connections: [
+          {
+            station: "KJ20",
+            embed:
+              '<iframe src="https://www.google.com/maps/embed?pb=!3e0!drive" loading="lazy"></iframe>',
+          },
+        ],
+      }),
+      STATIONS,
+    );
+
+    assert.deepEqual(errors, {});
+    assert.deepEqual(place?.connections, [
+      {
+        station: "KJ20",
+        embed: "https://www.google.com/maps/embed?pb=!3e2!drive",
+      },
+    ]);
+  });
+
+  it("rejects a share link or a directions link with a clear message", () => {
+    for (const embed of [
+      "https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9",
+      "https://www.google.com/maps/dir/?api=1&origin=a&destination=b",
+    ]) {
+      assert.match(
+        validatePlace(
+          draft({ connections: [{ station: "KJ20", embed }] }),
+          STATIONS,
+        ).errors.connections,
+        /Google Maps embed/,
+      );
+    }
+  });
+
   it("rejects a bad contributor link but allows a blank one", () => {
     assert.match(
       validatePlace(draft({ contributorHref: "nope" }), STATIONS).errors

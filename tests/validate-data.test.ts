@@ -43,6 +43,78 @@ describe("validate-data.mjs", () => {
     );
   });
 
+  it("accepts a stored, normalised bare Route frame", () => {
+    const dir = mkdtempSync(join(tmpdir(), "naiktrainjer-places-"));
+    try {
+      writeFileSync(
+        join(dir, "good.json"),
+        JSON.stringify({
+          slug: "good",
+          name: "Good",
+          kind: "building",
+          type: "condominium",
+          map: "https://maps.app.goo.gl/x",
+          connections: [
+            {
+              station: "AG1",
+              embed: "https://www.google.com/maps/embed?pb=!3e2!walk",
+            },
+          ],
+          source: "owner",
+        }),
+      );
+
+      const result = execFileSync("node", ["scripts/validate-data.mjs", dir], {
+        cwd: root,
+        encoding: "utf-8",
+      });
+      assert.ok(
+        result.includes("✓ Valid"),
+        `Expected a success message, got: ${result}`,
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses a Route frame stored as a raw <iframe> or a non-walk link", () => {
+    const dir = mkdtempSync(join(tmpdir(), "naiktrainjer-places-"));
+    try {
+      writeFileSync(
+        join(dir, "bad.json"),
+        JSON.stringify({
+          slug: "bad",
+          name: "Bad",
+          kind: "building",
+          type: "condominium",
+          map: "https://maps.app.goo.gl/x",
+          connections: [
+            {
+              station: "AG1",
+              embed:
+                '<iframe src="https://www.google.com/maps/embed?pb=!3e0!drive"></iframe>',
+            },
+          ],
+          source: "owner",
+        }),
+      );
+
+      assert.throws(
+        () =>
+          execFileSync("node", ["scripts/validate-data.mjs", dir], {
+            cwd: root,
+            encoding: "utf-8",
+          }),
+        (error: unknown) =>
+          ((error as { stderr?: string }).stderr ?? "").includes(
+            "not a normalised Google Maps embed link",
+          ),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("refuses a Route frame that is not a Google Maps embed", () => {
     const dir = mkdtempSync(join(tmpdir(), "naiktrainjer-places-"));
     try {
