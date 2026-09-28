@@ -11,17 +11,18 @@ import {
   corridorOrder,
   coverage,
   coverageCopy,
-  listedPlaces,
+  placesOnLine,
   selectedLine,
   stationNamesByCode,
   type Coverage,
   type Line,
-  type StationListing,
+  type StationPlace,
 } from "../lib/lines";
 import { lines as LINES, places as PLACES } from "../data/directory";
 import {
-  buildListingRouteFrameUrl,
+  buildConnectionRouteFrameUrl,
   buildOpenRouteUrl,
+  buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
@@ -65,12 +66,12 @@ export const meta: Route.MetaFunction = () => {
 };
 
 /**
- * One listing is one row: a Place under one Station. A Place with two
- * Connections on one Line appears twice, so the selection is keyed by both and
- * each row answers with its own route.
+ * One entry is one row: a Place under one Station. A Place with two Connections
+ * on one Line appears twice, so the selection is keyed by both and each row
+ * answers with its own route.
  */
-function listingKey(listing: StationListing): string {
-  return `${listing.place.slug}::${listing.stationCode}`;
+function stationPlaceKey(entry: StationPlace): string {
+  return `${entry.place.slug}::${entry.stationCode}`;
 }
 
 /**
@@ -165,11 +166,11 @@ export default function Browse() {
 
   /**
    * Only the selected Line's Places sit on the corridor, but a Place reaches it
-   * by a true Connection or by a derived Interchange or Also-near listing, so
-   * the reach comes from the listings rather than the Connections alone.
+   * by a true Connection or by a derived Interchange or Also-near placement, so
+   * the reach comes from the Station entries rather than the Connections alone.
    */
   const linePlaces = useMemo(
-    () => listedPlaces(line, LINES, places),
+    () => placesOnLine(line, LINES, places),
     [line, places],
   );
 
@@ -190,18 +191,21 @@ export default function Browse() {
 
   /**
    * The selected row: a Place under a Station. The corridor renders one row per
-   * listing, so the key is both, and each duplicate row resolves its own route.
+   * Station entry, so the key is both, and each duplicate row resolves its own
+   * route.
    */
-  const selectedListing = useMemo(() => {
+  const selectedStationPlace = useMemo(() => {
     if (!selectedKey) return null;
     for (const row of stationRows) {
-      const found = row.listings.find((listing) => listingKey(listing) === selectedKey);
+      const found = row.stationPlaces.find(
+        (entry) => stationPlaceKey(entry) === selectedKey,
+      );
       if (found) return found;
     }
     return null;
   }, [stationRows, selectedKey]);
 
-  const selectedPlace = selectedListing?.place ?? null;
+  const selectedPlace = selectedStationPlace?.place ?? null;
 
   /**
    * Switching Lines is a client-side render: the choice goes in the URL so
@@ -217,7 +221,7 @@ export default function Browse() {
   };
 
   /** The Station the selected row sits under, `<code> <name>`. */
-  const selectedStationCode = selectedListing?.stationCode ?? "";
+  const selectedStationCode = selectedStationPlace?.stationCode ?? "";
   const selectedStationName = selectedStationCode
     ? stationNameMap.get(selectedStationCode) ?? selectedStationCode
     : null;
@@ -226,45 +230,42 @@ export default function Browse() {
     : null;
 
   /**
-   * The "also near" this row answers: an Also-near listing names the anchor
-   * Station whose route it borrows. A true listing instead names the Place's
-   * other Connections, never the Station it already sits under.
+   * The "also near" this row answers: an Also-near entry names the anchor
+   * Station whose route it borrows. A true entry instead names the Place's other
+   * Connections, never the Station it already sits under.
    */
   const selectedAlsoNear = useMemo(() => {
-    if (!selectedListing) return [];
-    if (selectedListing.alsoNearCode) {
-      const code = selectedListing.alsoNearCode;
+    if (!selectedStationPlace) return [];
+    if (selectedStationPlace.alsoNearCode) {
+      const code = selectedStationPlace.alsoNearCode;
       const name = stationNameMap.get(code) ?? code;
       return [`${code} ${name}`];
     }
-    return selectedListing.place.connections
+    return selectedStationPlace.place.connections
       .filter(
-        (connection) => connection.station !== selectedListing.connection.station,
+        (connection) =>
+          connection.station !== selectedStationPlace.connection.station,
       )
       .map((connection) => {
         const name = stationNameMap.get(connection.station) ?? connection.station;
         return `${connection.station} ${name}`;
       });
-  }, [selectedListing, stationNameMap]);
+  }, [selectedStationPlace, stationNameMap]);
 
   /**
-   * A derived listing has no route of its own: the answer belongs to the anchor
+   * A derived entry has no route of its own: the answer belongs to the anchor
    * Station, so both the frame and the Google Maps route point there.
    */
   const routeStationCode =
-    selectedListing?.alsoNearCode ?? selectedStationCode;
+    selectedStationPlace?.alsoNearCode ?? selectedStationCode;
   const routeStationName = routeStationCode
     ? stationNameMap.get(routeStationCode) ?? routeStationCode
     : null;
 
   const routeFrameUrl = useMemo(() => {
-    if (!selectedPlace || !selectedListing) return "";
-    return buildListingRouteFrameUrl(
-      selectedPlace,
-      selectedListing.connection,
-      routeMode,
-    );
-  }, [selectedPlace, selectedListing, routeMode]);
+    if (!selectedStationPlace) return null;
+    return buildConnectionRouteFrameUrl(selectedStationPlace.connection, routeMode);
+  }, [selectedStationPlace, routeMode]);
 
   const openRouteUrl = useMemo(() => {
     if (!selectedPlace || !routeStationName) return "";
@@ -306,7 +307,7 @@ export default function Browse() {
     if (selectedKey !== null || !key) return;
     clearFocusRef.current = null;
     document
-      .querySelector<HTMLButtonElement>(`[data-listing="${key}"]`)
+      .querySelector<HTMLButtonElement>(`[data-station-place="${key}"]`)
       ?.focus();
   }, [selectedKey]);
 
@@ -436,15 +437,15 @@ export default function Browse() {
                           </div>
                         </div>
                         <ul>
-                          {row.listings.map((listing) => {
-                            const key = listingKey(listing);
+                          {row.stationPlaces.map((entry) => {
+                            const key = stationPlaceKey(entry);
                             const isActive = key === selectedKey;
                             return (
                               <li key={key} role="listitem">
                                 <button
                                   type="button"
-                                  data-listing={key}
-                                  data-place-slug={listing.place.slug}
+                                  data-station-place={key}
+                                  data-place-slug={entry.place.slug}
                                   data-active={isActive}
                                   aria-current={isActive ? "true" : undefined}
                                   onClick={() =>
@@ -456,10 +457,10 @@ export default function Browse() {
                                 >
                                   <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[13.5px] font-semibold text-ink">
-                                      {listing.place.name}
+                                      {entry.place.name}
                                     </span>
                                     <span className="mt-0.5 block truncate text-[12px] text-ink-soft">
-                                      {metaLabel(listing.place)}
+                                      {metaLabel(entry.place)}
                                     </span>
                                   </span>
                                 </button>
@@ -497,10 +498,11 @@ export default function Browse() {
           }`}
         >
           <div className="relative min-h-0 flex-1">
-            {selectedPlace && routeFrameUrl ? (
+            {selectedPlace ? (
               <RouteFrame
                 src={routeFrameUrl}
                 mode={routeMode}
+                mapUrl={buildPlacePinUrl(selectedPlace)}
                 className="absolute inset-0 block h-full w-full border-0"
               />
             ) : (

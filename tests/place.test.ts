@@ -405,7 +405,7 @@ describe("place page content", () => {
     }
   });
 
-  it("every page routes to the station on Google Maps, with no separate pin link", () => {
+  it("every page routes to the station on Google Maps", () => {
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -418,9 +418,60 @@ describe("place page content", () => {
         html.includes("google.com/maps/dir") && html.includes("Open in Google Maps"),
         `Page "${place.slug}" must offer the route on Google Maps`,
       );
+    }
+  });
+
+  it("frames a stored Route frame, and frames nothing without one", () => {
+    for (const place of data.places) {
+      const pagePath = resolve(BUILD_DIR, "places", place.slug, "index.html");
+      const html = stripComments(readFileSync(pagePath, "utf-8"));
+      const stored = place.connections[0]?.embed ?? null;
+      if (stored) {
+        assert.ok(
+          html.includes(`<iframe src="${stored}"`),
+          `Page "${place.slug}" must frame its stored Route frame`,
+        );
+      } else {
+        assert.ok(
+          !html.includes("<iframe"),
+          `Page "${place.slug}" stores no Route frame, so must render no iframe`,
+        );
+      }
       assert.ok(
-        !html.includes("Place on Google Maps"),
-        `Page "${place.slug}" must not carry a separate place pin link`,
+        !html.includes(`<iframe src="${place.map}"`),
+        `Page "${place.slug}" must not frame the Map link`,
+      );
+    }
+  });
+
+  it("offers the Map link where the frame would sit when no Route frame is stored", () => {
+    const framed = data.places.filter(
+      (place) => place.connections[0]?.embed ?? null,
+    );
+    const unframed = data.places.filter(
+      (place) => !(place.connections[0]?.embed ?? null),
+    );
+    assert.ok(unframed.length > 0, "The fixture must hold a Place with no Route frame");
+
+    for (const place of unframed) {
+      const pagePath = resolve(BUILD_DIR, "places", place.slug, "index.html");
+      const html = stripComments(readFileSync(pagePath, "utf-8"));
+      assert.ok(
+        html.includes("No walking route is stored for this station yet."),
+        `Page "${place.slug}" must say why no frame is shown`,
+      );
+      assert.ok(
+        html.includes("Place on Google Maps"),
+        `Page "${place.slug}" must reach the Place's Map link instead of a frame`,
+      );
+    }
+
+    for (const place of framed) {
+      const pagePath = resolve(BUILD_DIR, "places", place.slug, "index.html");
+      const html = stripComments(readFileSync(pagePath, "utf-8"));
+      assert.ok(
+        !html.includes("No walking route is stored for this station yet."),
+        `Page "${place.slug}" stores a frame, so must show the frame, not the fallback`,
       );
     }
   });
