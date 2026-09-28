@@ -1,4 +1,5 @@
 import type { RouteMode } from "../lib/route-url";
+import { isGoogleMapsEmbed } from "../lib/contribution";
 import { OpenIcon } from "./icons";
 
 interface RouteFrameProps {
@@ -31,7 +32,9 @@ export function RouteFrame({
       ? "Walking directions to LRT station"
       : "Driving directions to LRT station";
 
-  if (!src) {
+  // Only a stored Google Maps embed is framed: the Map link is a share/search
+  // link Google refuses to frame, so it stands in as a plain link instead.
+  if (!src || !isGoogleMapsEmbed(src)) {
     return (
       <div className={`${className} flex items-center justify-center`}>
         <div className="flex max-w-[36ch] flex-col items-center gap-3 px-6 text-center">

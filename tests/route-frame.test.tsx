@@ -46,8 +46,12 @@ describe("RouteFrame", () => {
       <RouteFrame src={MAP_LINK} mode="walk" mapUrl={MAP_LINK} />,
     );
     assert.ok(
-      !html.includes(`<iframe src="${MAP_LINK}"`),
+      !html.includes("<iframe"),
       "the Map link is a share/search link Google refuses to frame",
+    );
+    assert.ok(
+      html.includes(`href="${MAP_LINK}"`),
+      "the Map link stands in as a plain link instead",
     );
   });
 
