@@ -58,12 +58,35 @@ export default function ContributePage() {
     setFields((current) => ({ ...current, [field]: value }));
   }
 
-  /** The public form offers one Station; the record still carries a Connection list. */
-  function setStation(station: string) {
-    setFields((current) => ({ ...current, connections: [{ station, embed: "" }] }));
+  /** One row of the Station editor: its Station and its optional Route frame. */
+  function setConnection(
+    index: number,
+    patch: Partial<ContributionDraft["connections"][number]>,
+  ) {
+    setFields((current) => ({
+      ...current,
+      connections: current.connections.map((connection, i) =>
+        i === index ? { ...connection, ...patch } : connection,
+      ),
+    }));
   }
 
-  const station = fields.connections[0]?.station ?? "";
+  function addConnection() {
+    setFields((current) => ({
+      ...current,
+      connections: [...current.connections, { station: "", embed: "" }],
+    }));
+  }
+
+  function removeConnection(index: number) {
+    setFields((current) => ({
+      ...current,
+      connections:
+        current.connections.length === 1
+          ? current.connections
+          : current.connections.filter((_, i) => i !== index),
+    }));
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -145,9 +168,10 @@ export default function ContributePage() {
               Contribute a place
             </h1>
             <p className="mt-3 text-[13.5px] leading-relaxed text-ink-soft">
-              Know a place near a station? Give it a name and pick the station it
-              belongs to. Every contribution is reviewed by hand before it
-              appears, and there is no account to create.
+              Know a place near a station? Give it a name and pick the stations it
+              is near, adding the route you walked if you have it. Every
+              contribution is reviewed by hand before it appears, and there is no
+              account to create.
             </p>
 
             <form onSubmit={submit} className="mt-8 flex flex-col gap-5">
@@ -164,31 +188,67 @@ export default function ContributePage() {
                 />
               </Field>
 
-              <Field
-                label="Station"
-                error={errors.connections}
-                htmlFor="station"
-              >
-                <select
-                  id="station"
-                  name="station"
-                  aria-required="true"
-                  value={station}
-                  onChange={(event) => setStation(event.target.value)}
-                  className={FIELD_CLASS}
-                >
-                  <option value="">Choose a station</option>
-                  {lines.map((line) => (
-                    <optgroup key={line.slug} label={line.name}>
-                      {line.stations.map((station) => (
-                        <option key={station.code} value={station.code}>
-                          {station.name}
-                        </option>
+              <fieldset className="flex flex-col gap-3">
+                <legend className="text-[12px] font-medium text-ink-soft">
+                  Connections — the stations this place is near
+                </legend>
+                {fields.connections.map((connection, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
+                  >
+                    <select
+                      aria-label={`Station ${index + 1}`}
+                      aria-required="true"
+                      value={connection.station}
+                      onChange={(event) =>
+                        setConnection(index, { station: event.target.value })
+                      }
+                      className={FIELD_CLASS}
+                    >
+                      <option value="">Choose a station</option>
+                      {lines.map((line) => (
+                        <optgroup key={line.slug} label={line.name}>
+                          {line.stations.map((station) => (
+                            <option key={station.code} value={station.code}>
+                              {station.code} {station.name}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </Field>
+                    </select>
+                    <input
+                      aria-label={`Route frame ${index + 1} (optional)`}
+                      value={connection.embed}
+                      onChange={(event) =>
+                        setConnection(index, { embed: event.target.value })
+                      }
+                      placeholder="Route frame (optional)"
+                      className={FIELD_CLASS}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeConnection(index)}
+                      disabled={fields.connections.length === 1}
+                      className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                {errors.connections && (
+                  <p className="text-[12px] font-medium text-ink">
+                    {errors.connections}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={addConnection}
+                  className="self-start rounded-md border border-rule-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-soft transition-colors hover:bg-band"
+                >
+                  Add another station
+                </button>
+              </fieldset>
 
               <Field label="Type (optional)" error={errors.type} htmlFor="type">
                 <select
@@ -208,7 +268,7 @@ export default function ContributePage() {
               </Field>
 
               <Field
-                label="Google Maps link (optional)"
+                label="Google Maps link"
                 error={errors.map}
                 htmlFor="map"
               >
@@ -217,6 +277,7 @@ export default function ContributePage() {
                   name="map"
                   type="url"
                   inputMode="url"
+                  aria-required="true"
                   placeholder="https://"
                   value={fields.map}
                   onChange={(event) => set("map", event.target.value)}

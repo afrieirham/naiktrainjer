@@ -123,6 +123,93 @@ describe("POST /api/contribute", () => {
     assert.equal(wrote, false);
   });
 
+  it("refuses a Contribution with no Stations, or no Map link", async () => {
+    let wrote = false;
+    const depsWithWrite = deps({
+      openPullRequest: async () => {
+        wrote = true;
+        return PR_URL;
+      },
+    });
+
+    const noStations = await onRequestPost(
+      {
+        request: request({
+          name: "Amcorp Service Suite",
+          connections: [],
+          map: "https://maps.app.goo.gl/x",
+          turnstileToken: "token",
+        }),
+        env: env(),
+      },
+      depsWithWrite,
+    );
+    assert.equal(noStations.status, 422);
+    const noStationsBody = (await noStations.json()) as {
+      errors?: Record<string, string>;
+    };
+    assert.match(noStationsBody.errors?.connections ?? "", /at least one station/);
+
+    const noMap = await onRequestPost(
+      {
+        request: request({
+          name: "Amcorp Service Suite",
+          connections: [{ station: "KJ20", embed: "" }],
+          map: "",
+          turnstileToken: "token",
+        }),
+        env: env(),
+      },
+      depsWithWrite,
+    );
+    assert.equal(noMap.status, 422);
+    const noMapBody = (await noMap.json()) as {
+      errors?: Record<string, string>;
+    };
+    assert.match(noMapBody.errors?.map ?? "", /Map link/);
+
+    assert.equal(wrote, false, "nothing may be written without a Station and a Map link");
+  });
+
+  it("files every Connection and Route frame the visitor picked", async () => {
+    const requests: ContributionPullRequest[] = [];
+    const response = await onRequestPost(
+      {
+        request: request({
+          ...VALID,
+          connections: [
+            {
+              station: "KJ20",
+              embed:
+                '<iframe src="https://www.google.com/maps/embed?pb=!3e0!drive"></iframe>',
+            },
+            { station: "AG1", embed: "" },
+          ],
+        }),
+        env: env(),
+      },
+      deps({
+        openPullRequest: async (input) => {
+          requests.push(input);
+          return PR_URL;
+        },
+      }),
+    );
+
+    assert.equal(response.status, 200);
+    const record = JSON.parse(requests[0].files[0].contents) as Record<
+      string,
+      unknown
+    >;
+    assert.deepEqual(record.connections, [
+      {
+        station: "KJ20",
+        embed: "https://www.google.com/maps/embed?pb=!3e2!drive",
+      },
+      { station: "AG1" },
+    ]);
+  });
+
   it("files one pull request adding the Contribution on a clean contribution", async () => {
     const requests: ContributionPullRequest[] = [];
     const response = await onRequestPost(
