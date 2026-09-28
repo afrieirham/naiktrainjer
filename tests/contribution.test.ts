@@ -5,6 +5,7 @@ import {
   MAX_NOTE,
   buildContributionFile,
   contributionPullRequestBody,
+  isGoogleMapsEmbed,
   validateContribution,
   validateFields,
   type ContributionDraft,
@@ -87,6 +88,37 @@ describe("validateContribution", () => {
     );
   });
 
+  it("rejects a Route frame that is not a Google Maps embed", () => {
+    assert.match(
+      errorsFor({
+        connections: [{ station: "KJ20", embed: "https://maps.app.goo.gl/x" }],
+      }).connections,
+      /Google Maps embed/,
+    );
+    assert.match(
+      errorsFor({
+        connections: [
+          {
+            station: "KJ20",
+            embed: "https://www.google.com/maps/dir/?api=1&origin=a&destination=b",
+          },
+        ],
+      }).connections,
+      /Google Maps embed/,
+    );
+    assert.equal(
+      errorsFor({
+        connections: [
+          {
+            station: "KJ20",
+            embed: "https://www.google.com/maps/embed?pb=!3e2!walk",
+          },
+        ],
+      }).connections,
+      undefined,
+    );
+  });
+
   it("rejects a contributor link that is not a web address", () => {
     assert.match(
       errorsFor({ contributorHref: "not a url" }).contributorHref,
@@ -151,6 +183,43 @@ describe("validateContribution", () => {
   it("validateFields is the same rules without building a record", () => {
     assert.deepEqual(validateFields(draft(), STATIONS, TYPES), {});
     assert.match(validateFields(draft({ name: "" }), STATIONS, TYPES).name, /name/);
+  });
+});
+
+describe("isGoogleMapsEmbed", () => {
+  it("accepts a Google Maps embed link", () => {
+    assert.equal(
+      isGoogleMapsEmbed("https://www.google.com/maps/embed?pb=!3e2!walk"),
+      true,
+    );
+    assert.equal(
+      isGoogleMapsEmbed("https://maps.google.com/maps/embed?pb=!3e2!walk"),
+      true,
+    );
+    assert.equal(
+      isGoogleMapsEmbed("https://google.com/maps/embed?pb=x"),
+      true,
+    );
+  });
+
+  it("refuses a share link, a directions link and any other address", () => {
+    assert.equal(
+      isGoogleMapsEmbed("https://maps.app.goo.gl/rk7aw2Jn3MBU82iS9"),
+      false,
+    );
+    assert.equal(
+      isGoogleMapsEmbed(
+        "https://www.google.com/maps/dir/?api=1&origin=a&destination=b",
+      ),
+      false,
+    );
+    assert.equal(isGoogleMapsEmbed("https://www.google.com/maps/embed"), false);
+    assert.equal(isGoogleMapsEmbed("https://example.com/maps/embed?pb=x"), false);
+    assert.equal(
+      isGoogleMapsEmbed("https://translate.google.com/maps/embed?pb=x"),
+      false,
+    );
+    assert.equal(isGoogleMapsEmbed("not a url"), false);
   });
 });
 

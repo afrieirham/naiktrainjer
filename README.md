@@ -53,21 +53,23 @@ A Place record looks like:
   "name": "Amcorp Service Suite",
   "kind": "building",
   "type": "service-apartment",
-  "station": "KJ20",
-  "alsoNear": [],
   "map": "https://maps.app.goo.gl/...",
-  "coordinates": { "lat": 3.1117289, "lng": 101.6366555 },
+  "connections": [
+    { "station": "KJ20", "embed": "https://www.google.com/maps/embed?pb=..." }
+  ],
   "source": "owner"
 }
 ```
 
-A Place is either a **Building** or an **Area**; `type` is a controlled list. `station` is the one
-Nearest station; `alsoNear` is context only and never a route destination. Measurement fields
-(`walkMinutes`, `walkMeters`, `driveMinutes`) are forbidden by the validator — the map route frame
-is the answer, not a number.
+A Place is either a **Building** or an **Area**; `type` is a controlled list. `map` is the
+required Google Maps link. Each **Connection** is one Station the Place is near, with an optional
+`embed` Route frame — the hand-pasted Google Maps walking embed for that Place→Station pair. A
+Connection without one falls back to the Place's Map link. Measurement fields (`walkMinutes`,
+`walkMeters`, `driveMinutes`), `station`, `alsoNear` and `coordinates` are forbidden by the
+validator.
 
-Run `npm test` (or `node scripts/validate-data.mjs`) to check the records against the network,
-bounds, and the controlled lists.
+Run `npm test` (or `node scripts/validate-data.mjs`) to check the records against the network and
+the controlled lists.
 
 ## Routes
 

@@ -1,8 +1,9 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { places } from "../app/data/directory.node.ts";
 
 const root = resolve(import.meta.dirname, "..");
@@ -40,5 +41,39 @@ describe("validate-data.mjs", () => {
       places.length,
       "The validator and the loader must agree on the number of Place records",
     );
+  });
+
+  it("refuses a Route frame that is not a Google Maps embed", () => {
+    const dir = mkdtempSync(join(tmpdir(), "naiktrainjer-places-"));
+    try {
+      writeFileSync(
+        join(dir, "bad.json"),
+        JSON.stringify({
+          slug: "bad",
+          name: "Bad",
+          kind: "building",
+          type: "condominium",
+          map: "https://maps.app.goo.gl/x",
+          connections: [
+            { station: "AG1", embed: "https://maps.app.goo.gl/not-an-embed" },
+          ],
+          source: "owner",
+        }),
+      );
+
+      assert.throws(
+        () =>
+          execFileSync("node", ["scripts/validate-data.mjs", dir], {
+            cwd: root,
+            encoding: "utf-8",
+          }),
+        (error: unknown) =>
+          ((error as { stderr?: string }).stderr ?? "").includes(
+            "not a Google Maps embed link",
+          ),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

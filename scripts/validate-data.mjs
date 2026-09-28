@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { lines } from '../data/network.ts';
+import { isGoogleMapsEmbed } from '../app/lib/contribution.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
@@ -20,7 +21,9 @@ const errors = [];
 function err(msg) { errors.push(msg); }
 
 try {
-  const placesDir = resolve(root, 'data/places');
+  const placesDir = process.argv[2]
+    ? resolve(process.cwd(), process.argv[2])
+    : resolve(root, 'data/places');
   const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
   const places = placeFiles.map((name) => {
     try {
@@ -136,8 +139,8 @@ try {
         else if (!corridor.has(connection.station)) err(`${label}: Connection station "${connection.station}" does not resolve to a network station code`);
 
         if (connection.embed !== undefined && connection.embed !== null) {
-          if (typeof connection.embed !== 'string' || !/^https?:\/\//.test(connection.embed))
-            err(`${label}: Connection embed "${connection.embed}" is not a web address`);
+          if (typeof connection.embed !== 'string' || !isGoogleMapsEmbed(connection.embed))
+            err(`${label}: Connection embed "${connection.embed}" is not a Google Maps embed link`);
         }
       }
     }

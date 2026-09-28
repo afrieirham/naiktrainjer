@@ -104,6 +104,28 @@ export function isWebAddress(value: string): boolean {
   );
 }
 
+/** The Google Maps hosts a Route frame's embed may live on. */
+const GOOGLE_MAPS_EMBED_HOSTS = ["google.com", "www.google.com", "maps.google.com"];
+
+/**
+ * A Google Maps embed link: the only address a Route frame may hold. The embed
+ * path is what a pasted walking route opens as; a share link (`maps.app.goo.gl`)
+ * or a directions link (`/maps/dir`) is refused, so no other Google Maps page
+ * can masquerade as a Route frame.
+ */
+export function isGoogleMapsEmbed(value: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+  if (!GOOGLE_MAPS_EMBED_HOSTS.includes(parsed.hostname)) return false;
+  if (parsed.pathname !== "/maps/embed") return false;
+  return parsed.searchParams.has("pb");
+}
+
 /**
  * The Connections a set of drafts carries, with the blanks dropped. A row whose
  * Station and Route frame are both blank is an editor's spare line, not a
@@ -186,9 +208,13 @@ export function validateConnections(
       errors.connections = `"${connection.station}" is not a station on the network.`;
       break;
     }
-    if (connection.embed !== null && !isWebAddress(connection.embed)) {
-      errors.connections = "That Route frame is not a web address.";
-      break;
+    if (connection.embed !== null) {
+      if (!isWebAddress(connection.embed)) {
+        errors.connections = "That Route frame is not a web address.";
+      } else if (!isGoogleMapsEmbed(connection.embed)) {
+        errors.connections = "That Route frame is not a Google Maps embed link.";
+      }
+      if (errors.connections) break;
     }
   }
 
