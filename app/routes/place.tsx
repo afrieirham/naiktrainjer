@@ -9,7 +9,7 @@ import {
   type RouteMode,
 } from "../lib/route-url";
 import { RouteFrame } from "../components/RouteFrame";
-import { AppBar, AppBarAction, AppBarLink } from "../components/AppBar";
+import { AppBar } from "../components/AppBar";
 import { TravelMode } from "../components/TravelMode";
 import { BackIcon, OpenIcon } from "../components/icons";
 import { publicUrl } from "../lib/routes";
@@ -112,8 +112,6 @@ export default function PlacePage() {
       <AppBar
         subtitle={`${lineName} line`}
         counts={COUNTS}
-        nav={<AppBarLink href="/contributors/">Contributors</AppBarLink>}
-        action={<AppBarAction href="/contribute/">Contribute a place</AppBarAction>}
       />
 
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">

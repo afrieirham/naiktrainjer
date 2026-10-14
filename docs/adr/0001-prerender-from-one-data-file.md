@@ -1,8 +1,10 @@
 # 0001 — Prerender the directory from one data file
 
 **Status:** accepted, amended by ADR-0002 (browse is line-scoped), ADR-0003 (PocketBase is a
-read-only network reference), ADR-0004 (one file per record) and ADR-0005 (contributions through
-one write path). Decision 3 is **retired**: no interface shows a walk or drive figure, the data
+read-only network reference), ADR-0004 (one file per record), ADR-0005 (contributions through
+one write path) and ADR-0008 (PocketBase is the source of truth, so decision 1's "the repository
+is the source of truth" no longer holds for Places; the repo holds a generated snapshot).
+Decision 3 is **retired**: no interface shows a walk or drive figure, the data
 validator forbids the fields, and the Measure script and its providers no longer exist in the
 repo.
 

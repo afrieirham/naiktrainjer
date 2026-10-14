@@ -1,7 +1,8 @@
 # 0003 — PocketBase is a read-only network reference, exported by hand
 
 **Status:** accepted, amended by ADR-0004 (the network is exported whole, and the directory no
-longer records checked-ness).
+longer records checked-ness) and by ADR-0008 (PocketBase now also holds the Places, and is the
+source of truth for them; both are read through a committed snapshot).
 
 ## Context
 

@@ -1,6 +1,8 @@
 # 0005 — Contributions arrive through one write path, and are approved in a pull request
 
-**Status:** accepted.
+**Status:** superseded by ADR-0008. The Contribution write path is paused, and the app's place/
+approve editing is retired, because Places now live in PocketBase and the repository files they
+wrote no longer feed the site.
 
 ## Context
 

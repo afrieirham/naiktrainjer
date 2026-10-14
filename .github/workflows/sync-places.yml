@@ -1,0 +1,61 @@
+# Sync the committed Place snapshot (`data/places.ts`) with PocketBase.
+#
+# Manually triggered only. Cloudflare Pages builds from the repo on push, so this
+# workflow never builds or deploys: it refreshes the snapshot and commits it.
+#
+# Two things a human must set up on the repository:
+#   1. Secret   `TS_AUTHKEY`     — a Tailscale auth key, so the runner can join the
+#                                  tailnet and reach the box running PocketBase.
+#   2. Variable `POCKETBASE_URL` — the box's tailnet address (MagicDNS name or
+#                                  `100.x` IP). `pocketbase.pi` will not resolve
+#                                  on a GitHub runner.
+name: Sync places
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Join the tailnet
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      - run: npm ci
+
+      - name: Require the PocketBase address
+        run: |
+          if [ -z "${POCKETBASE_URL:-}" ]; then
+            echo "::error::Set the POCKETBASE_URL repository variable to the box's tailnet address."
+            exit 1
+          fi
+        env:
+          POCKETBASE_URL: ${{ vars.POCKETBASE_URL }}
+
+      - name: Export places from PocketBase
+        run: npm run export-places
+        env:
+          POCKETBASE_URL: ${{ vars.POCKETBASE_URL }}
+
+      - name: Commit the snapshot if it changed
+        run: |
+          if git diff --quiet -- data/places.ts; then
+            echo "No changes to data/places.ts"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/places.ts
+          git commit -m "Sync places from PocketBase"
+          git push
