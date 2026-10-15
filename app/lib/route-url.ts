@@ -51,21 +51,6 @@ export function buildRouteFrameUrl(
   );
 }
 
-/** The route opened in Google Maps, from the Place's name to the Station. */
-export function buildOpenRouteUrl(
-  place: Place,
-  stationName: string,
-  mode: RouteMode,
-): string {
-  const travelmode = mode === "walk" ? "walking" : "driving";
-  return (
-    `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${encodeURIComponent(place.name)}` +
-    `&destination=${encodeURIComponent(stationName)}` +
-    `&travelmode=${travelmode}`
-  );
-}
-
 /** The Place's own Map link, now a required part of the record. */
 export function buildPlacePinUrl(place: Place): string {
   return place.map;
