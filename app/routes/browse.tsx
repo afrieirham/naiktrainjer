@@ -21,7 +21,6 @@ import {
 import { lines as LINES, places as PLACES } from "../data/directory";
 import {
   buildConnectionRouteFrameUrl,
-  buildOpenRouteUrl,
   buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
@@ -254,23 +253,12 @@ export default function Browse() {
 
   /**
    * A derived entry has no route of its own: the answer belongs to the anchor
-   * Station, so both the frame and the Google Maps route point there.
+   * Station, so the frame points there.
    */
-  const routeStationCode =
-    selectedStationPlace?.alsoNearCode ?? selectedStationCode;
-  const routeStationName = routeStationCode
-    ? stationNameMap.get(routeStationCode) ?? routeStationCode
-    : null;
-
   const routeFrameUrl = useMemo(() => {
     if (!selectedStationPlace) return null;
     return buildConnectionRouteFrameUrl(selectedStationPlace.connection, routeMode);
   }, [selectedStationPlace, routeMode]);
-
-  const openRouteUrl = useMemo(() => {
-    if (!selectedPlace || !routeStationName) return "";
-    return buildOpenRouteUrl(selectedPlace, routeStationName, routeMode);
-  }, [selectedPlace, routeStationName, routeMode]);
 
   const typeCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -560,7 +548,7 @@ export default function Browse() {
                   </button>
                   <TravelMode mode={routeMode} onChange={setRouteMode} />
                   <a
-                    href={openRouteUrl}
+                    href={buildPlacePinUrl(selectedPlace)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"

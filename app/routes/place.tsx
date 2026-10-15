@@ -4,7 +4,6 @@ import type { Place } from "../lib/browse-filter";
 import { lines, places } from "../data/directory";
 import {
   buildRouteFrameUrl,
-  buildOpenRouteUrl,
   buildPlacePinUrl,
   type RouteMode,
 } from "../lib/route-url";
@@ -90,11 +89,6 @@ export default function PlacePage() {
   const routeFrameUrl = useMemo(
     () => buildRouteFrameUrl(place, stationCode, routeMode),
     [place, stationCode, routeMode],
-  );
-
-  const openRouteUrl = useMemo(
-    () => buildOpenRouteUrl(place, stationName, routeMode),
-    [place, stationName, routeMode],
   );
 
   const typeLabel = TYPE_LABELS[place.type] ?? place.type;
@@ -222,7 +216,7 @@ export default function PlacePage() {
             <div className="flex flex-wrap items-center gap-3">
               <TravelMode mode={routeMode} onChange={setRouteMode} />
               <a
-                href={openRouteUrl}
+                href={buildPlacePinUrl(place)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-ink-soft underline decoration-rule-strong underline-offset-4 transition-colors hover:text-ink"

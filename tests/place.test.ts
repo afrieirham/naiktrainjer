@@ -389,7 +389,7 @@ describe("place page content", () => {
     }
   });
 
-  it("every page opens the route in Google Maps", () => {
+  it("every page offers the Place on Google Maps", () => {
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -400,12 +400,12 @@ describe("place page content", () => {
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
         html.includes("Open in Google Maps"),
-        `Page "${place.slug}" is missing the Google Maps route link`,
+        `Page "${place.slug}" is missing the Google Maps link`,
       );
     }
   });
 
-  it("every page routes to the station on Google Maps", () => {
+  it("every page opens the Place's own Map link, never a generated route", () => {
     for (const place of data.places) {
       const pagePath = resolve(
         BUILD_DIR,
@@ -415,8 +415,12 @@ describe("place page content", () => {
       );
       const html = stripComments(readFileSync(pagePath, "utf-8"));
       assert.ok(
-        html.includes("google.com/maps/dir") && html.includes("Open in Google Maps"),
-        `Page "${place.slug}" must offer the route on Google Maps`,
+        html.includes(`href="${asHtmlText(place.map)}"`),
+        `Page "${place.slug}" must open the Place's Map link on Google Maps`,
+      );
+      assert.ok(
+        !html.includes("google.com/maps/dir"),
+        `Page "${place.slug}" must generate no route link`,
       );
     }
   });

@@ -19,7 +19,6 @@ import {
 } from "../app/lib/lines.ts";
 import {
   buildRouteFrameUrl,
-  buildOpenRouteUrl,
   buildPlacePinUrl,
 } from "../app/lib/route-url.ts";
 import { lines, places } from "../app/data/directory.node.ts";
@@ -655,21 +654,6 @@ describe("route URL builders", () => {
           );
         }
       }
-    });
-  });
-
-  describe("buildOpenRouteUrl", () => {
-    it("uses travelmode=walking for walk mode, from the Place's name", () => {
-      const place = places[0];
-      const url = buildOpenRouteUrl(place, "KLCC", "walk");
-      assert.ok(url.includes("travelmode=walking"), `walk mode: ${url}`);
-      assert.ok(url.startsWith("https://www.google.com/maps/dir/?api=1"));
-      assert.ok(url.includes(encodeURIComponent(place.name)));
-    });
-
-    it("uses travelmode=driving for drive mode", () => {
-      const url = buildOpenRouteUrl(places[0], "KLCC", "drive");
-      assert.ok(url.includes("travelmode=driving"), `drive mode: ${url}`);
     });
   });
 
