@@ -744,7 +744,8 @@ export const places: Place[] = [
     "source": "owner",
     "connections": [
       {
-        "station": "KJ37"
+        "station": "KJ37",
+        "embed": "https://maps.app.goo.gl/TYwAMMHyPG56Ag3p6"
       }
     ]
   },
