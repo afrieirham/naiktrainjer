@@ -33,7 +33,7 @@ export const MAX_CONTRIBUTOR_NAME = 60;
  */
 export interface Connection {
   station: string;
-  embed: string | null;
+  embed?: string | null;
 }
 
 /** A Connection as a form or a payload carries it, before any of it is trusted. */
@@ -246,7 +246,7 @@ export function validateConnections(
       errors.connections = `"${connection.station}" is not a station on the network.`;
       break;
     }
-    if (connection.embed !== null) {
+    if (connection.embed != null) {
       if (!isWebAddress(connection.embed)) {
         errors.connections = "That Route frame is not a web address.";
       } else if (!isGoogleMapsEmbed(connection.embed)) {

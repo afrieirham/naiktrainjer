@@ -4,16 +4,18 @@ A public directory of places to rent near rail stations in the Klang Valley, pub
 naiktrainjer.com. The visitor's question is always the same: *can I walk to a station from
 here?*
 
-The site is **prerendered**: the data records plus the app source build to plain static HTML,
-which Cloudflare Pages serves. No database and no request-time API for reading; Pages Functions
-under `/api/*` handle Contributions.
+The site is **prerendered**: the committed snapshots plus the app source build to plain static HTML,
+which Cloudflare Pages serves. There is no request-time API for reading. PocketBase is the source of
+truth for the data; the repository holds generated snapshots.
 
 ## Shape
 
 - The React Router (framework mode) app lives at the repo root.
-- `data/network.ts` holds the whole network — every Line and its Stations — and
-  `data/places/<slug>.json` holds one Place per file. Together they are the source of truth for
-  every place in the directory; nothing else holds place data.
+- PocketBase is the source of truth for the directory's data — the network reference and the Places
+  (ADR-0008). Editing happens in its admin UI over Tailscale, not in the repository.
+- The repository holds generated snapshots: `data/network.ts` (the whole network — every Line and
+  its Stations) and `data/places.ts` (every Place and its Connections). Both are written by export
+  scripts, never hand-edited; there is no per-file Place data.
 - `docs/adr/` records the decisions behind that shape.
 
 ## Agent skills

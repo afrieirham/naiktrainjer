@@ -11,8 +11,6 @@ const SITE_URL = "https://naiktrainjer.com";
  */
 export const STATIC_ROUTES = [
   "/",
-  "/contribute",
-  "/contributors",
   ...places.map((place) => `/places/${place.slug}`),
 ] as const;
 

@@ -72,9 +72,6 @@ indexable.
 **Preview card** — the generated image a Place page shows when the link is pasted into a chat
 or social post.
 
-**Contribute page** — the page holding the native form where a visitor contributes a Place.
-_Prefer over_: Submit page.
-
 **Contribution** — a visitor's proposed Place, carrying a name, one or more Connections and a
 required Map link, plus optional detail.
 Private until approved: a Contribution is not a Place and is never rendered. _Avoid_:

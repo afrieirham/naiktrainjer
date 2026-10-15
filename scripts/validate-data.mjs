@@ -1,11 +1,8 @@
 import { readFileSync, readdirSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { lines } from '../data/network.ts';
+import { places as snapshotPlaces } from '../data/places.ts';
 import { isGoogleMapsEmbed, normalizeRouteFrame } from '../app/lib/contribution.ts';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = resolve(__dirname, '..');
 
 const VALID_KINDS = ['building', 'area'];
 const VALID_TYPES = [
@@ -21,18 +18,25 @@ const errors = [];
 function err(msg) { errors.push(msg); }
 
 try {
-  const placesDir = process.argv[2]
-    ? resolve(process.cwd(), process.argv[2])
-    : resolve(root, 'data/places');
-  const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
-  const places = placeFiles.map((name) => {
-    try {
-      return { ...JSON.parse(readFileSync(resolve(placesDir, name), 'utf-8')), __file: name };
-    } catch (e) {
-      err(`data/places/${name}: invalid JSON — ${e.message}`);
-      return null;
-    }
-  }).filter(Boolean);
+  // Default: validate the committed snapshot. An explicit directory keeps the
+  // legacy JSON mode, used by the Route-frame fixture tests.
+  let places;
+  let placeFileCount = null;
+  if (process.argv[2]) {
+    const placesDir = resolve(process.cwd(), process.argv[2]);
+    const placeFiles = readdirSync(placesDir).filter((name) => name.endsWith('.json')).sort();
+    placeFileCount = placeFiles.length;
+    places = placeFiles.map((name) => {
+      try {
+        return { ...JSON.parse(readFileSync(resolve(placesDir, name), 'utf-8')), __file: name };
+      } catch (e) {
+        err(`data/places/${name}: invalid JSON — ${e.message}`);
+        return null;
+      }
+    }).filter(Boolean);
+  } else {
+    places = snapshotPlaces;
+  }
 
   // Top-level shape
   if (!Array.isArray(lines)) err('data/network.ts: missing or non-array "lines"');
@@ -88,7 +92,8 @@ try {
     }
   }
 
-  // Place validation — one file per Place, each keyed by network code.
+  // Place validation — each keyed by network code. In legacy JSON mode the file
+  // name must match the slug; the snapshot module has no file, so skip that.
   const placeSlugs = new Set();
   for (const p of places) {
     const label = p.name || p.slug || p.__file;
@@ -102,7 +107,7 @@ try {
         err(`${label}: slug "${p.slug}" is not url-safe`);
       if (p.slug.length === 1 && !/^[a-z0-9]$/.test(p.slug))
         err(`${label}: slug "${p.slug}" is not url-safe`);
-      if (p.__file !== `${p.slug}.json`)
+      if (p.__file !== undefined && p.__file !== `${p.slug}.json`)
         err(`${label}: file "${p.__file}" does not match slug "${p.slug}"`);
     }
 
@@ -175,7 +180,9 @@ try {
       .filter((code) => corridor.has(code)),
   );
   console.log(
-    `✓ Valid: ${places.length} Places across ${placeFiles.length} files, ${coveredCodes.size} of ${lineStationCount} Stations hold Places` +
+    `✓ Valid: ${places.length} Places` +
+      (placeFileCount === null ? ' from the snapshot' : ` across ${placeFileCount} files`) +
+      `, ${coveredCodes.size} of ${lineStationCount} Stations hold Places` +
       ` on ${lines.length} Line${lines.length === 1 ? '' : 's'}.`,
   );
 } catch (e) {

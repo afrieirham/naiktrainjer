@@ -1,6 +1,8 @@
 # 0004 — The repository holds one file per record
 
-**Status:** accepted, amends ADR-0001 (decision 1).
+**Status:** accepted, amends ADR-0001 (decision 1). Amended by ADR-0008: Places are a single
+generated module (`data/places.ts`), not one file per record, because they are now written by an
+export rather than by hand.
 
 ## Context
 

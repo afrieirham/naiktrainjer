@@ -4,15 +4,17 @@ A public directory of places to rent near rail stations in the Klang Valley, pub
 [naiktrainjer.com](https://naiktrainjer.com). The visitor's question is always the same: *can I
 walk to a station from here?*
 
-The site is **prerendered**: the data records plus the app source build to plain static HTML, which
-Cloudflare Pages serves. There is no database and no request-time API for reading. Pages Functions
-under `/api/*` handle Contributions.
+The site is **prerendered**: the committed snapshots plus the app source build to plain static HTML,
+which Cloudflare Pages serves. There is no request-time API for reading. PocketBase is the source of
+truth (ADR-0008); the repository holds generated snapshots, refreshed by a manually-triggered Action.
 
 ## Stack
 
 - React Router (framework mode, v8) + React 19, ssr prerendered
 - Vite + Tailwind CSS v4
-- Cloudflare Pages + Pages Functions (KV for rate limiting, GitHub as the write target)
+- Cloudflare Pages (static; the build never contacts PocketBase)
+- PocketBase as the source of truth (`naiktrainjer_places`, `naiktrainjer_connections`), synced by a
+  manually-triggered GitHub Action
 - Node `>=22.22.0` (see `engines`)
 
 ## Quick start
@@ -35,15 +37,23 @@ Then open the URL Vite prints.
 | `npm run typecheck` | React Router typegen + `tsc`. |
 | `npm run icons` | Regenerate the favicon/app icons. |
 | `npm run export-network` | Refresh `data/network.ts` from the PocketBase network reference. |
+| `npm run export-places` | Refresh `data/places.ts` from the PocketBase Places and Connections. |
 
 ## Data
 
-Everything the directory knows lives in two places:
+PocketBase is the source of truth for the directory's data — the network reference and the Places
+(ADR-0008). Editing happens in the PocketBase admin UI, reached over Tailscale; the repository is
+not an editing surface. The repository holds a generated snapshot instead:
 
 - `data/network.ts` — the whole network: every Line and its Stations. **Generated** by
   `scripts/export-network.mjs`; do not hand-edit, run `npm run export-network` instead.
-- `data/places/<slug>.json` — one file per Place (84 today). Together these are the source of
-  truth; nothing else holds place data.
+- `data/places.ts` — every Place and its Connections (84 Places today). **Generated** by
+  `scripts/export-places.mjs`; do not hand-edit, run `npm run export-places` instead.
+
+The snapshot is refreshed by the manually-triggered **Sync places** GitHub Action
+(`.github/workflows/sync-places.yml`): it joins the tailnet, runs `npm run export-places`, and commits
+`data/places.ts`, and the push triggers the Cloudflare build. Neither the build nor the request path
+ever contacts PocketBase.
 
 A Place record looks like:
 
@@ -77,24 +87,14 @@ the controlled lists.
 | --- | --- |
 | `/` | Browse page: Line selector, type filter, corridor list, detail panel with the Route frame. |
 | `/places/:slug` | Prerendered Place page, shareable and indexable, with a preview card. |
-| `/contribute` | Public form to propose a Place (Turnstile + rate limiting). |
-| `/contributors` | Credits for people who contributed. |
-| `/admin` | Maintainer shell for reviewing Contributions and editing Places. Protected by Cloudflare Access. |
 | `/sitemap.xml`, `/robots.txt` | Generated from the single route list in `app/lib/routes.ts`. |
 
 ## Contributions
 
-A visitor's proposed Place is a **Contribution**: private until the maintainer approves it, at
-which point it becomes a published Place (ADR-0005). The write path is:
-
-1. `/contribute` posts to `/api/contribute` (Turnstile check, KV rate limit).
-2. The handler commits the Contribution to GitHub.
-3. The maintainer reviews it at `/admin` and approves it into `data/places/<slug>.json`.
-
-`/admin` and `/api/admin/*` are protected by a Cloudflare Access application configured in the
-dashboard, not in this repo. `/api/contribute` and `/api/config` stay public.
-`scripts/setup-contribute-credentials.sh` provisions the KV namespace, Turnstile keys, and Pages
-secrets.
+Submissions are paused: the public Contribute page and its endpoint are turned off, and the
+maintainer's write path (`/admin`, `/api/admin/*`) is retired — it wrote repository files that no
+longer feed the site (ADR-0008). The maintainer now adds and edits Places directly in the PocketBase
+admin UI and runs the sync Action to publish them.
 
 ## Docs
 

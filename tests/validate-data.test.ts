@@ -1,13 +1,12 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { places } from "../app/data/directory.node.ts";
 
 const root = resolve(import.meta.dirname, "..");
-const placesDir = resolve(root, "data/places");
 
 let output: string;
 
@@ -19,27 +18,20 @@ before(() => {
 });
 
 describe("validate-data.mjs", () => {
-  it("passes on the per-record layout", () => {
+  it("passes on the snapshot's records", () => {
     assert.ok(
       output.includes("✓ Valid"),
       `Expected a success message, got: ${output}`,
     );
   });
 
-  it("sees one file per Place, and the validator agrees with the loader", () => {
-    const files = readdirSync(placesDir).filter((name) => name.endsWith(".json"));
-    assert.equal(
-      files.length,
-      places.length,
-      `Expected one file per Place: ${places.length} records, ${files.length} files`,
-    );
-
+  it("validates the same records the snapshot module holds", () => {
     const match = output.match(/Valid: (\d+) Places/);
     assert.ok(match, `Expected the validator to report its Place count, got: ${output}`);
     assert.equal(
       Number(match[1]),
       places.length,
-      "The validator and the loader must agree on the number of Place records",
+      "The validator and the snapshot module must agree on the number of Place records",
     );
   });
 

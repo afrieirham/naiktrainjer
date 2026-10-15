@@ -97,20 +97,6 @@ describe("sitemap.xml", () => {
     );
   });
 
-  it("contains the Contribute page URL", () => {
-    assert.ok(
-      sitemapXml.includes(`<loc>${SITE_URL}/contribute/</loc>`),
-      "Contribute page URL missing from sitemap",
-    );
-  });
-
-  it("contains the Contributors page URL", () => {
-    assert.ok(
-      sitemapXml.includes(`<loc>${SITE_URL}/contributors/</loc>`),
-      "Contributors page URL missing from sitemap",
-    );
-  });
-
   it("all sitemap URLs are absolute and on naiktrainjer.com", () => {
     const locs = [...sitemapXml.matchAll(/<loc>([^<]*)<\/loc>/g)].map(
       (m) => m[1],
@@ -186,14 +172,6 @@ describe("sitemap ↔ build parity", () => {
     // The root index
     if (existsSync(resolve(BUILD_DIR, "index.html"))) {
       builtPaths.add("/");
-    }
-    // Contribute page
-    if (existsSync(resolve(BUILD_DIR, "contribute", "index.html"))) {
-      builtPaths.add("/contribute");
-    }
-    // Contributors page
-    if (existsSync(resolve(BUILD_DIR, "contributors", "index.html"))) {
-      builtPaths.add("/contributors");
     }
     // Place pages
     const placesDir = resolve(BUILD_DIR, "places");
