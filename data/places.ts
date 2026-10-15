@@ -745,7 +745,7 @@ export const places: Place[] = [
     "connections": [
       {
         "station": "KJ37",
-        "embed": "https://maps.app.goo.gl/TYwAMMHyPG56Ag3p6"
+        "embed": "https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d3984.3577453498287!2d101.57177847570127!3d2.9979873969780155!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e2!4m5!1s0x31cdb3e4409fc0c5%3A0xbfe5f9b57247b026!2sSerasi%20Residences%2C%20Jalan%20Putra%20Indera%205%2C%20Putra%20Heights%2C%2047650%20Subang%20Jaya%2C%20Selangor!3m2!1d3.0001265!2d101.5739042!4m5!1s0x31cdb3aa016f0763%3A0x1909f85d4539e294!2sSJ705%20LRT%20Putra%20Height%2C%20Putra%20Point%20Commercial%20Centre%2C%2047650%20Subang%20Jaya%2C%20Selangor!3m2!1d2.9952829999999997!2d101.575734!5e0!3m2!1sen!2smy!4v1792051766630!5m2!1sen!2smy"
       }
     ]
   },
