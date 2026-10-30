@@ -2,8 +2,8 @@
 /**
  * Sync the network reference from PocketBase: every Line and every Station.
  *
- * PocketBase (`POCKETBASE_URL`, default `http://pocketbase.pi`) describes the rail
- * network as it exists; `data/network.ts` is the committed snapshot the app reads.
+ * PocketBase (required `POCKETBASE_URL`) describes the rail network as it exists;
+ * `data/network.ts` is the committed snapshot the app reads.
  * This script copies the first into the second, whole. It is run by hand and is
  * never part of `npm run build`, so a deploy cannot depend on PocketBase being
  * reachable.
@@ -34,7 +34,7 @@ const root = resolve(__dirname, '..');
 const DATA_PATH = resolve(root, 'data/network.ts');
 const RETIRED_JSON_PATH = resolve(root, 'data/network.json');
 
-const BASE_URL = process.env.POCKETBASE_URL ?? 'http://pocketbase.pi';
+const BASE_URL = process.env.POCKETBASE_URL?.trim();
 
 function slugify(name) {
   return name
@@ -106,6 +106,10 @@ export function buildNetwork(lines, networkStations) {
 }
 
 async function main() {
+  if (!BASE_URL) {
+    throw new Error('Set POCKETBASE_URL to the PocketBase address before exporting.');
+  }
+
   const [lines, networkStations] = await Promise.all([
     fetchAll('train_lines'),
     fetchAll('train_stations'),

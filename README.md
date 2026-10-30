@@ -55,6 +55,11 @@ The snapshot is refreshed by the manually-triggered **Sync places** GitHub Actio
 `data/places.ts`, and the push triggers the Cloudflare build. Neither the build nor the request path
 ever contacts PocketBase.
 
+Both export scripts require a Tailscale connection and an explicit `POCKETBASE_URL` environment
+variable; there is no default host. Set it in your shell before running an export. Keep the actual
+address out of committed files. The sync Action uses the repository variable `POCKETBASE_URL`;
+update that variable when moving hosts.
+
 A Place record looks like:
 
 ```json
